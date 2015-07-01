@@ -8,6 +8,7 @@ import org.apache.zookeeper.server.{ServerCnxnFactory, ZooKeeperServer}
 import org.scalatest.Suite
 
 import scala.reflect.io.Directory
+import scala.util.Try
 
 trait EmbeddedKafka {
 
@@ -15,22 +16,18 @@ trait EmbeddedKafka {
 
   def withRunningKafka(body: => Unit) = {
 
-    // setup zookeeper
-    val zkSnapshotDir = Directory.makeTemp("zookeeper-snapshots")
-    val zkLogDir = Directory.makeTemp("zookeeper-logs")
+    val factory = startZooKeeper()
+    val broker = startKafka()
 
-    val tickTime = 500
+    val tentativeExecution = Try { body }
 
-    val zkServer = new ZooKeeperServer(zkSnapshotDir.toFile.jfile, zkLogDir.toFile.jfile, tickTime)
+    broker.shutdown()
+    factory.shutdown()
 
-    val factory = ServerCnxnFactory.createFactory()
+    tentativeExecution.get
+  }
 
-    factory.configure(new InetSocketAddress("localhost", 6000), 16)
-    factory.startup(zkServer)
-
-
-    // setup kafka
-
+  def startKafka(): KafkaServerStartable = {
     val kafkaLogDir = Directory.makeTemp("kafka")
 
     val zkAddress = "localhost:6000"
@@ -46,15 +43,21 @@ trait EmbeddedKafka {
 
     val broker = new KafkaServerStartable(new KafkaConfig(properties))
     broker.startup()
+    broker
+  }
 
-    // body
-    body
+  def startZooKeeper(): ServerCnxnFactory = {
+    val zkSnapshotDir = Directory.makeTemp("zookeeper-snapshots")
+    val zkLogDir = Directory.makeTemp("zookeeper-logs")
 
-    // shutdown kafka
-    broker.shutdown()
+    val tickTime = 500
 
-    // shutdown zookeeper
-    zkServer.shutdown()
-    factory.shutdown()
+    val zkServer = new ZooKeeperServer(zkSnapshotDir.toFile.jfile, zkLogDir.toFile.jfile, tickTime)
+
+    val factory = ServerCnxnFactory.createFactory()
+
+    factory.configure(new InetSocketAddress("localhost", 6000), 16)
+    factory.startup(zkServer)
+    factory
   }
 }

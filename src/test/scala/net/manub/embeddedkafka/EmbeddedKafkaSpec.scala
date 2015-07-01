@@ -6,6 +6,7 @@ import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.io.Tcp._
 import akka.io.{IO, Tcp}
 import akka.testkit.{ImplicitSender, TestKit}
+import org.scalatest.exceptions.TestFailedException
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.duration._
@@ -29,18 +30,36 @@ class EmbeddedKafkaSpec
       }
     }
 
-    "stop Kafka and Zookeeper after the body is executed" in {
+    "stop Kafka and Zookeeper successfully" when {
 
-      withRunningKafka {
-        // nothing happens here
+      "the enclosed test passes" in {
+
+        withRunningKafka {
+          true shouldBe true
+        }
+
+        system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6001), testActor))
+        expectMsg(1 second, ConnectionFailed)
+
+        system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6000), testActor))
+        expectMsg(1 second, ConnectionFailed)
+
       }
 
-      system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6001), testActor))
-      expectMsg(1 second, ConnectionFailed)
+      "the enclosed test fails" in {
 
-      system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6000), testActor))
-      expectMsg(1 second, ConnectionFailed)
+        a [TestFailedException] shouldBe thrownBy {
+          withRunningKafka {
+            true shouldBe false
+          }
+        }
 
+        system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6001), testActor))
+        expectMsg(1 second, ConnectionFailed)
+
+        system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6000), testActor))
+        expectMsg(1 second, ConnectionFailed)
+      }
     }
   }
 }
@@ -50,6 +69,7 @@ object TcpClient {
 }
 
 case object ConnectionSuccessful
+
 case object ConnectionFailed
 
 class TcpClient(remote: InetSocketAddress, listener: ActorRef) extends Actor {
