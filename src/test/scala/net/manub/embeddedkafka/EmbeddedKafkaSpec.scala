@@ -83,7 +83,7 @@ class TcpClient(remote: InetSocketAddress, listener: ActorRef) extends Actor {
       listener ! ConnectionSuccessful
       context stop self
 
-    case CommandFailed(_) =>
+    case _ =>
       listener ! ConnectionFailed
       context stop self
   }

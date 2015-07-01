@@ -8,7 +8,6 @@ import org.apache.zookeeper.server.{ServerCnxnFactory, ZooKeeperServer}
 import org.scalatest.Suite
 
 import scala.reflect.io.Directory
-import scala.util.Try
 
 trait EmbeddedKafka {
 
@@ -19,12 +18,12 @@ trait EmbeddedKafka {
     val factory = startZooKeeper()
     val broker = startKafka()
 
-    val tentativeExecution = Try { body }
-
-    broker.shutdown()
-    factory.shutdown()
-
-    tentativeExecution.get
+    try {
+      body
+    } finally {
+      broker.shutdown()
+      factory.shutdown()
+    }
   }
 
   def startKafka(): KafkaServerStartable = {
