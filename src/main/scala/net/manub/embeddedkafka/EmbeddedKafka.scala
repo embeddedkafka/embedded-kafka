@@ -13,7 +13,7 @@ trait EmbeddedKafka {
 
   this: Suite =>
 
-  def withEmbeddedKafka(body: => Unit) = {
+  def withRunningKafka(body: => Unit) = {
 
     // setup zookeeper
     val zkSnapshotDir = Directory.makeTemp("zookeeper-snapshots")

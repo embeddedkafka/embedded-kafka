@@ -3,13 +3,13 @@ package net.manub.embeddedkafka
 import java.net.InetSocketAddress
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import akka.io.Tcp._
 import akka.io.{IO, Tcp}
 import akka.testkit.{ImplicitSender, TestKit}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
-
 
 class EmbeddedKafkaSpec
   extends TestKit(ActorSystem("embedded-kafka-spec")) with WordSpecLike with EmbeddedKafka with Matchers
@@ -19,44 +19,33 @@ class EmbeddedKafkaSpec
     system.shutdown()
   }
 
-  "an embedded kafka spec" when {
+  "the withRunningKafka method" should {
 
-    "providing a spec inside whenEmbeddedKafka" should {
+    "start a Kafka broker on port 6001" in {
 
-      "start a kafka broker" in {
-
-        withEmbeddedKafka {
-
-          system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6001), testActor))
-          expectMsg(2 seconds, "connect successful")
-
-        }
-
+      withRunningKafka {
+        system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6001), testActor))
+        expectMsg(1 second, ConnectionSuccessful)
       }
     }
-
   }
-
 }
 
 object TcpClient {
   def props(remote: InetSocketAddress, replies: ActorRef) = Props(classOf[TcpClient], remote, replies)
 }
 
+case object ConnectionSuccessful
+
 class TcpClient(remote: InetSocketAddress, listener: ActorRef) extends Actor {
 
-  import Tcp._
   import context.system
 
   IO(Tcp) ! Connect(remote)
 
   def receive: Receive = {
-    case CommandFailed(_: Connect) =>
-      listener ! "connect failed"
-      context stop self
-
-    case c @ Connected(_, _) =>
-      listener ! "connect successful"
+    case Connected(_, _) =>
+      listener ! ConnectionSuccessful
       context stop self
   }
 }
