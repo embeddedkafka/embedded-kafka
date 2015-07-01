@@ -28,6 +28,20 @@ class EmbeddedKafkaSpec
         expectMsg(1 second, ConnectionSuccessful)
       }
     }
+
+    "stop Kafka and Zookeeper after the body is executed" in {
+
+      withRunningKafka {
+        // nothing happens here
+      }
+
+      system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6001), testActor))
+      expectMsg(1 second, ConnectionFailed)
+
+      system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6000), testActor))
+      expectMsg(1 second, ConnectionFailed)
+
+    }
   }
 }
 
@@ -36,6 +50,7 @@ object TcpClient {
 }
 
 case object ConnectionSuccessful
+case object ConnectionFailed
 
 class TcpClient(remote: InetSocketAddress, listener: ActorRef) extends Actor {
 
@@ -46,6 +61,10 @@ class TcpClient(remote: InetSocketAddress, listener: ActorRef) extends Actor {
   def receive: Receive = {
     case Connected(_, _) =>
       listener ! ConnectionSuccessful
+      context stop self
+
+    case CommandFailed(_) =>
+      listener ! ConnectionFailed
       context stop self
   }
 }

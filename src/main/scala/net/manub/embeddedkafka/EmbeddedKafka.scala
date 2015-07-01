@@ -55,5 +55,6 @@ trait EmbeddedKafka {
 
     // shutdown zookeeper
     zkServer.shutdown()
+    factory.shutdown()
   }
 }
