@@ -13,10 +13,10 @@ trait EmbeddedKafka {
 
   this: Suite =>
 
-  def withRunningKafka(body: => Unit) = {
+  def withRunningKafka(body: => Unit)(implicit config: EmbeddedKafkaConfig) = {
 
     val factory = startZooKeeper()
-    val broker = startKafka()
+    val broker = startKafka(config)
 
     try {
       body
@@ -26,17 +26,16 @@ trait EmbeddedKafka {
     }
   }
 
-  def startKafka(): KafkaServerStartable = {
+  def startKafka(config: EmbeddedKafkaConfig): KafkaServerStartable = {
     val kafkaLogDir = Directory.makeTemp("kafka")
 
     val zkAddress = "localhost:6000"
-    val brokerPort = 6001
 
     val properties: Properties = new Properties
     properties.setProperty("zookeeper.connect", zkAddress)
     properties.setProperty("broker.id", "1")
     properties.setProperty("host.name", "localhost")
-    properties.setProperty("port", Integer.toString(brokerPort))
+    properties.setProperty("port", Integer.toString(config.kafkaPort))
     properties.setProperty("log.dir", kafkaLogDir.toAbsolute.path)
     properties.setProperty("log.flush.interval.messages", String.valueOf(1))
 

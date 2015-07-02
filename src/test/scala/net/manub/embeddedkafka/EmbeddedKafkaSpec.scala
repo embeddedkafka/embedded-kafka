@@ -22,7 +22,7 @@ class EmbeddedKafkaSpec
 
   "the withRunningKafka method" should {
 
-    "start a Kafka broker on port 6001" in {
+    "start a Kafka broker on port 6001 by default" in {
 
       withRunningKafka {
         system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6001), testActor))
@@ -59,6 +59,16 @@ class EmbeddedKafkaSpec
 
         system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6000), testActor))
         expectMsg(1 second, ConnectionFailed)
+      }
+    }
+
+    "start a Kafka broker on a specified port" in {
+
+      implicit val config = EmbeddedKafkaConfig(kafkaPort = 12345)
+
+      withRunningKafka {
+        system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 12345), testActor))
+        expectMsg(1 second, ConnectionSuccessful)
       }
     }
   }
