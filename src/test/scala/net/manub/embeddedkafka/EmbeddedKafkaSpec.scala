@@ -110,12 +110,14 @@ class EmbeddedKafkaSpec
         val message = "hello world!"
         val topic = "test_topic"
 
+        println("****************** PUBLISHING")
         publishToKafka(topic, message)
 
         val props = new Properties()
         props.put("group.id", "test")
         props.put("zookeeper.connect", "127.0.0.1:6000")
 
+        println("*************** CONSUMING")
         val streamForTopic = Consumer
           .create(new ConsumerConfig(props))
           .createMessageStreams(Map(topic -> 1), new StringDecoder, new StringDecoder)(topic).head
