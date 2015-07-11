@@ -3,11 +3,12 @@ package net.manub.embeddedkafka
 import java.net.InetSocketAddress
 import java.util.Properties
 
-import kafka.producer.{KeyedMessage, Producer, ProducerConfig}
-import kafka.serializer.StringEncoder
 import kafka.server.{KafkaConfig, KafkaServer}
+import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
+import org.apache.kafka.common.serialization.StringSerializer
 import org.apache.zookeeper.server.{ServerCnxnFactory, ZooKeeperServer}
 import org.scalatest.Suite
+import scala.collection.JavaConversions.mapAsJavaMap
 
 import scala.reflect.io.Directory
 
@@ -30,27 +31,26 @@ trait EmbeddedKafka {
 
   def publishToKafka(topic: String, message: String)(implicit config: EmbeddedKafkaConfig) = {
 
-    val producerProps = new Properties()
-    producerProps.put("metadata.broker.list", s"127.0.0.1:${config.kafkaPort}")
-    producerProps.put("serializer.class", classOf[StringEncoder].getName)
+    val producerProps = Map(
+      "bootstrap.servers" -> s"localhost:${config.kafkaPort}",
+      "key.serializer" -> classOf[StringSerializer].getName,
+      "value.serializer" -> classOf[StringSerializer].getName
+    )
 
-    val producer = new Producer[String, String](new ProducerConfig(producerProps))
-    producer.send(new KeyedMessage[String, String](topic, message))
-    println("***** FINISHED PUBLISHING")
-    producer.close()
+    val kafkaProducer = new KafkaProducer[String, String](producerProps)
+
+    kafkaProducer.send(new ProducerRecord[String, String](topic, message))
+    kafkaProducer.close()
   }
 
   private def startZooKeeper(zooKeeperPort: Int): ServerCnxnFactory = {
     val zkLogsDir = Directory.makeTemp("zookeeper-logs")
-
     val tickTime = 2000
 
     val zkServer = new ZooKeeperServer(zkLogsDir.toFile.jfile, zkLogsDir.toFile.jfile, tickTime)
 
     val factory = ServerCnxnFactory.createFactory
-
-
-    factory.configure(new InetSocketAddress("127.0.0.1", zooKeeperPort), 1024)
+    factory.configure(new InetSocketAddress("localhost", zooKeeperPort), 1024)
     factory.startup(zkServer)
     factory
   }
@@ -58,31 +58,19 @@ trait EmbeddedKafka {
   private def startKafka(config: EmbeddedKafkaConfig): KafkaServer = {
     val kafkaLogDir = Directory.makeTemp("kafka")
 
-    val zkAddress = s"127.0.0.1:${config.zooKeeperPort}"
+    val zkAddress = s"localhost:${config.zooKeeperPort}"
 
     val properties: Properties = new Properties
     properties.setProperty("zookeeper.connect", zkAddress)
     properties.setProperty("broker.id", "0")
-    properties.setProperty("host.name", "127.0.0.1")
-    properties.setProperty("advertised.host.name", "127.0.0.1")
+    properties.setProperty("host.name", "localhost")
     properties.setProperty("auto.create.topics.enable", "true")
-    properties.setProperty("port", Integer.toString(config.kafkaPort))
+    properties.setProperty("port", config.kafkaPort.toString)
     properties.setProperty("log.dir", kafkaLogDir.toAbsolute.path)
-    properties.setProperty("log.flush.interval.messages", String.valueOf(1))
+    properties.setProperty("log.flush.interval.messages", 1.toString)
 
     val broker = new KafkaServer(new KafkaConfig(properties))
     broker.startup()
-    broker
-
-
-    //    val kafka2LogDir = Directory.makeTemp("kafka2")
-    //    properties.setProperty("broker.id", "1")
-    //    properties.setProperty("port", "9092")
-    //    properties.setProperty("log.dir", kafka2LogDir.toAbsolute.path)
-    //
-    //    val broker2 = new KafkaServer(new KafkaConfig(properties))
-    //    broker2.startup()
-
     broker
   }
 }
