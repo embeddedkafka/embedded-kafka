@@ -2,7 +2,7 @@ lazy val commonSettings = Seq(
   name := "scalatest-embedded-kafka",
   organization := "net.manub",
   scalaVersion := "2.11.7",
-  version := "0.1.0-SNAPSHOT",
+  version := "0.2.0-SNAPSHOT",
   parallelExecution in Test := false,
   libraryDependencies ++= Seq(
     "org.scalatest" %% "scalatest" % "2.2.5",
@@ -16,7 +16,7 @@ lazy val commonSettings = Seq(
 
 lazy val publishSettings = Seq(
   licenses +=("MIT", url("http://opensource.org/licenses/MIT")),
-  publishMavenStyle := false,
+  publishMavenStyle := true,
   publishArtifact in Test := false,
   pomIncludeRepository := { _ => false },
   pomExtra := <scm>
