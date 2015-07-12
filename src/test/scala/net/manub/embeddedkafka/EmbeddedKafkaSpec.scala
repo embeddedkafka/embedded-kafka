@@ -127,6 +127,8 @@ class EmbeddedKafkaSpec
           msg shouldBe message
         }
 
+        consumer.shutdown()
+
       }
 
     }
