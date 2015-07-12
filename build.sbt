@@ -4,6 +4,7 @@ lazy val commonSettings = Seq(
   version := "0.1.0-SNAPSHOT",
   scalaVersion := "2.11.7",
   parallelExecution in Test := false,
+  licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
   libraryDependencies ++= Seq(
     "org.scalatest" %% "scalatest" % "2.2.5",
     "org.apache.kafka" %% "kafka" % "0.8.2.1",
