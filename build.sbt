@@ -1,7 +1,6 @@
 lazy val commonSettings = Seq(
   name := "scalatest-embedded-kafka",
   organization := "net.manub",
-  version := "0.1.0-SNAPSHOT",
   scalaVersion := "2.11.7",
   parallelExecution in Test := false,
   libraryDependencies ++= Seq(
