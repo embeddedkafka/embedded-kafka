@@ -34,3 +34,4 @@ lazy val publishSettings = Seq(
 lazy val root = (project in file("."))
   .settings(publishSettings: _*)
   .settings(commonSettings: _*)
+  .enablePlugins(GitVersioning)
