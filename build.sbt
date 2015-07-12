@@ -2,9 +2,11 @@ name := "scalatest-embedded-kafka"
 
 organization := "net.manub"
 
-version := "0.0.1-SNAPSHOT"
+version := "0.1.0-SNAPSHOT"
 
 scalaVersion := "2.11.7"
+
+licenses := Seq(("MIT", url("http://opensource.org/licenses/MIT")))
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "2.2.5",

@@ -16,6 +16,12 @@ trait EmbeddedKafka {
 
   this: Suite =>
 
+  /**
+   * Starts a ZooKeeper instance and a Kafka broker, then executes the body passed as a parameter.
+   *
+   * @param body the function to execute
+   * @param config an implicit {@see EmbeddedKafkaConfig}
+   */
   def withRunningKafka(body: => Unit)(implicit config: EmbeddedKafkaConfig) = {
 
     val factory = startZooKeeper(config.zooKeeperPort)
@@ -29,6 +35,13 @@ trait EmbeddedKafka {
     }
   }
 
+  /**
+   * Publishes asynchronously a message to the running Kafka broker.
+   *
+   * @param topic the topic to which publish the message (it will be auto-created)
+   * @param message the message to publish
+   * @param config an implicit {@see EmbeddedKafkaConfig}
+   */
   def publishToKafka(topic: String, message: String)(implicit config: EmbeddedKafkaConfig) = {
 
     val producerProps = Map(
