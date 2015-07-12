@@ -18,8 +18,7 @@ lazy val publishSettings = Seq(
   licenses +=("MIT", url("http://opensource.org/licenses/MIT")),
   publishMavenStyle := true,
   publishArtifact in Test := false,
-  pomIncludeRepository := { x => false },
-  bintray.Keys.repository in bintray.Keys.bintray := "sbt-plugins"
+  pomIncludeRepository := { x => false }
 )
 
 lazy val root = (project in file("."))
