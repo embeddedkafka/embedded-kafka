@@ -15,12 +15,22 @@ lazy val commonSettings = Seq(
 
 lazy val publishSettings = Seq(
   licenses +=("MIT", url("http://opensource.org/licenses/MIT")),
-  publishMavenStyle := true,
+  publishMavenStyle := false,
   publishArtifact in Test := false,
-  pomIncludeRepository := { x => false }
+  pomIncludeRepository := { _ => false },
+  pomExtra := <scm>
+                <url>https://github.com/manub/scalatest-embedded-kafka</url>
+                <connection>scm:git:git@github.com:manub/scalatest-embedded-kafka.git</connection>
+              </scm>
+              <developers>
+                <developer>
+                  <id>manub</id>
+                  <name>Emanuele Blanco</name>
+                  <url>http://twitter.com/manub</url>
+                </developer>
+              </developers>
 )
 
 lazy val root = (project in file("."))
-  .settings(Seq(bintrayPublishSettings: _*))
-  .settings(publishSettings : _*)
+  .settings(publishSettings: _*)
   .settings(commonSettings: _*)
