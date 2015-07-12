@@ -32,7 +32,12 @@ lazy val publishSettings = Seq(
     </developers>
 )
 
+lazy val releaseSettings = Seq(
+  releaseVersionBump := sbtrelease.Version.Bump.Minor,
+  releaseUseGlobalVersion := false
+)
+
 lazy val root = (project in file("."))
   .settings(publishSettings: _*)
   .settings(commonSettings: _*)
-  .enablePlugins(GitVersioning)
+  .settings(releaseSettings: _*)
