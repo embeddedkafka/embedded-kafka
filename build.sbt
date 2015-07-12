@@ -2,6 +2,7 @@ lazy val commonSettings = Seq(
   name := "scalatest-embedded-kafka",
   organization := "net.manub",
   scalaVersion := "2.11.7",
+  version := "0.1.0-SNAPSHOT",
   parallelExecution in Test := false,
   libraryDependencies ++= Seq(
     "org.scalatest" %% "scalatest" % "2.2.5",
@@ -19,16 +20,16 @@ lazy val publishSettings = Seq(
   publishArtifact in Test := false,
   pomIncludeRepository := { _ => false },
   pomExtra := <scm>
-                <url>https://github.com/manub/scalatest-embedded-kafka</url>
-                <connection>scm:git:git@github.com:manub/scalatest-embedded-kafka.git</connection>
-              </scm>
-              <developers>
-                <developer>
-                  <id>manub</id>
-                  <name>Emanuele Blanco</name>
-                  <url>http://twitter.com/manub</url>
-                </developer>
-              </developers>
+    <url>https://github.com/manub/scalatest-embedded-kafka</url>
+    <connection>scm:git:git@github.com:manub/scalatest-embedded-kafka.git</connection>
+  </scm>
+    <developers>
+      <developer>
+        <id>manub</id>
+        <name>Emanuele Blanco</name>
+        <url>http://twitter.com/manub</url>
+      </developer>
+    </developers>
 )
 
 lazy val root = (project in file("."))
