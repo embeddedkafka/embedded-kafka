@@ -5,7 +5,9 @@ Inspired by https://github.com/chbatey/kafka-unit
 
 ## How to use
 
-* In your `build.sbt` file add the following dependency: `"org.scalatest" %% "scalatest" % "0.2.2"` (available on Maven Central)
+NOTE - There are currently two versions: 0.2.1 has been compiled for Scala 2.11 and 0.2.2 has been compiled for Scala 2.10. I will investigate why I'm not currently able to release the same version for two different scala binaries.
+
+* In your `build.sbt` file add the following dependency: `"org.scalatest" %% "scalatest" % "0.2.1"` (available on Maven Central - use 0.2.2 if you're using Scala 2.10)
 * Have your `Spec` extend the `EmbeddedKafka` trait.
 * Enclose the code that needs a running instance of Kafka within the `withRunningKafka` closure.
 
