@@ -35,7 +35,7 @@ lazy val publishSettings = Seq(
 
 lazy val releaseSettings = Seq(
   releaseVersionBump := sbtrelease.Version.Bump.Minor,
-  releaseUseGlobalVersion := false
+  releaseCrossBuild := true
 )
 
 lazy val root = (project in file("."))
