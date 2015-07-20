@@ -132,9 +132,15 @@ class EmbeddedKafkaSpec
         }
 
         consumer.shutdown()
-
       }
 
+    }
+
+    "throws a KafkaUnavailableException when Kafka is unavailable when trying to publish" in {
+
+      a[KafkaUnavailableException] shouldBe thrownBy {
+        publishToKafka("non_existing_topic", "a message")
+      }
     }
   }
 
@@ -149,7 +155,7 @@ class EmbeddedKafkaSpec
 
         val producer = new KafkaProducer[String, String](Map(
           ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:6001",
-          ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer].getName,
+          ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG   -> classOf[StringSerializer].getName,
           ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer].getName
         ))
 
@@ -164,12 +170,17 @@ class EmbeddedKafkaSpec
     "throws a TimeoutExeption when a message is not available" in {
 
       withRunningKafka {
-
         a[TimeoutException] shouldBe thrownBy {
           consumeFirstMessageFrom("non_existing_topic")
         }
       }
+    }
 
+    "throws a KafkaUnavailableException when there's no running instance of Kafka" in {
+
+      a[KafkaUnavailableException] shouldBe thrownBy {
+        consumeFirstMessageFrom("non_existing_topic")
+      }
     }
   }
 

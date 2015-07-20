@@ -2,21 +2,22 @@ package net.manub.embeddedkafka
 
 import java.net.InetSocketAddress
 import java.util.Properties
-import java.util.concurrent.Executors
+import java.util.concurrent.{TimeUnit, Executors}
 
 import kafka.consumer.{Consumer, ConsumerConfig, Whitelist}
 import kafka.serializer.StringDecoder
 import kafka.server.{KafkaConfig, KafkaServer}
-import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
+import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
 import org.apache.kafka.common.serialization.StringSerializer
 import org.apache.zookeeper.server.{ServerCnxnFactory, ZooKeeperServer}
 import org.scalatest.Suite
 
 import scala.collection.JavaConversions.mapAsJavaMap
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent._
 import scala.language.postfixOps
 import scala.reflect.io.Directory
+import scala.util.Try
 
 trait EmbeddedKafka {
 
@@ -50,37 +51,49 @@ trait EmbeddedKafka {
    * @param topic the topic to which publish the message (it will be auto-created)
    * @param message the message to publish
    * @param config an implicit [[EmbeddedKafkaConfig]]
+   * @throws KafkaUnavailableException if unable to connect to Kafka
    */
+  @throws(classOf[KafkaUnavailableException])
   def publishToKafka(topic: String, message: String)(implicit config: EmbeddedKafkaConfig): Unit = {
 
-    val producerProps = Map(
-      "bootstrap.servers" -> s"localhost:${config.kafkaPort}",
-      "key.serializer" -> classOf[StringSerializer].getName,
-      "value.serializer" -> classOf[StringSerializer].getName
-    )
+    val kafkaProducer = new KafkaProducer[String, String](Map[String, String](
+      ProducerConfig.BOOTSTRAP_SERVERS_CONFIG       -> s"localhost:${config.kafkaPort}",
+      ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG    -> classOf[StringSerializer].getName,
+      ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG  -> classOf[StringSerializer].getName,
+      ProducerConfig.METADATA_FETCH_TIMEOUT_CONFIG  -> 3000.toString,
+      ProducerConfig.RETRY_BACKOFF_MS_CONFIG        -> 1000.toString
+    ))
 
-    val kafkaProducer = new KafkaProducer[String, String](producerProps)
+    val sendFuture = kafkaProducer.send(new ProducerRecord[String, String](topic, message))
+    val sendResult = Try { sendFuture.get(3, SECONDS) }
 
-    kafkaProducer.send(new ProducerRecord[String, String](topic, message))
     kafkaProducer.close()
+
+    if (sendResult.isFailure) throw new KafkaUnavailableException
   }
 
 
   /**
    * Consumes the first message available in a given topic, deserializing it as a String.
-   * Throws a [[java.util.concurrent.TimeoutException]] if a message is not available in 3 seconds.
    *
    * @param topic the topic to consume a message from
    * @param config an implicit [[EmbeddedKafkaConfig]]
    * @return the first message consumed from the given topic
+   * @throws TimeoutException if unable to consume a message within 3 seconds
+   * @throws KafkaUnavailableException if unable to connect to Kafka
    */
+  @throws(classOf[TimeoutException])
+  @throws(classOf[KafkaUnavailableException])
   def consumeFirstMessageFrom(topic: String)(implicit config: EmbeddedKafkaConfig): String = {
     val props = new Properties()
     props.put("group.id", "scalatest-embedded-kafka-spec")
     props.put("zookeeper.connect", s"localhost:${config.zooKeeperPort}")
     props.put("auto.offset.reset", "smallest")
+    props.put("zookeeper.connection.timeout.ms", "6000")
 
-    val consumer = Consumer.create(new ConsumerConfig(props))
+    val consumer = Try {
+      Consumer.create(new ConsumerConfig(props))
+    }.getOrElse(throw new KafkaUnavailableException)
 
     val filter = Whitelist(topic)
     val messageStreams =
