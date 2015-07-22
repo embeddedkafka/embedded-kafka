@@ -99,7 +99,9 @@ trait EmbeddedKafka {
     val messageStreams =
       consumer.createMessageStreamsByFilter(filter, keyDecoder = new StringDecoder, valueDecoder = new StringDecoder)
 
-    val messageFuture = Future { messageStreams.head.iterator().next().message() }
+    val messageFuture = Future {
+      messageStreams.headOption.getOrElse(throw new KafkaSpecException("Unable to find a message stream")).iterator().next().message()
+    }
 
     try {
       Await.result(messageFuture, 3 seconds)

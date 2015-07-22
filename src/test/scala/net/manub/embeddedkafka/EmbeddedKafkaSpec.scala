@@ -8,7 +8,7 @@ import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.io.Tcp._
 import akka.io.{IO, Tcp}
 import akka.testkit.{ImplicitSender, TestKit}
-import kafka.consumer.{ConsumerConfig, Consumer, Whitelist}
+import kafka.consumer.{Consumer, ConsumerConfig, Whitelist}
 import kafka.serializer.StringDecoder
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
 import org.apache.kafka.common.serialization.StringSerializer
@@ -124,7 +124,12 @@ class EmbeddedKafkaSpec
         val messageStreams = consumer.createMessageStreamsByFilter(filter, 1, stringDecoder, stringDecoder)
 
         val eventualMessage = Future {
-          messageStreams.head.iterator().next().message()
+          messageStreams
+            .headOption
+            .getOrElse(throw new RuntimeException("Unable to retrieve message streams"))
+            .iterator()
+            .next()
+            .message()
         }
 
         whenReady(eventualMessage) { msg =>
