@@ -7,7 +7,7 @@ Inspired by https://github.com/chbatey/kafka-unit
 
 scalatest-embedded-kafka is available on Bintray and Maven Central, compiled for both Scala 2.10 and 2.11
 
-* In your `build.sbt` file add the following dependency: `"org.scalatest" %% "scalatest" % "0.2.3"`
+* In your `build.sbt` file add the following dependency: `"org.scalatest" %% "scalatest" % "0.3.0"`
 * Have your `Spec` extend the `EmbeddedKafka` trait.
 * Enclose the code that needs a running instance of Kafka within the `withRunningKafka` closure.
 
@@ -41,11 +41,14 @@ It's possible to change the ports on which Zookeeper and Kafka are started by pr
         
 ## Utility methods
 
-The `EmbeddedKafka` trait provides also an utility method to publish a message to a topic:
+The `EmbeddedKafka` trait provides also some utility methods to interact with the embedded kafka, in order to set preconditions or verifications in your specs:
 
-        publishToKafka("topic", "message")
+        def publishToKafka(topic: String, message: String): Unit
         
-At the moment it's only possible to publish a message as a `String`. There's no utility method for consuming, but this will be part of a next release.
+        def consumeFirstMessageFrom(topic: String): String
+        
+
+For more information about how to use those method, you can either look at the Scaladocs or at the tests of this project.
 
 ## Badges 
 

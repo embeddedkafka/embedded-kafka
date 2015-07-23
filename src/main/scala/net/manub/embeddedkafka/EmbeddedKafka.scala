@@ -86,7 +86,7 @@ trait EmbeddedKafka {
   @throws(classOf[KafkaUnavailableException])
   def consumeFirstMessageFrom(topic: String)(implicit config: EmbeddedKafkaConfig): String = {
     val props = new Properties()
-    props.put("group.id", "scalatest-embedded-kafka-spec")
+    props.put("group.id", s"embedded-kafka-spec-$suiteId")
     props.put("zookeeper.connect", s"localhost:${config.zooKeeperPort}")
     props.put("auto.offset.reset", "smallest")
     props.put("zookeeper.connection.timeout.ms", "6000")
