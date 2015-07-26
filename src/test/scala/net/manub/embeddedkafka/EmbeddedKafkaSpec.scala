@@ -1,5 +1,6 @@
 package net.manub.embeddedkafka
 
+import java.lang.Class
 import java.net.InetSocketAddress
 import java.util.Properties
 import java.util.concurrent.TimeoutException
@@ -11,7 +12,7 @@ import akka.testkit.{ImplicitSender, TestKit}
 import kafka.consumer.{Consumer, ConsumerConfig, Whitelist}
 import kafka.serializer.StringDecoder
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
-import org.apache.kafka.common.serialization.StringSerializer
+import org.apache.kafka.common.serialization.{ByteArraySerializer, StringSerializer}
 import org.scalatest.concurrent.{JavaFutures, ScalaFutures}
 import org.scalatest.exceptions.TestFailedException
 import org.scalatest.time.{Milliseconds, Seconds, Span}
@@ -22,6 +23,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.language.postfixOps
+import scala.reflect.ClassTag
 
 class EmbeddedKafkaSpec
   extends TestKit(ActorSystem("embedded-kafka-spec")) with WordSpecLike with EmbeddedKafka with Matchers
@@ -186,6 +188,15 @@ class EmbeddedKafkaSpec
       a[KafkaUnavailableException] shouldBe thrownBy {
         consumeFirstMessageFrom("non_existing_topic")
       }
+    }
+  }
+
+  "the aKafkaProducerThat method" should {
+
+    "return a producer that encodes messages for the given encoder" in {
+        val producer = aKafkaProducerThat serializesValuesWith classOf[ByteArraySerializer]
+
+        producer.isInstanceOf[KafkaProducer[String, ByteArraySerializer]] shouldBe true
     }
   }
 

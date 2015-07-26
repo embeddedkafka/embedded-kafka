@@ -2,19 +2,19 @@ package net.manub.embeddedkafka
 
 import java.net.InetSocketAddress
 import java.util.Properties
-import java.util.concurrent.{TimeUnit, Executors}
+import java.util.concurrent.Executors
 
 import kafka.consumer.{Consumer, ConsumerConfig, Whitelist}
 import kafka.serializer.StringDecoder
 import kafka.server.{KafkaConfig, KafkaServer}
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
-import org.apache.kafka.common.serialization.StringSerializer
+import org.apache.kafka.common.serialization.{Serializer, StringSerializer}
 import org.apache.zookeeper.server.{ServerCnxnFactory, ZooKeeperServer}
 import org.scalatest.Suite
 
 import scala.collection.JavaConversions.mapAsJavaMap
-import scala.concurrent.duration._
 import scala.concurrent._
+import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.reflect.io.Directory
 import scala.util.Try
@@ -99,14 +99,31 @@ trait EmbeddedKafka {
     val messageStreams =
       consumer.createMessageStreamsByFilter(filter, keyDecoder = new StringDecoder, valueDecoder = new StringDecoder)
 
-    val messageFuture = Future {
-      messageStreams.headOption.getOrElse(throw new KafkaSpecException("Unable to find a message stream")).iterator().next().message()
+    val messageFuture = Future { messageStreams.headOption
+      .getOrElse(throw new KafkaSpecException("Unable to find a message stream")).iterator().next().message()
     }
 
     try {
       Await.result(messageFuture, 3 seconds)
     } finally {
       consumer.shutdown()
+    }
+  }
+
+  def aKafkaProducerThat(): KafkaProducerConfiguration = {
+    new KafkaProducerConfiguration()
+  }
+
+  sealed class KafkaProducerConfiguration {
+
+    def serializesValuesWith[T <: Serializer[_]](serializer: Class[T])(implicit config: EmbeddedKafkaConfig) = {
+      new KafkaProducer[String, T](Map(
+        ProducerConfig.BOOTSTRAP_SERVERS_CONFIG       -> s"localhost:${config.kafkaPort}",
+        ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG    -> classOf[StringSerializer].getName,
+        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG  -> serializer.getName,
+        ProducerConfig.METADATA_FETCH_TIMEOUT_CONFIG  -> 3000.toString,
+        ProducerConfig.RETRY_BACKOFF_MS_CONFIG        -> 1000.toString
+      ))
     }
   }
 
