@@ -1,6 +1,5 @@
 package net.manub.embeddedkafka
 
-import java.lang.Class
 import java.net.InetSocketAddress
 import java.util.Properties
 import java.util.concurrent.TimeoutException
@@ -23,7 +22,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import scala.reflect.ClassTag
 
 class EmbeddedKafkaSpec
   extends TestKit(ActorSystem("embedded-kafka-spec")) with WordSpecLike with EmbeddedKafka with Matchers
@@ -194,9 +192,12 @@ class EmbeddedKafkaSpec
   "the aKafkaProducerThat method" should {
 
     "return a producer that encodes messages for the given encoder" in {
-        val producer = aKafkaProducerThat serializesValuesWith classOf[ByteArraySerializer]
 
-        producer.isInstanceOf[KafkaProducer[String, ByteArraySerializer]] shouldBe true
+      withRunningKafka {
+        val producer = aKafkaProducer thatSerializesValuesWith classOf[ByteArraySerializer]
+        producer.send(new ProducerRecord[String, Array[Byte]]("a topic", "a message".getBytes))
+      }
+
     }
   }
 

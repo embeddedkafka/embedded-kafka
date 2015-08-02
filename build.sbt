@@ -1,3 +1,5 @@
+import sbtrelease.Version
+
 lazy val commonSettings = Seq(
   name := "scalatest-embedded-kafka",
   organization := "net.manub",
@@ -34,7 +36,7 @@ lazy val publishSettings = Seq(
 )
 
 lazy val releaseSettings = Seq(
-  releaseVersionBump := sbtrelease.Version.Bump.Minor,
+  releaseVersionBump := Version.Bump.Minor,
   releaseCrossBuild := true
 )
 
