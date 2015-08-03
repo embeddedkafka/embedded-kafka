@@ -5,10 +5,10 @@ import java.util.Properties
 import java.util.concurrent.Executors
 
 import kafka.consumer.{Consumer, ConsumerConfig, Whitelist}
-import kafka.serializer.StringDecoder
+import kafka.serializer.{Decoder, StringDecoder}
 import kafka.server.{KafkaConfig, KafkaServer}
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
-import org.apache.kafka.common.serialization.{Serializer, StringSerializer}
+import org.apache.kafka.common.serialization.{Deserializer, Serializer, StringSerializer}
 import org.apache.zookeeper.server.{ServerCnxnFactory, ZooKeeperServer}
 import org.scalatest.Suite
 
@@ -46,6 +46,9 @@ trait EmbeddedKafka {
     }
   }
 
+  def publishStringMessageToKafka(topic: String, message: String)(implicit config: EmbeddedKafkaConfig): Unit =
+    publishToKafka(topic, message)(config, new StringSerializer)
+
   /**
    * Publishes asynchronously a message to the running Kafka broker.
    *
@@ -55,23 +58,24 @@ trait EmbeddedKafka {
    * @throws KafkaUnavailableException if unable to connect to Kafka
    */
   @throws(classOf[KafkaUnavailableException])
-  def publishToKafka(topic: String, message: String)(implicit config: EmbeddedKafkaConfig): Unit = {
+  def publishToKafka[T](topic: String, message: T)(implicit config: EmbeddedKafkaConfig, serializer: Serializer[T]): Unit = {
 
-    val kafkaProducer = new KafkaProducer[String, String](Map[String, String](
+    val kafkaProducer = new KafkaProducer(Map(
       ProducerConfig.BOOTSTRAP_SERVERS_CONFIG       -> s"localhost:${config.kafkaPort}",
-      ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG    -> classOf[StringSerializer].getName,
-      ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG  -> classOf[StringSerializer].getName,
       ProducerConfig.METADATA_FETCH_TIMEOUT_CONFIG  -> 3000.toString,
       ProducerConfig.RETRY_BACKOFF_MS_CONFIG        -> 1000.toString
-    ))
+    ), new StringSerializer, serializer)
 
-    val sendFuture = kafkaProducer.send(new ProducerRecord[String, String](topic, message))
+    val sendFuture = kafkaProducer.send(new ProducerRecord(topic, message))
     val sendResult = Try { sendFuture.get(3, SECONDS) }
 
     kafkaProducer.close()
 
     if (sendResult.isFailure) throw new KafkaUnavailableException
   }
+
+  def consumeFirstStringMessageFrom(topic: String)(implicit config: EmbeddedKafkaConfig): String =
+    consumeFirstMessageFrom(topic)(config, new StringDecoder())
 
 
   /**
@@ -85,7 +89,7 @@ trait EmbeddedKafka {
    */
   @throws(classOf[TimeoutException])
   @throws(classOf[KafkaUnavailableException])
-  def consumeFirstMessageFrom(topic: String)(implicit config: EmbeddedKafkaConfig): String = {
+  def consumeFirstMessageFrom[T](topic: String)(implicit config: EmbeddedKafkaConfig, decoder: Decoder[T]): T = {
     val props = new Properties()
     props.put("group.id", s"embedded-kafka-spec-$suiteId")
     props.put("zookeeper.connect", s"localhost:${config.zooKeeperPort}")
@@ -98,7 +102,7 @@ trait EmbeddedKafka {
 
     val filter = Whitelist(topic)
     val messageStreams =
-      consumer.createMessageStreamsByFilter(filter, keyDecoder = new StringDecoder, valueDecoder = new StringDecoder)
+      consumer.createMessageStreamsByFilter(filter, keyDecoder = new StringDecoder, valueDecoder = decoder)
 
     val messageFuture = Future { messageStreams.headOption
       .getOrElse(throw new KafkaSpecException("Unable to find a message stream")).iterator().next().message()
@@ -113,13 +117,21 @@ trait EmbeddedKafka {
 
   object aKafkaProducer {
     def thatSerializesValuesWith[V](serializer: Class[_ <: Serializer[V]])(implicit config: EmbeddedKafkaConfig) = {
-      new KafkaProducer[String, V](Map(
-        ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
+      new KafkaProducer[String, V]( basicKafkaConfig(config) + (
         ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer].getName,
-        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> serializer.getName,
+        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> serializer.getName
+      ))
+    }
+    
+    def apply[V](implicit valueSerializer: Serializer[V], config: EmbeddedKafkaConfig) =
+      new KafkaProducer[String, V](basicKafkaConfig(config), new StringSerializer, valueSerializer)
+
+    def basicKafkaConfig[V](config: EmbeddedKafkaConfig): Map[String, String] = {
+      Map(
+        ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
         ProducerConfig.METADATA_FETCH_TIMEOUT_CONFIG -> 3000.toString,
         ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> 1000.toString
-      ))
+      )
     }
   }
 
