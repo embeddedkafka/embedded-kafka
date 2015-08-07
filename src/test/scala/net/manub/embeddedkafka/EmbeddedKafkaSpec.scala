@@ -219,6 +219,7 @@ class EmbeddedKafkaSpec
 
   "the aKafkaProducer object" should {
     "return a producer that encodes messages for the given type" in {
+      import Codecs._
       withRunningKafka {
         val producer = aKafkaProducer[String]
         producer.send(new ProducerRecord[String, String]("a topic", "a message"))
