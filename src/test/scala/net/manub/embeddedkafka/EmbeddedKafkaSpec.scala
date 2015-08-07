@@ -34,9 +34,7 @@ class EmbeddedKafkaSpec
   }
 
   "the withRunningKafka method" should {
-
     "start a Kafka broker on port 6001 by default" in {
-
       withRunningKafka {
         system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6001), testActor))
         expectMsg(1 second, ConnectionSuccessful)
@@ -44,32 +42,25 @@ class EmbeddedKafkaSpec
     }
 
     "start a ZooKeeper instance on port 6000 by default" in {
-
       withRunningKafka {
         system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6000), testActor))
         expectMsg(1 second, ConnectionSuccessful)
       }
-
     }
 
     "stop Kafka and Zookeeper successfully" when {
-
       "the enclosed test passes" in {
-
         withRunningKafka {
           true shouldBe true
         }
 
         system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6001), testActor))
         expectMsg(1 second, ConnectionFailed)
-
         system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6000), testActor))
         expectMsg(1 second, ConnectionFailed)
-
       }
 
       "the enclosed test fails" in {
-
         a[TestFailedException] shouldBe thrownBy {
           withRunningKafka {
             true shouldBe false
@@ -78,14 +69,12 @@ class EmbeddedKafkaSpec
 
         system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6001), testActor))
         expectMsg(1 second, ConnectionFailed)
-
         system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6000), testActor))
         expectMsg(1 second, ConnectionFailed)
       }
     }
 
     "start a Kafka broker on a specified port" in {
-
       implicit val config = EmbeddedKafkaConfig(kafkaPort = 12345)
 
       withRunningKafka {
@@ -95,7 +84,6 @@ class EmbeddedKafkaSpec
     }
 
     "start a Zookeeper server on a specified port" in {
-
       implicit val config = EmbeddedKafkaConfig(zooKeeperPort = 12345)
 
       withRunningKafka {
@@ -105,12 +93,9 @@ class EmbeddedKafkaSpec
     }
   }
 
-  "the publishToKafka method" should {
-
-    "publishes asynchronously a message to Kafka" in {
-
+  "the publishStringMessageToKafka method" should {
+    "publish synchronously a String message to Kafka" in {
       withRunningKafka {
-
         val message = "hello world!"
         val topic = "test_topic"
 
@@ -138,22 +123,18 @@ class EmbeddedKafkaSpec
 
         consumer.shutdown()
       }
-
     }
 
-    "throws a KafkaUnavailableException when Kafka is unavailable when trying to publish" in {
+    "throw a KafkaUnavailableException when Kafka is unavailable when trying to publish" in {
       a[KafkaUnavailableException] shouldBe thrownBy {
         publishStringMessageToKafka("non_existing_topic", "a message")
       }
     }
   }
 
-  "the consumeFirstMessageFrom method" should {
-
-    "returns a message published to a topic" in {
-
+  "the consumeFirstStringMessageFrom method" should {
+    "return a message published to a topic" in {
       withRunningKafka {
-
         val message = "hello world!"
         val topic = "test_topic"
 
@@ -171,10 +152,8 @@ class EmbeddedKafkaSpec
       }
     }
 
-    "returns a message published to a topic with implicit decoder" in {
-
+    "return a message published to a topic with implicit decoder" in {
       withRunningKafka {
-
         val message = "hello world!"
         val topic = "test_topic"
 
@@ -184,7 +163,7 @@ class EmbeddedKafkaSpec
           ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer].getName
         ))
 
-        import marshalling._
+        import Codecs._
         whenReady(producer.send(new ProducerRecord[String, String](topic, message))) { _ =>
           consumeFirstMessageFrom[Array[Byte]](topic) shouldBe message.getBytes
         }
@@ -195,7 +174,7 @@ class EmbeddedKafkaSpec
 
     "return a message published to a topic with custom decoder" in {
 
-      import marshalling.avro._
+      import avro._
       withRunningKafka {
 
         val message = TestAvroClass("name")
@@ -214,8 +193,7 @@ class EmbeddedKafkaSpec
       }
     }
 
-    "throws a TimeoutExeption when a message is not available" in {
-
+    "throw a TimeoutExeption when a message is not available" in {
       withRunningKafka {
         a[TimeoutException] shouldBe thrownBy {
           consumeFirstStringMessageFrom("non_existing_topic")
@@ -223,8 +201,7 @@ class EmbeddedKafkaSpec
       }
     }
 
-    "throws a KafkaUnavailableException when there's no running instance of Kafka" in {
-
+    "throw a KafkaUnavailableException when there's no running instance of Kafka" in {
       a[KafkaUnavailableException] shouldBe thrownBy {
         consumeFirstStringMessageFrom("non_existing_topic")
       }
@@ -232,21 +209,16 @@ class EmbeddedKafkaSpec
   }
 
   "the aKafkaProducerThat method" should {
-
     "return a producer that encodes messages for the given encoder" in {
-
       withRunningKafka {
         val producer = aKafkaProducer thatSerializesValuesWith classOf[ByteArraySerializer]
         producer.send(new ProducerRecord[String, Array[Byte]]("a topic", "a message".getBytes))
       }
-
     }
   }
 
   "the aKafkaProducer object" should {
-
     "return a producer that encodes messages for the given type" in {
-      import marshalling._
       withRunningKafka {
         val producer = aKafkaProducer[String]
         producer.send(new ProducerRecord[String, String]("a topic", "a message"))
@@ -255,8 +227,7 @@ class EmbeddedKafkaSpec
 
 
     "return a producer that encodes messages for a custom type" in {
-      import marshalling.avro._
-
+      import avro._
       withRunningKafka {
         val producer = aKafkaProducer[TestAvroClass]
         producer.send(new ProducerRecord[String, TestAvroClass]("a topic", TestAvroClass("name")))
@@ -273,7 +244,6 @@ class EmbeddedKafkaSpec
     new ConsumerConfig(props)
   }
 }
-
 
 
 object TcpClient {

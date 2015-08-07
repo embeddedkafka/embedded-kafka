@@ -33,5 +33,5 @@ object TestAvroClass {
       |     {"name": "name", "type": "string"}
       | ]
       |}
-    """.stripMargin )
+    """.stripMargin)
 }

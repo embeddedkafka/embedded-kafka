@@ -3,8 +3,8 @@ package net.manub.embeddedkafka
 import kafka.serializer._
 import org.apache.kafka.common.serialization._
 
-
-package object marshalling {
+/** useful encoders/serializers and decoders/deserializers **/
+object Codecs {
   implicit val stringEncoder: Encoder[String] = new StringEncoder()
   implicit val nullEncoder: Encoder[Array[Byte]] = new DefaultEncoder()
   implicit val stringSerializer: Serializer[String] = new StringSerializer()
