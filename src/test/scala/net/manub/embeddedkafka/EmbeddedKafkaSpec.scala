@@ -107,14 +107,14 @@ class EmbeddedKafkaSpec
 
   "the publishToKafka method" should {
 
-    "publishes asynchronously a message to Kafka as String" in {
+    "publishes asynchronously a message to Kafka" in {
 
       withRunningKafka {
 
         val message = "hello world!"
         val topic = "test_topic"
 
-        publishToKafka(topic, message)
+        publishStringMessageToKafka(topic, message)
 
         val consumer = Consumer.create(consumerConfigForEmbeddedKafka)
 
@@ -142,9 +142,8 @@ class EmbeddedKafkaSpec
     }
 
     "throws a KafkaUnavailableException when Kafka is unavailable when trying to publish" in {
-
       a[KafkaUnavailableException] shouldBe thrownBy {
-        publishToKafka("non_existing_topic", "a message")
+        publishStringMessageToKafka("non_existing_topic", "a message")
       }
     }
   }
@@ -165,7 +164,50 @@ class EmbeddedKafkaSpec
         ))
 
         whenReady(producer.send(new ProducerRecord[String, String](topic, message))) { _ =>
-          consumeFirstMessageFrom(topic) shouldBe message
+          consumeFirstStringMessageFrom(topic) shouldBe message
+        }
+
+        producer.close()
+      }
+    }
+
+    "returns a message published to a topic with implicit decoder" in {
+
+      withRunningKafka {
+
+        val message = "hello world!"
+        val topic = "test_topic"
+
+        val producer = new KafkaProducer[String, String](Map(
+          ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:6001",
+          ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG   -> classOf[StringSerializer].getName,
+          ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer].getName
+        ))
+
+        import marshalling._
+        whenReady(producer.send(new ProducerRecord[String, String](topic, message))) { _ =>
+          consumeFirstMessageFrom[Array[Byte]](topic) shouldBe message.getBytes
+        }
+
+        producer.close()
+      }
+    }
+
+    "return a message published to a topic with custom decoder" in {
+
+      import marshalling.avro._
+      withRunningKafka {
+
+        val message = TestAvroClass("name")
+        val topic = "test_topic"
+        implicit val testAvroClassDecoder = specificAvroDecoder[TestAvroClass](TestAvroClass.SCHEMA$)
+
+        val producer = new KafkaProducer[String, TestAvroClass](Map(
+          ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:6001"
+        ), new StringSerializer, specificAvroSerializer[TestAvroClass])
+
+        whenReady(producer.send(new ProducerRecord(topic, message))) { _ =>
+          consumeFirstMessageFrom[TestAvroClass](topic) shouldBe message
         }
 
         producer.close()
@@ -176,7 +218,7 @@ class EmbeddedKafkaSpec
 
       withRunningKafka {
         a[TimeoutException] shouldBe thrownBy {
-          consumeFirstMessageFrom("non_existing_topic")
+          consumeFirstStringMessageFrom("non_existing_topic")
         }
       }
     }
@@ -184,7 +226,7 @@ class EmbeddedKafkaSpec
     "throws a KafkaUnavailableException when there's no running instance of Kafka" in {
 
       a[KafkaUnavailableException] shouldBe thrownBy {
-        consumeFirstMessageFrom("non_existing_topic")
+        consumeFirstStringMessageFrom("non_existing_topic")
       }
     }
   }
@@ -201,6 +243,27 @@ class EmbeddedKafkaSpec
     }
   }
 
+  "the aKafkaProducer object" should {
+
+    "return a producer that encodes messages for the given type" in {
+      import marshalling._
+      withRunningKafka {
+        val producer = aKafkaProducer[String]
+        producer.send(new ProducerRecord[String, String]("a topic", "a message"))
+      }
+    }
+
+
+    "return a producer that encodes messages for a custom type" in {
+      import marshalling.avro._
+
+      withRunningKafka {
+        val producer = aKafkaProducer[TestAvroClass]
+        producer.send(new ProducerRecord[String, TestAvroClass]("a topic", TestAvroClass("name")))
+      }
+    }
+  }
+
   lazy val consumerConfigForEmbeddedKafka: ConsumerConfig = {
     val props = new Properties()
     props.put("group.id", "test")
@@ -210,6 +273,8 @@ class EmbeddedKafkaSpec
     new ConsumerConfig(props)
   }
 }
+
+
 
 object TcpClient {
   def props(remote: InetSocketAddress, replies: ActorRef) = Props(classOf[TcpClient], remote, replies)
