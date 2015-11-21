@@ -19,19 +19,51 @@ import scala.language.{higherKinds, postfixOps}
 import scala.reflect.io.Directory
 import scala.util.Try
 
-trait EmbeddedKafka {
-
+trait EmbeddedKafka extends EmbeddedKafkaSupport {
   this: Suite =>
+}
 
+object EmbeddedKafka extends EmbeddedKafkaSupport {
+
+  private[this] var factory: Option[ServerCnxnFactory] = None
+  private[this] var broker: Option[KafkaServer] = None
+
+  /**
+    * Starts a ZooKeeper instance and a Kafka broker in memory.
+    *
+    * @param config an implicit [[EmbeddedKafkaConfig]]
+    */
+  def start()(implicit config: EmbeddedKafkaConfig) = {
+    factory = Option(startZooKeeper(config.zooKeeperPort))
+    broker = Option(startKafka(config))
+  }
+
+  /**
+    * Stops the in memory ZooKeeper instance and Kafka broker.
+    */
+  def stop(): Unit = {
+    broker.foreach(_.shutdown)
+    factory.foreach(_.shutdown())
+    broker = None
+    factory = None
+  }
+
+  /**
+    * Returns whether the in memory Kafka and Zookeeper are running.
+    */
+  def isRunning: Boolean = factory.nonEmpty && broker.nonEmpty
+}
+
+sealed trait EmbeddedKafkaSupport {
   val executorService = Executors.newFixedThreadPool(2)
   implicit val executionContext = ExecutionContext.fromExecutorService(executorService)
 
   /**
-   * Starts a ZooKeeper instance and a Kafka broker, then executes the body passed as a parameter.
-   *
-   * @param body the function to execute
-   * @param config an implicit [[EmbeddedKafkaConfig]]
-   */
+    * Starts a ZooKeeper instance and a Kafka broker, then executes the body passed as a parameter.
+    *
+    * @param body the function to execute
+    * @param config an implicit [[EmbeddedKafkaConfig]]
+    */
   def withRunningKafka(body: => Unit)(implicit config: EmbeddedKafkaConfig) = {
 
     val factory = startZooKeeper(config.zooKeeperPort)
@@ -45,28 +77,27 @@ trait EmbeddedKafka {
     }
   }
 
-
   /**
-   * Publishes synchronously a message of type [[String]] to the running Kafka broker.
-   *
-   * @see [[EmbeddedKafka#publishToKafka]]
-   * @param topic the topic to which publish the message (it will be auto-created)
-   * @param message the [[String]] message to publish
-   * @param config an implicit [[EmbeddedKafkaConfig]]
-   * @throws KafkaUnavailableException if unable to connect to Kafka
-   */
+    * Publishes synchronously a message of type [[String]] to the running Kafka broker.
+    *
+    * @see [[EmbeddedKafka#publishToKafka]]
+    * @param topic the topic to which publish the message (it will be auto-created)
+    * @param message the [[String]] message to publish
+    * @param config an implicit [[EmbeddedKafkaConfig]]
+    * @throws KafkaUnavailableException if unable to connect to Kafka
+    */
   def publishStringMessageToKafka(topic: String, message: String)(implicit config: EmbeddedKafkaConfig): Unit =
     publishToKafka(topic, message)(config, new StringSerializer)
 
   /**
-   * Publishes synchronously a message to the running Kafka broker.
-   *
-   * @param topic the topic to which publish the message (it will be auto-created)
-   * @param message the message of type [[T]] to publish
-   * @param config an implicit [[EmbeddedKafkaConfig]]
-   * @param serializer an implicit [[Serializer]] for the type [[T]]
-   * @throws KafkaUnavailableException if unable to connect to Kafka
-   */
+    * Publishes synchronously a message to the running Kafka broker.
+    *
+    * @param topic the topic to which publish the message (it will be auto-created)
+    * @param message the message of type [[T]] to publish
+    * @param config an implicit [[EmbeddedKafkaConfig]]
+    * @param serializer an implicit [[Serializer]] for the type [[T]]
+    * @throws KafkaUnavailableException if unable to connect to Kafka
+    */
   @throws(classOf[KafkaUnavailableException])
   def publishToKafka[T](topic: String, message: T)
                        (implicit config: EmbeddedKafkaConfig, serializer: Serializer[T]): Unit = {
@@ -92,20 +123,20 @@ trait EmbeddedKafka {
 
 
   /**
-   * Consumes the first message available in a given topic, deserializing it as a String.
-   *
-   * @param topic the topic to consume a message from
-   * @param config an implicit [[EmbeddedKafkaConfig]]
-   * @param decoder an implicit [[Decoder]] for the type [[T]]
-   * @return the first message consumed from the given topic, with a type [[T]]
-   * @throws TimeoutException if unable to consume a message within 3 seconds
-   * @throws KafkaUnavailableException if unable to connect to Kafka
-   */
+    * Consumes the first message available in a given topic, deserializing it as a String.
+    *
+    * @param topic the topic to consume a message from
+    * @param config an implicit [[EmbeddedKafkaConfig]]
+    * @param decoder an implicit [[Decoder]] for the type [[T]]
+    * @return the first message consumed from the given topic, with a type [[T]]
+    * @throws TimeoutException if unable to consume a message within 3 seconds
+    * @throws KafkaUnavailableException if unable to connect to Kafka
+    */
   @throws(classOf[TimeoutException])
   @throws(classOf[KafkaUnavailableException])
   def consumeFirstMessageFrom[T](topic: String)(implicit config: EmbeddedKafkaConfig, decoder: Decoder[T]): T = {
     val props = new Properties()
-    props.put("group.id", s"embedded-kafka-spec-$suiteId")
+    props.put("group.id", s"embedded-kafka-spec")
     props.put("zookeeper.connect", s"localhost:${config.zooKeeperPort}")
     props.put("auto.offset.reset", "smallest")
     props.put("zookeeper.connection.timeout.ms", "6000")
@@ -146,7 +177,7 @@ trait EmbeddedKafka {
     )
   }
 
-  private def startZooKeeper(zooKeeperPort: Int): ServerCnxnFactory = {
+  def startZooKeeper(zooKeeperPort: Int): ServerCnxnFactory = {
     val zkLogsDir = Directory.makeTemp("zookeeper-logs")
     val tickTime = 2000
 
@@ -158,7 +189,7 @@ trait EmbeddedKafka {
     factory
   }
 
-  private def startKafka(config: EmbeddedKafkaConfig): KafkaServer = {
+  def startKafka(config: EmbeddedKafkaConfig): KafkaServer = {
     val kafkaLogDir = Directory.makeTemp("kafka")
 
     val zkAddress = s"localhost:${config.zooKeeperPort}"

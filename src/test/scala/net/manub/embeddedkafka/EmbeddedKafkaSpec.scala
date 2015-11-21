@@ -1,31 +1,21 @@
 package net.manub.embeddedkafka
 
-import java.net.InetSocketAddress
 import java.util.Properties
 import java.util.concurrent.TimeoutException
 
-import akka.actor.{Actor, ActorRef, ActorSystem, Props}
-import akka.io.Tcp._
-import akka.io.{IO, Tcp}
-import akka.testkit.{ImplicitSender, TestKit}
 import kafka.consumer.{Consumer, ConsumerConfig, Whitelist}
 import kafka.serializer.StringDecoder
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
 import org.apache.kafka.common.serialization.{ByteArraySerializer, StringSerializer}
-import org.scalatest.concurrent.{JavaFutures, ScalaFutures}
 import org.scalatest.exceptions.TestFailedException
 import org.scalatest.time.{Milliseconds, Seconds, Span}
-import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.collection.JavaConversions._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class EmbeddedKafkaSpec
-  extends TestKit(ActorSystem("embedded-kafka-spec")) with WordSpecLike with EmbeddedKafka with Matchers
-  with ImplicitSender with BeforeAndAfterAll with ScalaFutures with JavaFutures {
+class EmbeddedKafkaSpec extends EmbeddedKafkaSpecSupport with EmbeddedKafka {
 
   implicit val config = PatienceConfig(Span(2, Seconds), Span(100, Milliseconds))
 
@@ -36,15 +26,13 @@ class EmbeddedKafkaSpec
   "the withRunningKafka method" should {
     "start a Kafka broker on port 6001 by default" in {
       withRunningKafka {
-        system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6001), testActor))
-        expectMsg(1 second, ConnectionSuccessful)
+        kafkaIsAvailable()
       }
     }
 
     "start a ZooKeeper instance on port 6000 by default" in {
       withRunningKafka {
-        system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6000), testActor))
-        expectMsg(1 second, ConnectionSuccessful)
+        zookeeperIsAvailable()
       }
     }
 
@@ -54,10 +42,8 @@ class EmbeddedKafkaSpec
           true shouldBe true
         }
 
-        system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6001), testActor))
-        expectMsg(1 second, ConnectionFailed)
-        system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6000), testActor))
-        expectMsg(1 second, ConnectionFailed)
+        kafkaIsNotAvailable()
+        zookeeperIsNotAvailable()
       }
 
       "the enclosed test fails" in {
@@ -67,10 +53,8 @@ class EmbeddedKafkaSpec
           }
         }
 
-        system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6001), testActor))
-        expectMsg(1 second, ConnectionFailed)
-        system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6000), testActor))
-        expectMsg(1 second, ConnectionFailed)
+        kafkaIsNotAvailable()
+        zookeeperIsNotAvailable()
       }
     }
 
@@ -78,8 +62,7 @@ class EmbeddedKafkaSpec
       implicit val config = EmbeddedKafkaConfig(kafkaPort = 12345)
 
       withRunningKafka {
-        system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 12345), testActor))
-        expectMsg(1 second, ConnectionSuccessful)
+        kafkaIsAvailable(12345)
       }
     }
 
@@ -87,8 +70,7 @@ class EmbeddedKafkaSpec
       implicit val config = EmbeddedKafkaConfig(zooKeeperPort = 12345)
 
       withRunningKafka {
-        system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 12345), testActor))
-        expectMsg(1 second, ConnectionSuccessful)
+        zookeeperIsAvailable(12345)
       }
     }
   }
@@ -140,7 +122,7 @@ class EmbeddedKafkaSpec
 
         val producer = new KafkaProducer[String, String](Map(
           ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:6001",
-          ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG   -> classOf[StringSerializer].getName,
+          ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer].getName,
           ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer].getName
         ))
 
@@ -159,7 +141,7 @@ class EmbeddedKafkaSpec
 
         val producer = new KafkaProducer[String, String](Map(
           ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:6001",
-          ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG   -> classOf[StringSerializer].getName,
+          ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer].getName,
           ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer].getName
         ))
 
@@ -226,7 +208,6 @@ class EmbeddedKafkaSpec
       }
     }
 
-
     "return a producer that encodes messages for a custom type" in {
       import avro._
       withRunningKafka {
@@ -243,31 +224,5 @@ class EmbeddedKafkaSpec
     props.put("auto.offset.reset", "smallest")
 
     new ConsumerConfig(props)
-  }
-}
-
-
-object TcpClient {
-  def props(remote: InetSocketAddress, replies: ActorRef) = Props(classOf[TcpClient], remote, replies)
-}
-
-case object ConnectionSuccessful
-
-case object ConnectionFailed
-
-class TcpClient(remote: InetSocketAddress, listener: ActorRef) extends Actor {
-
-  import context.system
-
-  IO(Tcp) ! Connect(remote)
-
-  def receive: Receive = {
-    case Connected(_, _) =>
-      listener ! ConnectionSuccessful
-      context stop self
-
-    case _ =>
-      listener ! ConnectionFailed
-      context stop self
   }
 }
