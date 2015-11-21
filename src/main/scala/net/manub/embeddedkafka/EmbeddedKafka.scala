@@ -161,14 +161,26 @@ sealed trait EmbeddedKafkaSupport {
   }
 
   object aKafkaProducer {
-    def thatSerializesValuesWith[V](serializer: Class[_ <: Serializer[V]])(implicit config: EmbeddedKafkaConfig) = {
-      new KafkaProducer[String, V](basicKafkaConfig(config) +(
-        ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer].getName,
-        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> serializer.getName))
+    private[this] var producers = Vector.empty[KafkaProducer[_, _]]
+
+    sys.addShutdownHook {
+      producers.foreach(_.close())
     }
 
-    def apply[V](implicit valueSerializer: Serializer[V], config: EmbeddedKafkaConfig) =
-      new KafkaProducer[String, V](basicKafkaConfig(config), new StringSerializer, valueSerializer)
+    def thatSerializesValuesWith[V](serializer: Class[_ <: Serializer[V]])(implicit config: EmbeddedKafkaConfig) = {
+      val producer = new KafkaProducer[String, V](basicKafkaConfig(config) + (
+        ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer].getName,
+        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> serializer.getName)
+      )
+      producers :+= producer
+      producer
+    }
+
+    def apply[V](implicit valueSerializer: Serializer[V], config: EmbeddedKafkaConfig) = {
+      val producer = new KafkaProducer[String, V](basicKafkaConfig(config), new StringSerializer, valueSerializer)
+      producers :+= producer
+      producer
+    }
 
     def basicKafkaConfig[V](config: EmbeddedKafkaConfig): Map[String, String] = Map(
       ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
