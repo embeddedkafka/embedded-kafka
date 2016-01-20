@@ -8,8 +8,8 @@ lazy val commonSettings = Seq(
   parallelExecution in Test := false,
   libraryDependencies ++= Seq(
     "org.scalatest" %% "scalatest" % "2.2.5",
-    "org.apache.kafka" %% "kafka" % "0.8.2.2",
-    "org.apache.zookeeper" % "zookeeper" % "3.4.6",
+    "org.apache.kafka" %% "kafka" % "0.9.0.0",
+    "org.apache.zookeeper" % "zookeeper" % "3.4.7",
     "org.apache.avro" % "avro" % "1.7.7",
 
     "com.typesafe.akka" %% "akka-actor" % "2.3.14" % Test,

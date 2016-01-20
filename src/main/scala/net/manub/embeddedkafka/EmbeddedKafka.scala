@@ -104,7 +104,7 @@ sealed trait EmbeddedKafkaSupport {
 
     val kafkaProducer = new KafkaProducer(Map(
       ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
-      ProducerConfig.METADATA_FETCH_TIMEOUT_CONFIG -> 3000.toString,
+      ProducerConfig.MAX_BLOCK_MS_CONFIG -> 10000.toString,
       ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> 1000.toString
     ), new StringSerializer, serializer)
 
