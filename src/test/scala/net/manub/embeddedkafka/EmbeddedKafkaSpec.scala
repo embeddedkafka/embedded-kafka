@@ -194,7 +194,8 @@ class EmbeddedKafkaSpec extends EmbeddedKafkaSpecSupport with EmbeddedKafka {
     "return a producer that encodes messages for the given encoder" in {
       withRunningKafka {
         val producer = aKafkaProducer thatSerializesValuesWith classOf[ByteArraySerializer]
-        producer.send(new ProducerRecord[String, Array[Byte]]("a topic", "a message".getBytes))
+        producer.send(new ProducerRecord[String, Array[Byte]]("a_topic", "a message".getBytes))
+        producer.close()
       }
     }
   }
@@ -204,7 +205,8 @@ class EmbeddedKafkaSpec extends EmbeddedKafkaSpecSupport with EmbeddedKafka {
       import Codecs._
       withRunningKafka {
         val producer = aKafkaProducer[String]
-        producer.send(new ProducerRecord[String, String]("a topic", "a message"))
+        producer.send(new ProducerRecord[String, String]("a_topic", "a message"))
+        producer.close()
       }
     }
 
@@ -212,7 +214,8 @@ class EmbeddedKafkaSpec extends EmbeddedKafkaSpecSupport with EmbeddedKafka {
       import avro._
       withRunningKafka {
         val producer = aKafkaProducer[TestAvroClass]
-        producer.send(new ProducerRecord[String, TestAvroClass]("a topic", TestAvroClass("name")))
+        producer.send(new ProducerRecord[String, TestAvroClass]("a_topic", TestAvroClass("name")))
+        producer.close()
       }
     }
   }
