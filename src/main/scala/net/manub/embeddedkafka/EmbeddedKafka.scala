@@ -38,14 +38,30 @@ object EmbeddedKafka extends EmbeddedKafkaSupport {
     broker = Option(startKafka(config))
   }
 
+  def startZooKeeper(zkLogsDir: Directory)(implicit config: EmbeddedKafkaConfig): Unit = {
+    factory = Option(startZooKeeper(config.zooKeeperPort, zkLogsDir))
+  }
+
+  def startKafka(kafkaLogDir: Directory)(implicit config: EmbeddedKafkaConfig): Unit = {
+    broker = Option(startKafka(config, kafkaLogDir))
+  }
+
   /**
     * Stops the in memory ZooKeeper instance and Kafka broker.
     */
   def stop(): Unit = {
-    broker.foreach(_.shutdown)
+    stopKafka()
+    stopZooKeeper()
+  }
+
+  def stopZooKeeper(): Unit = {
     factory.foreach(_.shutdown())
-    broker = None
     factory = None
+  }
+
+  def stopKafka(): Unit = {
+    broker.foreach(_.shutdown)
+    broker = None
   }
 
   /**
@@ -189,8 +205,7 @@ sealed trait EmbeddedKafkaSupport {
     )
   }
 
-  def startZooKeeper(zooKeeperPort: Int): ServerCnxnFactory = {
-    val zkLogsDir = Directory.makeTemp("zookeeper-logs")
+  def startZooKeeper(zooKeeperPort: Int, zkLogsDir: Directory = Directory.makeTemp("zookeeper-logs")): ServerCnxnFactory = {
     val tickTime = 2000
 
     val zkServer = new ZooKeeperServer(zkLogsDir.toFile.jfile, zkLogsDir.toFile.jfile, tickTime)
@@ -201,9 +216,7 @@ sealed trait EmbeddedKafkaSupport {
     factory
   }
 
-  def startKafka(config: EmbeddedKafkaConfig): KafkaServer = {
-    val kafkaLogDir = Directory.makeTemp("kafka")
-
+  def startKafka(config: EmbeddedKafkaConfig, kafkaLogDir: Directory = Directory.makeTemp("kafka")): KafkaServer = {
     val zkAddress = s"localhost:${config.zooKeeperPort}"
 
     val properties: Properties = new Properties
