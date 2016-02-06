@@ -32,12 +32,16 @@ A `EmbeddedKafka` companion object is provided for usage without the `EmbeddedKa
         class MySpec extends WordSpec {
     
         "runs with embedded kafka" should {
-
-            withRunningKafka {
-                // ... code goes here
-            }
+        
+            EmbeddedKafka.start()
+            
+            // ... code goes here
+            
+            EmbeddedKafka.stop() 
         
         }
+        
+Please note that in order to avoid Kafka instances not shutting down properly, it's recommended to call `EmbeddedKafka.stop()` in a `after` block or in a similar teardown logic. 
 
 ## Configuration
 
