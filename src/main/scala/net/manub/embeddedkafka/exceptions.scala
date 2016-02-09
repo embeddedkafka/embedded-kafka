@@ -1,5 +1,5 @@
 package net.manub.embeddedkafka
 
-class KafkaUnavailableException extends RuntimeException
+class KafkaUnavailableException(cause: Throwable) extends RuntimeException(cause)
 
 class KafkaSpecException(msg: String) extends RuntimeException(msg)

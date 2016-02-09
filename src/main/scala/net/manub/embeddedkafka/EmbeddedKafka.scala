@@ -18,6 +18,7 @@ import scala.concurrent.duration._
 import scala.language.{higherKinds, postfixOps}
 import scala.reflect.io.Directory
 import scala.util.Try
+import scala.util.control.NonFatal
 
 trait EmbeddedKafka extends EmbeddedKafkaSupport {
   this: Suite =>
@@ -120,18 +121,20 @@ sealed trait EmbeddedKafkaSupport {
 
     val kafkaProducer = new KafkaProducer(Map(
       ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
+      ProducerConfig.METADATA_FETCH_TIMEOUT_CONFIG -> 5000.toString,
       ProducerConfig.MAX_BLOCK_MS_CONFIG -> 10000.toString,
       ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> 1000.toString
     ), new StringSerializer, serializer)
 
     val sendFuture = kafkaProducer.send(new ProducerRecord(topic, message))
     val sendResult = Try {
-      sendFuture.get(3, SECONDS)
+      sendFuture.get(5, SECONDS)
     }
 
     kafkaProducer.close()
 
-    if (sendResult.isFailure) throw new KafkaUnavailableException
+    if (sendResult.isFailure)
+      throw new KafkaUnavailableException(sendResult.failed.get)
   }
 
   def consumeFirstStringMessageFrom(topic: String)(implicit config: EmbeddedKafkaConfig): String =
@@ -145,7 +148,7 @@ sealed trait EmbeddedKafkaSupport {
     * @param config an implicit [[EmbeddedKafkaConfig]]
     * @param decoder an implicit [[Decoder]] for the type [[T]]
     * @return the first message consumed from the given topic, with a type [[T]]
-    * @throws TimeoutException if unable to consume a message within 3 seconds
+    * @throws TimeoutException if unable to consume a message within 5 seconds
     * @throws KafkaUnavailableException if unable to connect to Kafka
     */
   @throws(classOf[TimeoutException])
@@ -157,9 +160,12 @@ sealed trait EmbeddedKafkaSupport {
     props.put("auto.offset.reset", "smallest")
     props.put("zookeeper.connection.timeout.ms", "6000")
 
-    val consumer = Try {
-      Consumer.create(new ConsumerConfig(props))
-    }.getOrElse(throw new KafkaUnavailableException)
+    val consumer =
+      try Consumer.create(new ConsumerConfig(props))
+      catch {
+        case NonFatal(e) =>
+          throw new KafkaUnavailableException(e)
+      }
 
     val messageStreams =
       consumer.createMessageStreamsByFilter(Whitelist(topic), keyDecoder = new StringDecoder, valueDecoder = decoder)
@@ -170,7 +176,7 @@ sealed trait EmbeddedKafkaSupport {
     }
 
     try {
-      Await.result(messageFuture, 3 seconds)
+      Await.result(messageFuture, 5 seconds)
     } finally {
       consumer.shutdown()
     }
@@ -200,7 +206,7 @@ sealed trait EmbeddedKafkaSupport {
 
     def basicKafkaConfig[V](config: EmbeddedKafkaConfig): Map[String, String] = Map(
       ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
-      ProducerConfig.METADATA_FETCH_TIMEOUT_CONFIG -> 3000.toString,
+      ProducerConfig.METADATA_FETCH_TIMEOUT_CONFIG -> 5000.toString,
       ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> 1000.toString
     )
   }
