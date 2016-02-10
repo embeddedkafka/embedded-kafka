@@ -1,1 +1,1 @@
-version in ThisBuild := "0.4.3-kafka09"
+version in ThisBuild := "0.5.0-SNAPSHOT"
