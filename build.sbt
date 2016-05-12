@@ -3,15 +3,15 @@ import sbtrelease.Version
 lazy val commonSettings = Seq(
   name := "scalatest-embedded-kafka",
   organization := "net.manub",
-  crossScalaVersions := Seq("2.10.6", "2.11.7"),
+  scalaVersion := "2.11.8",
   homepage := Some(url("https://github.com/manub/scalatest-embedded-kafka")),
   parallelExecution in Test := false,
   libraryDependencies ++= Seq(
     "org.scalatest" %% "scalatest" % "2.2.5",
-    "org.apache.kafka" %% "kafka" % "0.9.0.0",
+    "org.apache.kafka" %% "kafka" % "0.9.0.1",
     "org.apache.zookeeper" % "zookeeper" % "3.4.7",
     "org.apache.avro" % "avro" % "1.7.7",
-
+    "org.slf4j" % "log4j-over-slf4j" % "1.7.12",
     "com.typesafe.akka" %% "akka-actor" % "2.3.14" % Test,
     "com.typesafe.akka" %% "akka-testkit" % "2.3.14" % Test
   )
