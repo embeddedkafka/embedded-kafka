@@ -217,7 +217,7 @@ sealed trait EmbeddedKafkaSupport {
     val zkServer = new ZooKeeperServer(zkLogsDir.toFile.jfile, zkLogsDir.toFile.jfile, tickTime)
 
     val factory = ServerCnxnFactory.createFactory
-    factory.configure(new InetSocketAddress("localhost", zooKeeperPort), 1024)
+    factory.configure(new InetSocketAddress("0.0.0.0", zooKeeperPort), 1024)
     factory.startup(zkServer)
     factory
   }
@@ -229,6 +229,7 @@ sealed trait EmbeddedKafkaSupport {
     properties.setProperty("zookeeper.connect", zkAddress)
     properties.setProperty("broker.id", "0")
     properties.setProperty("host.name", "localhost")
+    properties.setProperty("advertised.host.name", "localhost")
     properties.setProperty("auto.create.topics.enable", "true")
     properties.setProperty("port", config.kafkaPort.toString)
     properties.setProperty("log.dir", kafkaLogDir.toAbsolute.path)
