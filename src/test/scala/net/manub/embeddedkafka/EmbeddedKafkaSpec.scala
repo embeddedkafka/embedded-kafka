@@ -3,8 +3,10 @@ package net.manub.embeddedkafka
 import java.util.Properties
 import java.util.concurrent.TimeoutException
 
+import kafka.admin.AdminUtils
 import kafka.consumer.{Consumer, ConsumerConfig, Whitelist}
 import kafka.serializer.StringDecoder
+import kafka.utils.ZkUtils
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
 import org.apache.kafka.common.serialization.{ByteArraySerializer, StringSerializer}
 import org.scalatest.exceptions.TestFailedException
@@ -110,6 +112,27 @@ class EmbeddedKafkaSpec extends EmbeddedKafkaSpecSupport with EmbeddedKafka {
     "throw a KafkaUnavailableException when Kafka is unavailable when trying to publish" in {
       a[KafkaUnavailableException] shouldBe thrownBy {
         publishStringMessageToKafka("non_existing_topic", "a message")
+      }
+    }
+  }
+
+  "the createCustomTopic method" should {
+    "create a topic with a custom configuration" in {
+      implicit val config = EmbeddedKafkaConfig(customBrokerProperties = Map("log.cleaner.dedupe.buffer.size" -> "2000000"))
+      val topic = "test_custom_topic"
+
+      withRunningKafka {
+        val properties: Properties = new Properties
+        properties.put("cleanup.policy", "compact")
+
+        createCustomTopic(topic, properties)
+
+        val zkSessionTimeoutMs  = 10000
+        val zkConnectionTimeoutMs = 10000
+        val zkSecurityEnabled = false
+
+        AdminUtils.topicExists(ZkUtils(s"localhost:${config.zooKeeperPort}", zkSessionTimeoutMs, zkConnectionTimeoutMs, zkSecurityEnabled), topic) shouldBe true
+
       }
     }
   }
