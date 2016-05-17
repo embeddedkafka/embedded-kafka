@@ -246,6 +246,7 @@ sealed trait EmbeddedKafkaSupport {
   }
 
   def createCustomTopic(topic: String, topicConfig: Properties)(implicit config: EmbeddedKafkaConfig): Unit = {
-    AdminUtils.createTopic(ZkUtils(s"localhost:${config.zooKeeperPort}", zkSessionTimeoutMs, zkConnectionTimeoutMs, zkSecurityEnabled), topic, 1, 1, topicConfig)
+    val zkUtils = ZkUtils(s"localhost:${config.zooKeeperPort}", zkSessionTimeoutMs, zkConnectionTimeoutMs, zkSecurityEnabled)
+    try AdminUtils.createTopic(zkUtils, topic, 1, 1, topicConfig) finally zkUtils.close()
   }
 }
