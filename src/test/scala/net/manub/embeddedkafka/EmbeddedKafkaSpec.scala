@@ -4,17 +4,14 @@ import java.util.Properties
 import java.util.concurrent.TimeoutException
 
 import kafka.admin.AdminUtils
-import kafka.consumer.{Consumer, ConsumerConfig, Whitelist}
-import kafka.serializer.StringDecoder
 import kafka.utils.ZkUtils
+import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
-import org.apache.kafka.common.serialization.{ByteArraySerializer, StringSerializer}
+import org.apache.kafka.common.serialization.{ByteArraySerializer, StringDeserializer, StringSerializer}
 import org.scalatest.exceptions.TestFailedException
 import org.scalatest.time.{Milliseconds, Seconds, Span}
 
 import scala.collection.JavaConversions._
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 import scala.language.postfixOps
 
 class EmbeddedKafkaSpec extends EmbeddedKafkaSpecSupport with EmbeddedKafka {
@@ -85,27 +82,17 @@ class EmbeddedKafkaSpec extends EmbeddedKafkaSpecSupport with EmbeddedKafka {
 
         publishStringMessageToKafka(topic, message)
 
-        val consumer = Consumer.create(consumerConfigForEmbeddedKafka)
+        val consumer = new KafkaConsumer[String, String](consumerProps, new StringDeserializer, new StringDeserializer)
+        consumer.subscribe(List("test_topic"))
 
-        val filter = new Whitelist("test_topic")
-        val stringDecoder = new StringDecoder
+        val records = consumer.poll(ConsumerPollTimeout)
 
-        val messageStreams = consumer.createMessageStreamsByFilter(filter, 1, stringDecoder, stringDecoder)
+        records.iterator().hasNext shouldBe true
+        val record = records.iterator().next()
 
-        val eventualMessage = Future {
-          messageStreams
-            .headOption
-            .getOrElse(throw new RuntimeException("Unable to retrieve message streams"))
-            .iterator()
-            .next()
-            .message()
-        }
+        record.value() shouldBe message
 
-        whenReady(eventualMessage) { msg =>
-          msg shouldBe message
-        }
-
-        consumer.shutdown()
+        consumer.close()
       }
     }
 
@@ -184,7 +171,7 @@ class EmbeddedKafkaSpec extends EmbeddedKafkaSpecSupport with EmbeddedKafka {
 
         val message = TestAvroClass("name")
         val topic = "test_topic"
-        implicit val testAvroClassDecoder = specificAvroDecoder[TestAvroClass](TestAvroClass.SCHEMA$)
+        implicit val testAvroClassDecoder = specificAvroDeserializer[TestAvroClass](TestAvroClass.SCHEMA$)
 
         val producer = new KafkaProducer[String, TestAvroClass](Map(
           ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:6001"
@@ -243,12 +230,13 @@ class EmbeddedKafkaSpec extends EmbeddedKafkaSpecSupport with EmbeddedKafka {
     }
   }
 
-  lazy val consumerConfigForEmbeddedKafka: ConsumerConfig = {
+  lazy val consumerProps: Properties = {
     val props = new Properties()
     props.put("group.id", "test")
-    props.put("zookeeper.connect", "localhost:6000")
-    props.put("auto.offset.reset", "smallest")
-
-    new ConsumerConfig(props)
+    props.put("bootstrap.servers", "localhost:6001")
+    props.put("auto.offset.reset", "earliest")
+    props
   }
+
+  val ConsumerPollTimeout = 3000
 }

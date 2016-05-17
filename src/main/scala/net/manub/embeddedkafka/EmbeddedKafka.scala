@@ -5,22 +5,22 @@ import java.util.Properties
 import java.util.concurrent.Executors
 
 import kafka.admin.AdminUtils
-import kafka.consumer.{Consumer, ConsumerConfig, Whitelist}
-import kafka.serializer.{Decoder, StringDecoder}
 import kafka.server.{KafkaConfig, KafkaServer}
 import kafka.utils.ZkUtils
+import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
-import org.apache.kafka.common.serialization.{Serializer, StringSerializer}
+import org.apache.kafka.common.KafkaException
+import org.apache.kafka.common.serialization.{Deserializer, Serializer, StringDeserializer, StringSerializer}
 import org.apache.zookeeper.server.{ServerCnxnFactory, ZooKeeperServer}
 import org.scalatest.Suite
 
+import scala.collection.JavaConversions
 import scala.collection.JavaConversions.mapAsJavaMap
-import scala.concurrent._
 import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, TimeoutException}
 import scala.language.{higherKinds, postfixOps}
 import scala.reflect.io.Directory
 import scala.util.Try
-import scala.util.control.NonFatal
 
 trait EmbeddedKafka extends EmbeddedKafkaSupport {
   this: Suite =>
@@ -77,14 +77,14 @@ sealed trait EmbeddedKafkaSupport {
   val executorService = Executors.newFixedThreadPool(2)
   implicit val executionContext = ExecutionContext.fromExecutorService(executorService)
 
-  val zkSessionTimeoutMs  = 10000
+  val zkSessionTimeoutMs = 10000
   val zkConnectionTimeoutMs = 10000
   val zkSecurityEnabled = false
 
   /**
     * Starts a ZooKeeper instance and a Kafka broker, then executes the body passed as a parameter.
     *
-    * @param body the function to execute
+    * @param body   the function to execute
     * @param config an implicit [[EmbeddedKafkaConfig]]
     */
   def withRunningKafka(body: => Unit)(implicit config: EmbeddedKafkaConfig) = {
@@ -104,9 +104,9 @@ sealed trait EmbeddedKafkaSupport {
     * Publishes synchronously a message of type [[String]] to the running Kafka broker.
     *
     * @see [[EmbeddedKafka#publishToKafka]]
-    * @param topic the topic to which publish the message (it will be auto-created)
+    * @param topic   the topic to which publish the message (it will be auto-created)
     * @param message the [[String]] message to publish
-    * @param config an implicit [[EmbeddedKafkaConfig]]
+    * @param config  an implicit [[EmbeddedKafkaConfig]]
     * @throws KafkaUnavailableException if unable to connect to Kafka
     */
   def publishStringMessageToKafka(topic: String, message: String)(implicit config: EmbeddedKafkaConfig): Unit =
@@ -115,9 +115,9 @@ sealed trait EmbeddedKafkaSupport {
   /**
     * Publishes synchronously a message to the running Kafka broker.
     *
-    * @param topic the topic to which publish the message (it will be auto-created)
-    * @param message the message of type [[T]] to publish
-    * @param config an implicit [[EmbeddedKafkaConfig]]
+    * @param topic      the topic to which publish the message (it will be auto-created)
+    * @param message    the message of type [[T]] to publish
+    * @param config     an implicit [[EmbeddedKafkaConfig]]
     * @param serializer an implicit [[Serializer]] for the type [[T]]
     * @throws KafkaUnavailableException if unable to connect to Kafka
     */
@@ -144,48 +144,46 @@ sealed trait EmbeddedKafkaSupport {
   }
 
   def consumeFirstStringMessageFrom(topic: String)(implicit config: EmbeddedKafkaConfig): String =
-    consumeFirstMessageFrom(topic)(config, new StringDecoder())
+    consumeFirstMessageFrom(topic)(config, new StringDeserializer())
 
 
   /**
     * Consumes the first message available in a given topic, deserializing it as a String.
     *
-    * @param topic the topic to consume a message from
-    * @param config an implicit [[EmbeddedKafkaConfig]]
-    * @param decoder an implicit [[Decoder]] for the type [[T]]
+    * @param topic        the topic to consume a message from
+    * @param config       an implicit [[EmbeddedKafkaConfig]]
+    * @param deserializer an implicit [[org.apache.kafka.common.serialization.Deserializer]] for the type [[T]]
     * @return the first message consumed from the given topic, with a type [[T]]
     * @throws TimeoutException if unable to consume a message within 5 seconds
     * @throws KafkaUnavailableException if unable to connect to Kafka
     */
   @throws(classOf[TimeoutException])
   @throws(classOf[KafkaUnavailableException])
-  def consumeFirstMessageFrom[T](topic: String)(implicit config: EmbeddedKafkaConfig, decoder: Decoder[T]): T = {
+  def consumeFirstMessageFrom[T](topic: String)(implicit config: EmbeddedKafkaConfig, deserializer: Deserializer[T]): T = {
+
+    import scala.collection.JavaConversions._
+
     val props = new Properties()
     props.put("group.id", s"embedded-kafka-spec")
-    props.put("zookeeper.connect", s"localhost:${config.zooKeeperPort}")
-    props.put("auto.offset.reset", "smallest")
-    props.put("zookeeper.connection.timeout.ms", "6000")
+    props.put("bootstrap.servers", s"localhost:${config.kafkaPort}")
+    props.put("auto.offset.reset", "earliest")
 
-    val consumer =
-      try Consumer.create(new ConsumerConfig(props))
-      catch {
-        case NonFatal(e) =>
-          throw new KafkaUnavailableException(e)
+    val consumer = new KafkaConsumer[String, T](props, new StringDeserializer, deserializer)
+
+    val message = Try {
+      consumer.subscribe(List(topic))
+      consumer.partitionsFor(topic) // as poll doesn't honour the timeout, forcing the consumer to fail here.
+      val records = consumer.poll(5000)
+      if (records.isEmpty) {
+        throw new TimeoutException("Unable to retrieve a message from Kafka in 5000ms")
       }
-
-    val messageStreams =
-      consumer.createMessageStreamsByFilter(Whitelist(topic), keyDecoder = new StringDecoder, valueDecoder = decoder)
-
-    val messageFuture = Future {
-      messageStreams.headOption
-        .getOrElse(throw new KafkaSpecException("Unable to find a message stream")).iterator().next().message()
+      records.iterator().next().value()
     }
 
-    try {
-      Await.result(messageFuture, 5 seconds)
-    } finally {
-      consumer.shutdown()
-    }
+    consumer.close()
+    message.recover {
+      case ex: KafkaException => throw new KafkaUnavailableException(ex)
+    }.get
   }
 
   object aKafkaProducer {
