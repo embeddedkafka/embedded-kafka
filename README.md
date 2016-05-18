@@ -5,6 +5,8 @@ The version supporting Kafka 0.8.x can be found [here](https://github.com/manub/
 
 Inspired by https://github.com/chbatey/kafka-unit
 
+[![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/manub/scalatest-embedded-kafka)
+
 ## How to use
 
 scalatest-embedded-kafka is available on Bintray and Maven Central, compiled for both Scala 2.10 and 2.11
