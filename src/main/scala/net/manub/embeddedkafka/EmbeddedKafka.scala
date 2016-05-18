@@ -14,7 +14,6 @@ import org.apache.kafka.common.serialization.{Deserializer, Serializer, StringDe
 import org.apache.zookeeper.server.{ServerCnxnFactory, ZooKeeperServer}
 import org.scalatest.Suite
 
-import scala.collection.JavaConversions
 import scala.collection.JavaConversions.mapAsJavaMap
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, TimeoutException}
