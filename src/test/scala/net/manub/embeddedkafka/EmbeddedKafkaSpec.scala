@@ -118,7 +118,8 @@ class EmbeddedKafkaSpec extends EmbeddedKafkaSpecSupport with EmbeddedKafka {
         val zkConnectionTimeoutMs = 10000
         val zkSecurityEnabled = false
 
-        AdminUtils.topicExists(ZkUtils(s"localhost:${config.zooKeeperPort}", zkSessionTimeoutMs, zkConnectionTimeoutMs, zkSecurityEnabled), topic) shouldBe true
+        val zkUtils = ZkUtils(s"localhost:${config.zooKeeperPort}", zkSessionTimeoutMs, zkConnectionTimeoutMs, zkSecurityEnabled)
+        try { AdminUtils.topicExists(zkUtils, topic) shouldBe true } finally zkUtils.close()
 
       }
     }

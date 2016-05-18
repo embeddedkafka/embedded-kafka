@@ -68,6 +68,8 @@ The `EmbeddedKafka` trait provides also some utility methods to interact with th
         def publishToKafka(topic: String, message: String): Unit
         
         def consumeFirstMessageFrom(topic: String): String
+
+        def createCustomTopic(topic: String, topicConfig: Properties): Unit
         
 ## Custom producers
 
