@@ -124,12 +124,7 @@ sealed trait EmbeddedKafkaSupport {
   def publishToKafka[T](topic: String, message: T)
                        (implicit config: EmbeddedKafkaConfig, serializer: Serializer[T]): Unit = {
 
-    val kafkaProducer = new KafkaProducer(Map(
-      ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
-      ProducerConfig.METADATA_FETCH_TIMEOUT_CONFIG -> 5000.toString,
-      ProducerConfig.MAX_BLOCK_MS_CONFIG -> 10000.toString,
-      ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> 1000.toString
-    ), new StringSerializer, serializer)
+    val kafkaProducer = new KafkaProducer(baseProducerConfig, new StringSerializer, serializer)
 
     val sendFuture = kafkaProducer.send(new ProducerRecord(topic, message))
     val sendResult = Try {
@@ -142,6 +137,12 @@ sealed trait EmbeddedKafkaSupport {
       throw new KafkaUnavailableException(sendResult.failed.get)
   }
 
+  private def baseProducerConfig(implicit config: EmbeddedKafkaConfig) = Map(
+    ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
+    ProducerConfig.MAX_BLOCK_MS_CONFIG -> 5000.toString,
+    ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> 1000.toString
+  )
+
   def consumeFirstStringMessageFrom(topic: String)(implicit config: EmbeddedKafkaConfig): String =
     consumeFirstMessageFrom(topic)(config, new StringDeserializer())
 
@@ -153,7 +154,7 @@ sealed trait EmbeddedKafkaSupport {
     * @param config       an implicit [[EmbeddedKafkaConfig]]
     * @param deserializer an implicit [[org.apache.kafka.common.serialization.Deserializer]] for the type [[T]]
     * @return the first message consumed from the given topic, with a type [[T]]
-    * @throws TimeoutException if unable to consume a message within 5 seconds
+    * @throws TimeoutException          if unable to consume a message within 5 seconds
     * @throws KafkaUnavailableException if unable to connect to Kafka
     */
   @throws(classOf[TimeoutException])
@@ -193,7 +194,7 @@ sealed trait EmbeddedKafkaSupport {
     }
 
     def thatSerializesValuesWith[V](serializer: Class[_ <: Serializer[V]])(implicit config: EmbeddedKafkaConfig) = {
-      val producer = new KafkaProducer[String, V](basicKafkaConfig(config) + (
+      val producer = new KafkaProducer[String, V](baseProducerConfig +(
         ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer].getName,
         ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> serializer.getName)
       )
@@ -202,16 +203,10 @@ sealed trait EmbeddedKafkaSupport {
     }
 
     def apply[V](implicit valueSerializer: Serializer[V], config: EmbeddedKafkaConfig) = {
-      val producer = new KafkaProducer[String, V](basicKafkaConfig(config), new StringSerializer, valueSerializer)
+      val producer = new KafkaProducer[String, V](baseProducerConfig(config), new StringSerializer, valueSerializer)
       producers :+= producer
       producer
     }
-
-    def basicKafkaConfig[V](config: EmbeddedKafkaConfig): Map[String, String] = Map(
-      ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
-      ProducerConfig.METADATA_FETCH_TIMEOUT_CONFIG -> 5000.toString,
-      ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> 1000.toString
-    )
   }
 
   def startZooKeeper(zooKeeperPort: Int, zkLogsDir: Directory = Directory.makeTemp("zookeeper-logs")): ServerCnxnFactory = {
@@ -243,6 +238,7 @@ sealed trait EmbeddedKafkaSupport {
     broker.startup()
     broker
   }
+
   /**
     * Creates a topic with a custom configuration
     *
