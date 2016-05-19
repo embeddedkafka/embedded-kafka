@@ -5,6 +5,10 @@ The version supporting Kafka 0.8.x can be found [here](https://github.com/manub/
 
 Inspired by https://github.com/chbatey/kafka-unit
 
+[![Build Status](https://travis-ci.org/manub/scalatest-embedded-kafka.svg?branch=master)](https://travis-ci.org/manub/scalatest-embedded-kafka)
+
+[![Codacy Badge](https://www.codacy.com/project/badge/c7b26292335d4331b49a81317884dd17)](https://www.codacy.com/app/emanuele-blanco/scalatest-embedded-kafka)
+
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/manub/scalatest-embedded-kafka)
 
 ## How to use
@@ -88,8 +92,3 @@ It is possible to create producers for custom types in two ways:
 
 For more information about how to use the utility methods, you can either look at the Scaladocs or at the tests of this project.
 
-## Badges 
-
-![Codeship](https://codeship.com/projects/f3a53210-021d-0133-d900-2e03a244558b/status?branch=master)
-
-[![Codacy Badge](https://www.codacy.com/project/badge/c7b26292335d4331b49a81317884dd17)](https://www.codacy.com/app/emanuele-blanco/scalatest-embedded-kafka)
