@@ -109,10 +109,8 @@ class EmbeddedKafkaSpec extends EmbeddedKafkaSpecSupport with EmbeddedKafka {
       val topic = "test_custom_topic"
 
       withRunningKafka {
-        val properties: Properties = new Properties
-        properties.put("cleanup.policy", "compact")
 
-        createCustomTopic(topic, properties)
+        createCustomTopic(topic, Map("cleanup.policy"->"compact"))
 
         val zkSessionTimeoutMs  = 10000
         val zkConnectionTimeoutMs = 10000
