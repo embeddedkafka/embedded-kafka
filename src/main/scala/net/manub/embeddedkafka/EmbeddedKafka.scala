@@ -242,15 +242,19 @@ sealed trait EmbeddedKafkaSupport {
   /**
     * Creates a topic with a custom configuration
     *
-    * @param topic       the topic name
-    * @param topicConfig per topic configuration [[Map]]
-    * @param config      an implicit [[EmbeddedKafkaConfig]]
+    * @param topic             the topic name
+    * @param topicConfig       per topic configuration [[Map]]
+    * @param partitions        number of partitions [[Int]]
+    * @param replicationFactor replication factor [[Int]]
+    * @param config            an implicit [[EmbeddedKafkaConfig]]
     */
-  def createCustomTopic(topic: String, topicConfig: Map[String,String] = Map.empty)(implicit config: EmbeddedKafkaConfig): Unit = {
+  def createCustomTopic(topic: String, topicConfig: Map[String,String] = Map.empty,
+    partitions: Int = 1, replicationFactor: Int = 1)(implicit config: EmbeddedKafkaConfig): Unit = {
+
     val zkUtils = ZkUtils(s"localhost:${config.zooKeeperPort}", zkSessionTimeoutMs, zkConnectionTimeoutMs, zkSecurityEnabled)
     val topicProperties = topicConfig.foldLeft(new Properties){case (props, (k,v)) => props.put(k,v); props}
 
-    try AdminUtils.createTopic(zkUtils, topic, 1, 1, topicProperties) finally zkUtils.close()
+    try AdminUtils.createTopic(zkUtils, topic, partitions, replicationFactor, topicProperties) finally zkUtils.close()
   }
 
 }

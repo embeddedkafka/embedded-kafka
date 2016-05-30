@@ -81,7 +81,7 @@ The `EmbeddedKafka` trait provides also some utility methods to interact with th
         
         def consumeFirstMessageFrom(topic: String): String
 
-        def createCustomTopic(topic: String, topicConfig: Map[String,String]): Unit
+        def createCustomTopic(topic: String, topicConfig: Map[String,String], partitions: Int, replicationFactor: Int): Unit
         
 ## Custom producers
 

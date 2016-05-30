@@ -121,6 +121,24 @@ class EmbeddedKafkaSpec extends EmbeddedKafkaSpecSupport with EmbeddedKafka {
 
       }
     }
+
+    "create a topic with custom number of partitions" in {
+      implicit val config = EmbeddedKafkaConfig()
+      val topic = "test_custom_topic"
+
+      withRunningKafka {
+
+        createCustomTopic(topic, Map("cleanup.policy"->"compact"), partitions = 2)
+
+        val zkSessionTimeoutMs  = 10000
+        val zkConnectionTimeoutMs = 10000
+        val zkSecurityEnabled = false
+
+        val zkUtils = ZkUtils(s"localhost:${config.zooKeeperPort}", zkSessionTimeoutMs, zkConnectionTimeoutMs, zkSecurityEnabled)
+        try { AdminUtils.fetchTopicMetadataFromZk(topic, zkUtils).partitionsMetadata.size shouldBe 2 } finally zkUtils.close()
+
+      }
+    }
   }
 
   "the consumeFirstStringMessageFrom method" should {
