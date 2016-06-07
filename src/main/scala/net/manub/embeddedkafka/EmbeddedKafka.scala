@@ -86,7 +86,7 @@ sealed trait EmbeddedKafkaSupport {
     * @param body   the function to execute
     * @param config an implicit [[EmbeddedKafkaConfig]]
     */
-  def withRunningKafka(body: => Unit)(implicit config: EmbeddedKafkaConfig) = {
+  def withRunningKafka(body: => Any)(implicit config: EmbeddedKafkaConfig) = {
 
     val factory = startZooKeeper(config.zooKeeperPort)
     val broker = startKafka(config)
