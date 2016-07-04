@@ -135,7 +135,7 @@ class EmbeddedKafkaSpec extends EmbeddedKafkaSpecSupport with EmbeddedKafka {
         val zkSecurityEnabled = false
 
         val zkUtils = ZkUtils(s"localhost:${config.zooKeeperPort}", zkSessionTimeoutMs, zkConnectionTimeoutMs, zkSecurityEnabled)
-        try { AdminUtils.fetchTopicMetadataFromZk(topic, zkUtils).partitionsMetadata.size shouldBe 2 } finally zkUtils.close()
+        try { AdminUtils.fetchTopicMetadataFromZk(topic, zkUtils).partitionMetadata().size shouldBe 2 } finally zkUtils.close()
 
       }
     }
