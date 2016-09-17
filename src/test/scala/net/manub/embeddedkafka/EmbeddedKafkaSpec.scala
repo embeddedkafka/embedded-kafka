@@ -103,6 +103,62 @@ class EmbeddedKafkaSpec extends EmbeddedKafkaSpecSupport with EmbeddedKafka {
     }
   }
 
+  "the publishToKafka method" should {
+    "publish synchronously a String message to Kafka" in {
+      withRunningKafka {
+        implicit val serializer = new StringSerializer()
+        val message = "hello world!"
+        val topic = "test_topic"
+
+        publishToKafka(topic, message)
+
+        val consumer = new KafkaConsumer[String, String](consumerProps, new StringDeserializer, new StringDeserializer)
+        consumer.subscribe(List("test_topic"))
+
+        val records = consumer.poll(ConsumerPollTimeout)
+
+        records.iterator().hasNext shouldBe true
+        val record = records.iterator().next()
+
+        record.value() shouldBe message
+
+        consumer.close()
+      }
+    }
+
+    "publish synchronously a String message with String key to Kafka" in {
+      withRunningKafka {
+        implicit val serializer = new StringSerializer()
+        val key = "key"
+        val message = "hello world!"
+        val topic = "test_topic"
+
+        publishToKafka(topic, key, message)
+
+        val consumer = new KafkaConsumer[String, String](consumerProps, new StringDeserializer, new StringDeserializer)
+        consumer.subscribe(List("test_topic"))
+
+        val records = consumer.poll(ConsumerPollTimeout)
+
+        records.iterator().hasNext shouldBe true
+        val record = records.iterator().next()
+
+        record.key() shouldBe key
+        record.value() shouldBe message
+
+
+        consumer.close()
+      }
+    }
+
+    "throw a KafkaUnavailableException when Kafka is unavailable when trying to publish" in {
+      a[KafkaUnavailableException] shouldBe thrownBy {
+        implicit val serializer = new StringSerializer()
+        publishToKafka("non_existing_topic", "a message")
+      }
+    }
+  }
+
   "the createCustomTopic method" should {
     "create a topic with a custom configuration" in {
       implicit val config = EmbeddedKafkaConfig(customBrokerProperties = Map("log.cleaner.dedupe.buffer.size" -> "2000000"))
