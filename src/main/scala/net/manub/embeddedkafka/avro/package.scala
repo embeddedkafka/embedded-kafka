@@ -8,13 +8,17 @@ import org.apache.kafka.common.serialization.{Deserializer, Serializer}
 
 package object avro {
 
-  implicit def specificAvroSerializer[T <: SpecificRecord]: Serializer[T] = new KafkaAvroSerializer[T]
-  implicit def specificAvroEncoder[T <: SpecificRecord]: Encoder[T] = new KafkaAvroEncoder[T]
+  implicit def specificAvroSerializer[T <: SpecificRecord]: Serializer[T] =
+    new KafkaAvroSerializer[T]
+  implicit def specificAvroEncoder[T <: SpecificRecord]: Encoder[T] =
+    new KafkaAvroEncoder[T]
 
-  def specificAvroDeserializer[T <: SpecificRecord](schema: Schema): Deserializer[T] =
+  def specificAvroDeserializer[T <: SpecificRecord](
+      schema: Schema): Deserializer[T] =
     new KafkaAvroDeserializer[T](schema)
 
-  def specificAvroDecoder[T <: SpecificRecord](schema: Schema, props: VerifiableProperties = null): Decoder[T] =
+  def specificAvroDecoder[T <: SpecificRecord](schema: Schema,
+                                               props: VerifiableProperties =
+                                                 null): Decoder[T] =
     new KafkaAvroDecoder[T](schema, props)
 }
-

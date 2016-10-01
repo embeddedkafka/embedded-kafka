@@ -6,6 +6,7 @@ val slf4jLog4jArtifact = "slf4j-log4j12"
 lazy val commonSettings = Seq(
   name := "scalatest-embedded-kafka",
   organization := "net.manub",
+  scalaVersion := "2.11.8",
   crossScalaVersions := Seq("2.10.6", "2.11.8"),
   homepage := Some(url("https://github.com/manub/scalatest-embedded-kafka")),
   parallelExecution in Test := false,
@@ -20,10 +21,12 @@ lazy val commonSettings = Seq(
 )
 
 lazy val publishSettings = Seq(
-  licenses +=("MIT", url("http://opensource.org/licenses/MIT")),
+  licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
   publishMavenStyle := true,
   publishArtifact in Test := false,
-  pomIncludeRepository := { _ => false },
+  pomIncludeRepository := { _ =>
+    false
+  },
   pomExtra :=
     <scm>
       <url>https://github.com/manub/scalatest-embedded-kafka</url>
