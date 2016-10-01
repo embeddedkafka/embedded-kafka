@@ -11,7 +11,7 @@ lazy val commonSettings = Seq(
   homepage := Some(url("https://github.com/manub/scalatest-embedded-kafka")),
   parallelExecution in Test := false,
   libraryDependencies ++= Seq(
-    "org.scalatest" %% "scalatest" % "2.2.5",
+    "org.scalatest" %% "scalatest" % "3.0.0",
     "org.apache.kafka" %% "kafka" % "0.10.0.1" exclude(slf4jLog4jOrg, slf4jLog4jArtifact),
     "org.apache.zookeeper" % "zookeeper" % "3.4.7" exclude(slf4jLog4jOrg, slf4jLog4jArtifact),
     "org.apache.avro" % "avro" % "1.7.7" exclude(slf4jLog4jOrg, slf4jLog4jArtifact),
