@@ -72,7 +72,10 @@ object EmbeddedKafka extends EmbeddedKafkaSupport {
   }
 
   def stopKafka(): Unit = {
-    broker.foreach(_.shutdown)
+    broker.foreach { b =>
+      b.shutdown()
+      b.awaitShutdown()
+    }
     broker = None
   }
 
