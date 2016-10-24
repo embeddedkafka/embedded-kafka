@@ -109,6 +109,7 @@ sealed trait EmbeddedKafkaSupport {
       body
     } finally {
       broker.shutdown()
+      broker.awaitShutdown()
       factory.shutdown()
     }
   }
