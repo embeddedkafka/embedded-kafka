@@ -168,7 +168,7 @@ sealed trait EmbeddedKafkaSupport {
                                    record: ProducerRecord[K, T]) = {
     val sendFuture = kafkaProducer.send(record)
     val sendResult = Try {
-      sendFuture.get(5, SECONDS)
+      sendFuture.get(10, SECONDS)
     }
 
     kafkaProducer.close()
@@ -179,7 +179,7 @@ sealed trait EmbeddedKafkaSupport {
 
   private def baseProducerConfig(implicit config: EmbeddedKafkaConfig) = Map(
     ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
-    ProducerConfig.MAX_BLOCK_MS_CONFIG -> 5000.toString,
+    ProducerConfig.MAX_BLOCK_MS_CONFIG -> 10000.toString,
     ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> 1000.toString
   )
 

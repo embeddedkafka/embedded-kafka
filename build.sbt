@@ -1,5 +1,7 @@
 import sbtrelease.Version
 
+parallelExecution in ThisBuild := false
+
 val kafkaVersion = "0.10.0.1"
 
 val slf4jLog4jOrg = "org.slf4j"
@@ -14,6 +16,7 @@ lazy val commonSettings = Seq(
   logBuffered in Test := false,
   fork in Test := true
 )
+
 
 lazy val commonLibrarySettings = libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.0",
@@ -51,9 +54,9 @@ lazy val releaseSettings = Seq(
 )
 
 lazy val root = (project in file("."))
-    .settings(name := "scalatest-embedded-kafka-root")
-    .settings(commonSettings: _*)
-    .aggregate(embeddedKafka, kafkaStreams)
+  .settings(name := "scalatest-embedded-kafka-root")
+  .settings(commonSettings: _*)
+  .aggregate(embeddedKafka, kafkaStreams)
 
 
 lazy val embeddedKafka = (project in file("embedded-kafka"))
