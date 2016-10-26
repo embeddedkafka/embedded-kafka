@@ -94,3 +94,73 @@ It is possible to create producers for custom types in two ways:
 
 For more information about how to use the utility methods, you can either look at the Scaladocs or at the tests of this project.
 
+## Custom consumers
+
+Use the `Consumer` trait that easily creates consumers of arbitrary key-value types and manages their lifecycle (via a loaner pattern).
+* For basic String consumption use `Consumer.withStringConsumer { your code here }`.
+* For arbitrary key and value types, expose implicit `Deserializer`s for each type and use `Consumer.withConsumer { your code here }`.
+* If you just want to create a consumer and manage its lifecycle yourself then try `Consumer.newConsumer()`.
+
+
+## Easy message consumption
+With `ConsumerExtensions` you can turn a consumer to a Scala lazy Stream of key-value pairs and treat it as a collection for easy assertion.
+* Just import the extensions.
+* On any `KafkaConsumer` instance you can now do:
+ 
+```scala
+import net.manub.embeddedkafka.ConsumerExtensions._
+...
+consumer.consumeLazily("from-this-topic").take(3).toList should be (Seq(
+  "1" -> "one", 
+  "2" -> "two", 
+  "3" -> "three"
+)
+```
+
+
+# scalatest-embedded-kafka-streams
+
+A library that builds on top of `scalatest-embedded-kafka` to offer easy testing of [Kafka Streams](https://cwiki.apache.org/confluence/display/KAFKA/Kafka+Streams) with ScalaTest.
+It uses Kafka Streams 0.10.0.1.
+It takes care of instantiating and starting your streams as well as closing them after running your test-case code.
+
+## How to use
+
+* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka-streams" % "0.8.1" % "test"`
+* Have a look at the [example test](kafka-streams/src/test/scala/net/manub/embeddedkafka/streams/ExampleKafkaStreamsSpec.scala)
+* For most of the cases have your `Spec` extend the `EmbeddedKafkaStreamsAllInOne` trait. This offers both streams management and easy creation of consumers for asserting resulting messages in output/sink topics.
+* If you only want to use the streams management without the test consumers just have the `Spec` extend the `EmbeddedKafkaStreams` trait.
+* Use the `runStreamsWithStringConsumer` to:
+    * Create any topics that need to exist for the strems to operate (usually sources and sinks).
+    * Pass the Stream or Topology builder that will then be used to instantiate and start the Kafka Streams. This will be done while using the `withRunningKafka` closure internally so that your stream runs with an embedded Kafka and Zookeeper.
+    * Pass the `{code block}` that needs a running instance of your streams. This is where your actual test code will sit. You can publish messages to your source topics and consume messages from your sink topics that the Kafka Streams should have generated. This method also offers a pre-instantiated consumer that can read String keys and values.
+* For more flexibility, use `runStreams` and `withConsumer`. This allows you to create your own consumers of custom types as seen in the [example test](kafka-streams/src/test/scala/net/manub/embeddedkafka/streams/ExampleKafkaStreamsSpec.scala).
+
+```scala
+import net.manub.embeddedkafka.ConsumerExtensions._
+import org.apache.kafka.streams.kstream.KStreamBuilder
+import org.scalatest.{Matchers, WordSpec}
+
+class MySpec extends WordSpec with Matchers with EmbeddedKafkaStreamsAllInOne {
+  "my kafka stream" should {
+    "be easy to test" in {
+      val inputTopic = "input-topic"
+      val outputTopic = "output-topic"
+      // your code for building the stream goes here e.g.
+      val streamBuilder = new KStreamBuilder
+      streamBuilder.stream(inputTopic).to(outputTopic)
+      // tell the stream test
+      // 1. what topics need to be created before the stream starts
+      // 2. the builder to be used for initializing and starting the stream
+      runStreamsWithStringConsumer(
+        topicsToCreate = Seq(inputTopic, outputTopic),
+        builder = streamBuilder
+      ){ consumer =>
+        // your test code goes here
+        publishToKafka(inputTopic, key = "hello", message = "world")
+        consumer.consumeLazily(outputTopic).head should be ("hello" -> "world")
+      }
+    }
+  }
+}
+```
