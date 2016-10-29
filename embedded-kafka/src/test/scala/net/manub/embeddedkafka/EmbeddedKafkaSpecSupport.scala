@@ -6,14 +6,15 @@ import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.io.Tcp.{Connect, Connected}
 import akka.io.{IO, Tcp}
 import akka.testkit.{ImplicitSender, TestKit}
-import org.scalatest.concurrent.{JavaFutures, ScalaFutures}
+import org.scalatest.concurrent.{Eventually, IntegrationPatience, JavaFutures, ScalaFutures}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-abstract class EmbeddedKafkaSpecSupport extends TestKit(ActorSystem("embedded-kafka-spec")) with WordSpecLike with Matchers
-  with ImplicitSender with BeforeAndAfterAll with ScalaFutures with JavaFutures {
+abstract class EmbeddedKafkaSpecSupport extends TestKit(ActorSystem("embedded-kafka-spec"))
+  with WordSpecLike with Matchers with ImplicitSender with BeforeAndAfterAll with ScalaFutures with JavaFutures
+  with Eventually with IntegrationPatience {
 
   def kafkaIsAvailable(kafkaPort: Int = 6001): Unit = {
     system.actorOf(TcpClient.props(new InetSocketAddress("localhost", kafkaPort), testActor))
