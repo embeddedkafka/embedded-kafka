@@ -59,6 +59,7 @@ lazy val root = (project in file("."))
   .settings(publishArtifact := false)
   .settings(publish := {})
   .disablePlugins(BintrayPlugin)
+  .settings(publishTo := Some(Resolver.defaultLocal))
   .aggregate(embeddedKafka, kafkaStreams)
 
 
