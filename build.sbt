@@ -14,7 +14,8 @@ lazy val commonSettings = Seq(
   homepage := Some(url("https://github.com/manub/scalatest-embedded-kafka")),
   parallelExecution in Test := false,
   logBuffered in Test := false,
-  fork in Test := true
+  fork in Test := true,
+  javaOptions += "-Xmx1G"
 )
 
 
