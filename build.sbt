@@ -57,6 +57,8 @@ lazy val root = (project in file("."))
   .settings(name := "scalatest-embedded-kafka-root")
   .settings(commonSettings: _*)
   .settings(publishArtifact := false)
+  .settings(publish := {})
+  .disablePlugins(BintrayPlugin)
   .aggregate(embeddedKafka, kafkaStreams)
 
 
