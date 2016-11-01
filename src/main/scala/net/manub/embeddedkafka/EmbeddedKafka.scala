@@ -233,6 +233,10 @@ sealed trait EmbeddedKafkaSupport {
     properties.setProperty("log.dir", kafkaLogDir.toAbsolute.path)
     properties.setProperty("log.flush.interval.messages", 1.toString)
 
+    config.customBrokerProperties.foreach {
+      case (key, value) => properties.setProperty(key, value)
+    }
+
     val broker = new KafkaServer(new KafkaConfig(properties))
     broker.startup()
     broker
