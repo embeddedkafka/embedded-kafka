@@ -1,7 +1,14 @@
 # scalatest-embedded-kafka
-A library that provides an in-memory Kafka broker to run your ScalaTest specs against. It uses Kafka 0.10.0.1 and ZooKeeper 3.4.9.
+A library that provides an in-memory Kafka broker to run your ScalaTest specs against. It uses Kafka 0.10.1.0 and ZooKeeper 3.4.9.
 
-The version supporting Kafka 0.8.x can be found [here](https://github.com/manub/scalatest-embedded-kafka/tree/kafka-0.8) - *this is no longer actively supported, although I'll be happy to accept PRs and produce releases.* 
+The version supporting Kafka 0.8.x can be found [here](https://github.com/manub/scalatest-embedded-kafka/tree/kafka-0.8) - *this is no longer actively supported, although I'll be happy to accept PRs and produce releases.*
+ 
+For Kafka 0.10.0.x support, override `org.apache.kafka % kafka` dependency with older version:
+
+        libraryDependencies += "org.apache.kafka" % "kafka" % "0.10.0.1" % test
+        dependencyOverrides += "org.apache.kafka" % "kafka" % "0.10.0.1"
+        
+This override is required because Kafka Broker 0.10.1.0 doesn't support older clients.
 
 Inspired by https://github.com/chbatey/kafka-unit
 
