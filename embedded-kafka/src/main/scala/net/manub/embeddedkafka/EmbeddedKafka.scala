@@ -278,9 +278,6 @@ sealed trait EmbeddedKafkaSupport {
     val zkAddress = s"localhost:${config.zooKeeperPort}"
 
     val properties: Properties = new Properties
-    config.customBrokerProperties.foreach {
-      case (key, value) => properties.setProperty(key, value)
-    }
     properties.setProperty("zookeeper.connect", zkAddress)
     properties.setProperty("broker.id", "0")
     properties.setProperty("host.name", "localhost")
@@ -289,6 +286,9 @@ sealed trait EmbeddedKafkaSupport {
     properties.setProperty("port", config.kafkaPort.toString)
     properties.setProperty("log.dir", kafkaLogDir.toAbsolute.path)
     properties.setProperty("log.flush.interval.messages", 1.toString)
+    config.customBrokerProperties.foreach {
+      case (key, value) => properties.setProperty(key, value)
+    }
 
     val broker = new KafkaServer(new KafkaConfig(properties))
     broker.startup()
