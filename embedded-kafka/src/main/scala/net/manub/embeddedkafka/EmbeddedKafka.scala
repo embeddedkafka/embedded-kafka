@@ -43,7 +43,7 @@ object EmbeddedKafka extends EmbeddedKafkaSupport {
     *
     * @param config an implicit [[EmbeddedKafkaConfig]]
     */
-  def start()(implicit config: EmbeddedKafkaConfig) = {
+  def start()(implicit config: EmbeddedKafkaConfig): Unit = {
     factory = Option(startZooKeeper(config.zooKeeperPort))
     broker = Option(startKafka(config))
   }
@@ -86,8 +86,8 @@ object EmbeddedKafka extends EmbeddedKafkaSupport {
 }
 
 sealed trait EmbeddedKafkaSupport {
-  val executorService = Executors.newFixedThreadPool(2)
-  implicit val executionContext =
+  private val executorService = Executors.newFixedThreadPool(2)
+  implicit private val executionContext =
     ExecutionContext.fromExecutorService(executorService)
 
   val zkSessionTimeoutMs = 10000
@@ -100,7 +100,7 @@ sealed trait EmbeddedKafkaSupport {
     * @param body   the function to execute
     * @param config an implicit [[EmbeddedKafkaConfig]]
     */
-  def withRunningKafka(body: => Any)(implicit config: EmbeddedKafkaConfig) = {
+  def withRunningKafka(body: => Any)(implicit config: EmbeddedKafkaConfig): Any = {
 
     val factory = startZooKeeper(config.zooKeeperPort)
     val broker = startKafka(config)
@@ -238,7 +238,7 @@ sealed trait EmbeddedKafkaSupport {
     }
 
     def thatSerializesValuesWith[V](serializer: Class[_ <: Serializer[V]])(
-        implicit config: EmbeddedKafkaConfig) = {
+        implicit config: EmbeddedKafkaConfig): KafkaProducer[String, V] = {
       val producer = new KafkaProducer[String, V](
         baseProducerConfig + (ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[
           StringSerializer].getName,
@@ -248,7 +248,7 @@ sealed trait EmbeddedKafkaSupport {
     }
 
     def apply[V](implicit valueSerializer: Serializer[V],
-                 config: EmbeddedKafkaConfig) = {
+                 config: EmbeddedKafkaConfig): KafkaProducer[String, V] = {
       val producer = new KafkaProducer[String, V](baseProducerConfig(config),
                                                   new StringSerializer,
                                                   valueSerializer)
