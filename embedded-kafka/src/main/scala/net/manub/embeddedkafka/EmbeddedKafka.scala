@@ -311,6 +311,10 @@ sealed trait EmbeddedKafkaSupport {
     properties.setProperty("port", config.kafkaPort.toString)
     properties.setProperty("log.dir", kafkaLogDir.toAbsolute.path)
     properties.setProperty("log.flush.interval.messages", 1.toString)
+
+    // The total memory used for log deduplication across all cleaner threads, keep it small to not exhaust suite memory
+    properties.setProperty("log.cleaner.dedupe.buffer.size", "1048577")
+
     config.customBrokerProperties.foreach {
       case (key, value) => properties.setProperty(key, value)
     }
