@@ -76,7 +76,7 @@ This works for both `withRunningKafka` and `EmbeddedKafka.start()`
 Also, it is now possible to provide custom properties to the broker while starting Kafka. `EmbeddedKafkaConfig` has a 
 `customBrokerProperties` field which can be used to provide extra properties contained in a `Map[String, String]`.
 Those properties will be added to the broker configuration, be careful some properties are set by the library itself and
-in case of conflict your values will take precedence. Please look at the source code to see what these properties
+in case of conflict the `customBrokerProperties` values will take precedence. Please look at the source code to see what these properties
 are.
         
 ## Utility methods

@@ -210,16 +210,20 @@ sealed trait EmbeddedKafkaSupport {
     ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> 1000.toString
   )
 
-  def consumeFirstStringMessageFrom(topic: String)(
+  def consumeFirstStringMessageFrom(topic: String, autoCommit: Boolean = false)(
       implicit config: EmbeddedKafkaConfig): String =
-    consumeFirstMessageFrom(topic)(config, new StringDeserializer())
+    consumeFirstMessageFrom(topic, autoCommit)(config, new StringDeserializer())
 
   /**
     * Consumes the first message available in a given topic, deserializing it as a String.
     *
-    * Only the messsage that is returned is committed if config.autoCommit is false. If config.autoCommit is true then all messages that were polled will be committed.
+    * Only the messsage that is returned is committed if autoCommit is false.
+    * If autoCommit is true then all messages that were polled will be committed.
     *
     * @param topic        the topic to consume a message from
+    * @param autoCommit   if false, only the offset for the consumed message will be commited.
+    *                     if true, the offset for the last polled message will be committed instead.
+    *                     Defaulted to false.
     * @param config       an implicit [[EmbeddedKafkaConfig]]
     * @param deserializer an implicit [[org.apache.kafka.common.serialization.Deserializer]] for the type [[T]]
     * @return the first message consumed from the given topic, with a type [[T]]
@@ -228,7 +232,7 @@ sealed trait EmbeddedKafkaSupport {
     */
   @throws(classOf[TimeoutException])
   @throws(classOf[KafkaUnavailableException])
-  def consumeFirstMessageFrom[T](topic: String)(
+  def consumeFirstMessageFrom[T](topic: String, autoCommit: Boolean = false)(
       implicit config: EmbeddedKafkaConfig,
       deserializer: Deserializer[T]): T = {
 
@@ -238,7 +242,7 @@ sealed trait EmbeddedKafkaSupport {
     props.put("group.id", s"embedded-kafka-spec")
     props.put("bootstrap.servers", s"localhost:${config.kafkaPort}")
     props.put("auto.offset.reset", "earliest")
-    props.put("enable.auto.commit", s"${config.autoCommit}")
+    props.put("enable.auto.commit", autoCommit.toString)
 
     val consumer =
       new KafkaConsumer[String, T](props, new StringDeserializer, deserializer)
