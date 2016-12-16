@@ -28,12 +28,12 @@ class EmbeddedKafkaMethodsSpec extends EmbeddedKafkaSpecSupport with EmbeddedKaf
     "publish synchronously a String message to Kafka" in {
       implicit val serializer = new StringSerializer()
       val message = "hello world!"
-      val topic = "test_topic"
+      val topic = "publish_test_topic"
 
       publishToKafka(topic, message)
 
       val consumer = new KafkaConsumer[String, String](consumerProps, new StringDeserializer, new StringDeserializer)
-      consumer.subscribe(List("test_topic"))
+      consumer.subscribe(List(topic))
 
       val records = consumer.poll(ConsumerPollTimeout)
 
@@ -50,12 +50,12 @@ class EmbeddedKafkaMethodsSpec extends EmbeddedKafkaSpecSupport with EmbeddedKaf
       implicit val serializer = new StringSerializer()
       val key = "key"
       val message = "hello world!"
-      val topic = "test_topic"
+      val topic = "publish_test_topic"
 
       publishToKafka(topic, key, message)
 
       val consumer = new KafkaConsumer[String, String](consumerProps, new StringDeserializer, new StringDeserializer)
-      consumer.subscribe(List("test_topic"))
+      consumer.subscribe(List(topic))
 
       val records = consumer.poll(ConsumerPollTimeout)
 
@@ -111,7 +111,7 @@ class EmbeddedKafkaMethodsSpec extends EmbeddedKafkaSpecSupport with EmbeddedKaf
   "the consumeFirstStringMessageFrom method" should {
     "return a message published to a topic" in {
       val message = "hello world!"
-      val topic = "test_topic"
+      val topic = "consume_test_topic"
 
       val producer = new KafkaProducer[String, String](Map(
         ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:6001",
@@ -126,9 +126,34 @@ class EmbeddedKafkaMethodsSpec extends EmbeddedKafkaSpecSupport with EmbeddedKaf
       producer.close()
     }
 
+    "consume only a single message when multiple messages have been published to a topic" in {
+      val messages = Set("message 1", "message 2", "message 3")
+      val topic = "consume_test_topic"
+
+      val producer = new KafkaProducer[String, String](Map(
+        ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:6001",
+        ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer].getName,
+        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer].getName
+      ))
+
+      messages.foreach { message =>
+        producer.send(new ProducerRecord[String, String](topic, message))
+      }
+
+      producer.flush()
+
+      val consumedMessages = for (i <- 1 to messages.size) yield {
+        consumeFirstStringMessageFrom(topic)
+      }
+
+      consumedMessages.toSet shouldEqual messages
+
+      producer.close()
+    }
+
     "return a message published to a topic with implicit decoder" in {
       val message = "hello world!"
-      val topic = "test_topic"
+      val topic = "consume_test_topic"
 
       val producer = new KafkaProducer[String, String](Map(
         ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:6001",
@@ -149,7 +174,7 @@ class EmbeddedKafkaMethodsSpec extends EmbeddedKafkaSpecSupport with EmbeddedKaf
       import avro._
 
       val message = TestAvroClass("name")
-      val topic = "test_topic"
+      val topic = "consume_test_topic"
       implicit val testAvroClassDecoder = specificAvroDeserializer[TestAvroClass](TestAvroClass.SCHEMA$)
 
       val producer = new KafkaProducer[String, TestAvroClass](Map(

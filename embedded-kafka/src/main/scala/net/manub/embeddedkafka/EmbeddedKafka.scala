@@ -7,9 +7,9 @@ import java.util.concurrent.Executors
 import kafka.admin.AdminUtils
 import kafka.server.{KafkaConfig, KafkaServer}
 import kafka.utils.ZkUtils
-import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.consumer.{KafkaConsumer, OffsetAndMetadata}
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
-import org.apache.kafka.common.KafkaException
+import org.apache.kafka.common.{KafkaException, TopicPartition}
 import org.apache.kafka.common.serialization.{Deserializer, Serializer, StringDeserializer, StringSerializer}
 import org.apache.zookeeper.server.{ServerCnxnFactory, ZooKeeperServer}
 import org.scalatest.Suite
@@ -217,6 +217,8 @@ sealed trait EmbeddedKafkaSupport {
   /**
     * Consumes the first message available in a given topic, deserializing it as a String.
     *
+    * Only the messsage that is returned is committed if config.autoCommit is false. If config.autoCommit is true then all messages that were polled will be committed.
+    *
     * @param topic        the topic to consume a message from
     * @param config       an implicit [[EmbeddedKafkaConfig]]
     * @param deserializer an implicit [[org.apache.kafka.common.serialization.Deserializer]] for the type [[T]]
@@ -236,6 +238,7 @@ sealed trait EmbeddedKafkaSupport {
     props.put("group.id", s"embedded-kafka-spec")
     props.put("bootstrap.servers", s"localhost:${config.kafkaPort}")
     props.put("auto.offset.reset", "earliest")
+    props.put("enable.auto.commit", s"${config.autoCommit}")
 
     val consumer =
       new KafkaConsumer[String, T](props, new StringDeserializer, deserializer)
@@ -248,7 +251,14 @@ sealed trait EmbeddedKafkaSupport {
         throw new TimeoutException(
           "Unable to retrieve a message from Kafka in 5000ms")
       }
-      records.iterator().next().value()
+
+      val record = records.iterator().next()
+
+      val tp = new TopicPartition(record.topic(), record.partition())
+      val om = new OffsetAndMetadata(record.offset() + 1)
+      consumer.commitSync(Map(tp -> om))
+
+      record.value()
     }
 
     consumer.close()
