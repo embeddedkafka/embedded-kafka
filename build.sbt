@@ -2,15 +2,18 @@ import sbtrelease.Version
 
 parallelExecution in ThisBuild := false
 
-val kafkaVersion = "0.10.1.0"
+val kafkaVersion = "0.10.1.1"
+val akkaVersion = "2.4.14"
 
 val slf4jLog4jOrg = "org.slf4j"
 val slf4jLog4jArtifact = "slf4j-log4j12"
 
+resolvers in ThisBuild += "Apache Staging" at "https://repository.apache.org/content/groups/staging"
+
 lazy val commonSettings = Seq(
   organization := "net.manub",
   scalaVersion := "2.11.8",
-  crossScalaVersions := Seq("2.10.6", "2.11.8"),
+  crossScalaVersions := Seq("2.12.1", "2.11.8"),
   homepage := Some(url("https://github.com/manub/scalatest-embedded-kafka")),
   parallelExecution in Test := false,
   logBuffered in Test := false,
@@ -20,12 +23,12 @@ lazy val commonSettings = Seq(
 
 
 lazy val commonLibrarySettings = libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest" % "3.0.0",
+  "org.scalatest" %% "scalatest" % "3.0.1",
   "org.apache.kafka" %% "kafka" % kafkaVersion exclude(slf4jLog4jOrg, slf4jLog4jArtifact),
-  "org.apache.zookeeper" % "zookeeper" % "3.4.7" exclude(slf4jLog4jOrg, slf4jLog4jArtifact),
+  "org.apache.zookeeper" % "zookeeper" % "3.4.8" exclude(slf4jLog4jOrg, slf4jLog4jArtifact),
   "org.apache.avro" % "avro" % "1.7.7" exclude(slf4jLog4jOrg, slf4jLog4jArtifact),
-  "com.typesafe.akka" %% "akka-actor" % "2.3.14" % Test,
-  "com.typesafe.akka" %% "akka-testkit" % "2.3.14" % Test
+  "com.typesafe.akka" %% "akka-actor" % akkaVersion % Test,
+  "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test
 )
 
 lazy val publishSettings = Seq(

@@ -1,5 +1,5 @@
 # scalatest-embedded-kafka
-A library that provides an in-memory Kafka broker to run your ScalaTest specs against. It uses Kafka 0.10.1.0 and ZooKeeper 3.4.9.
+A library that provides an in-memory Kafka broker to run your ScalaTest specs against. It uses Kafka 0.10.1.1 and ZooKeeper 3.4.8.
 
 The version supporting Kafka 0.8.x can be found [here](https://github.com/manub/scalatest-embedded-kafka/tree/kafka-0.8) - *this is no longer actively supported, although I'll be happy to accept PRs and produce releases.* 
 
@@ -13,11 +13,18 @@ Inspired by https://github.com/chbatey/kafka-unit
 
 [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
 
-## How to use
 
-scalatest-embedded-kafka is available on Bintray and Maven Central, compiled for both Scala 2.10 and 2.11
+### Version compatibility matrix
 
-* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka" % "0.10.0" % "test"`
+scalatest-embedded-kafka is available on Bintray and Maven Central, compiled for both Scala 2.11 and 2.12.
+
+* Scala 2.10 is supported until `0.10.0`
+* Scala 2.11 is supported for all versions
+* Scala 2.12 is supported from `0.11.0`. Please noted that currently kafka support for 2.12 is marked as pre-alpha from the kafka team.
+ 
+### How to use 
+
+* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka" % "0.11.0" % "test"`
 * Have your `Spec` extend the `EmbeddedKafka` trait.
 * Enclose the code that needs a running instance of Kafka within the `withRunningKafka` closure.
 ```scala
@@ -53,7 +60,7 @@ class MySpec extends WordSpec {
         
 Please note that in order to avoid Kafka instances not shutting down properly, it's recommended to call `EmbeddedKafka.stop()` in a `after` block or in a similar teardown logic. 
 
-## Configuration
+### Configuration
 
 It's possible to change the ports on which Zookeeper and Kafka are started by providing an implicit `EmbeddedKafkaConfig`
 
@@ -79,7 +86,7 @@ Those properties will be added to the broker configuration, be careful some prop
 in case of conflict the `customBrokerProperties` values will take precedence. Please look at the source code to see what these properties
 are.
         
-## Utility methods
+### Utility methods
 
 The `EmbeddedKafka` trait provides also some utility methods to interact with the embedded kafka, in order to set preconditions or verifications in your specs:
 
@@ -91,7 +98,7 @@ def consumeFirstMessageFrom(topic: String): String
 def createCustomTopic(topic: String, topicConfig: Map[String,String], partitions: Int, replicationFactor: Int): Unit
 ```
 
-## Custom producers
+### Custom producers
 
 It is possible to create producers for custom types in two ways:
 
@@ -100,15 +107,15 @@ It is possible to create producers for custom types in two ways:
 
 For more information about how to use the utility methods, you can either look at the Scaladocs or at the tests of this project.
 
-## Custom consumers
+### Custom consumers
 
 Use the `Consumer` trait that easily creates consumers of arbitrary key-value types and manages their lifecycle (via a loaner pattern).
 * For basic String consumption use `Consumer.withStringConsumer { your code here }`.
 * For arbitrary key and value types, expose implicit `Deserializer`s for each type and use `Consumer.withConsumer { your code here }`.
 * If you just want to create a consumer and manage its lifecycle yourself then try `Consumer.newConsumer()`.
 
+### Easy message consumption
 
-## Easy message consumption
 With `ConsumerExtensions` you can turn a consumer to a Scala lazy Stream of key-value pairs and treat it as a collection for easy assertion.
 * Just import the extensions.
 * On any `KafkaConsumer` instance you can now do:
@@ -123,16 +130,16 @@ consumer.consumeLazily("from-this-topic").take(3).toList should be (Seq(
 )
 ```
 
-
-# scalatest-embedded-kafka-streams
+## scalatest-embedded-kafka-streams
 
 A library that builds on top of `scalatest-embedded-kafka` to offer easy testing of [Kafka Streams](https://cwiki.apache.org/confluence/display/KAFKA/Kafka+Streams) with ScalaTest.
-It uses Kafka Streams 0.10.0.1.
+It uses Kafka Streams 0.10.1.1.
+
 It takes care of instantiating and starting your streams as well as closing them after running your test-case code.
 
-## How to use
+### How to use
 
-* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka-streams" % "0.9.0" % "test"`
+* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka-streams" % "0.11.0" % "test"`
 * Have a look at the [example test](kafka-streams/src/test/scala/net/manub/embeddedkafka/streams/ExampleKafkaStreamsSpec.scala)
 * For most of the cases have your `Spec` extend the `EmbeddedKafkaStreamsAllInOne` trait. This offers both streams management and easy creation of consumers for asserting resulting messages in output/sink topics.
 * If you only want to use the streams management without the test consumers just have the `Spec` extend the `EmbeddedKafkaStreams` trait.
