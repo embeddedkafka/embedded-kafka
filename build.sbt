@@ -8,8 +8,6 @@ val akkaVersion = "2.4.14"
 val slf4jLog4jOrg = "org.slf4j"
 val slf4jLog4jArtifact = "slf4j-log4j12"
 
-resolvers in ThisBuild += "Apache Staging" at "https://repository.apache.org/content/groups/staging"
-
 lazy val commonSettings = Seq(
   organization := "net.manub",
   scalaVersion := "2.11.8",
