@@ -20,7 +20,7 @@ scalatest-embedded-kafka is available on Bintray and Maven Central, compiled for
 
 * Scala 2.10 is supported until `0.10.0`
 * Scala 2.11 is supported for all versions
-* Scala 2.12 is supported from `0.11.0`. Please noted that currently kafka support for 2.12 is marked as pre-alpha from the kafka team.
+* Scala 2.12 is supported from `0.11.0`. 
  
 ### How to use 
 
