@@ -16,6 +16,7 @@ import org.scalatest.Suite
 
 import scala.collection.JavaConversions.mapAsJavaMap
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, TimeoutException}
 import scala.language.{higherKinds, postfixOps}
@@ -210,9 +211,22 @@ sealed trait EmbeddedKafkaSupport {
     ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> 1000.toString
   )
 
+  private def baseConsumerConfig(implicit config: EmbeddedKafkaConfig) : Properties = {
+    val props = new Properties()
+    props.put("group.id", s"embedded-kafka-spec")
+    props.put("bootstrap.servers", s"localhost:${config.kafkaPort}")
+    props.put("auto.offset.reset", "earliest")
+    props.put("enable.auto.commit", "false")
+    props
+  }
+
   def consumeFirstStringMessageFrom(topic: String, autoCommit: Boolean = false)(
       implicit config: EmbeddedKafkaConfig): String =
     consumeFirstMessageFrom(topic, autoCommit)(config, new StringDeserializer())
+
+  def consumeNumberStringMessagesFrom(topic: String, number: Int, autoCommit: Boolean = false)(
+      implicit config: EmbeddedKafkaConfig): List[String] =
+    consumeNumberMessagesFrom(topic, number, autoCommit)(config, new StringDeserializer())
 
   /**
     * Consumes the first message available in a given topic, deserializing it as a String.
@@ -238,10 +252,7 @@ sealed trait EmbeddedKafkaSupport {
 
     import scala.collection.JavaConversions._
 
-    val props = new Properties()
-    props.put("group.id", s"embedded-kafka-spec")
-    props.put("bootstrap.servers", s"localhost:${config.kafkaPort}")
-    props.put("auto.offset.reset", "earliest")
+    val props = baseConsumerConfig
     props.put("enable.auto.commit", autoCommit.toString)
 
     val consumer =
@@ -270,6 +281,69 @@ sealed trait EmbeddedKafkaSupport {
       case ex: KafkaException => throw new KafkaUnavailableException(ex)
     }.get
   }
+
+  /**
+    * Consumes the first n messages available in a given topic, deserializing it as a String, and returns
+    * the n messages as a List.
+    *
+    * Only the messsages that are returned are committed if autoCommit is false.
+    * If autoCommit is true then all messages that were polled will be committed.
+    *
+    * @param topic        the topic to consume a message from
+    * @param number       the number of messagese to consume in a batch
+    * @param autoCommit   if false, only the offset for the consumed message will be commited.
+    *                     if true, the offset for the last polled message will be committed instead.
+    *                     Defaulted to false.
+    * @param config       an implicit [[EmbeddedKafkaConfig]]
+    * @param deserializer an implicit [[org.apache.kafka.common.serialization.Deserializer]] for the type [[T]]
+    * @return the first message consumed from the given topic, with a type [[T]]
+    * @throws TimeoutException          if unable to consume a message within 5 seconds
+    * @throws KafkaUnavailableException if unable to connect to Kafka
+    */
+  def consumeNumberMessagesFrom[T](topic: String, number: Int, autoCommit: Boolean = false)(
+    implicit config: EmbeddedKafkaConfig,
+    deserializer: Deserializer[T]): List[T] = {
+
+    import scala.collection.JavaConverters._
+
+    val props = baseConsumerConfig
+    props.put("enable.auto.commit", autoCommit.toString)
+
+    val consumer =
+      new KafkaConsumer[String, T](props, new StringDeserializer, deserializer)
+
+    val messages = Try {
+      val messagesBuffer = ListBuffer.empty[T]
+      var messagesRead = 0
+      consumer.subscribe(List(topic).asJava)
+      consumer.partitionsFor(topic)
+
+      while (messagesRead < number) {
+        val records = consumer.poll(5000)
+        if (records.isEmpty) {
+          throw new TimeoutException(
+            "Unable to retrieve a message from Kafka in 5000ms")
+        }
+
+        val recordIter = records.iterator()
+        while (recordIter.hasNext && messagesRead < number) {
+          val record = recordIter.next()
+          messagesBuffer += record.value()
+          val tp = new TopicPartition(record.topic(), record.partition())
+          val om = new OffsetAndMetadata(record.offset() + 1)
+          consumer.commitSync(Map(tp -> om).asJava)
+          messagesRead += 1
+        }
+      }
+      messagesBuffer.toList
+    }
+
+    consumer.close()
+    messages.recover {
+      case ex: KafkaException => throw new KafkaUnavailableException(ex)
+    }.get
+  }
+
 
   object aKafkaProducer {
     private[this] var producers = Vector.empty[KafkaProducer[_, _]]

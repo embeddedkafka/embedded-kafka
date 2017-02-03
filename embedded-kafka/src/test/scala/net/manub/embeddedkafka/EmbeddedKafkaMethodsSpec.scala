@@ -195,6 +195,52 @@ class EmbeddedKafkaMethodsSpec extends EmbeddedKafkaSpecSupport with EmbeddedKaf
     }
   }
 
+  "the consumeNumberStringMessagesFrom method" should {
+    "consume set number of messages when multiple messages have been published to a topic" in {
+      val messages = Set("message 1", "message 2", "message 3")
+      val topic = "consume_test_topic"
+      val producer = new KafkaProducer[String, String](Map(
+        ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:6001",
+        ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer].getName,
+        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer].getName
+      ))
+
+      messages.foreach { message =>
+        producer.send(new ProducerRecord[String, String](topic, message))
+      }
+
+      producer.flush()
+
+      val consumedMessages = consumeNumberStringMessagesFrom(topic, messages.size)
+
+      consumedMessages.toSet shouldEqual messages
+
+      producer.close()
+    }
+
+    "timeout and throw a TimeoutException when n messages are not received in time" in {
+      val messages = Set("message 1", "message 2", "message 3")
+      val topic = "consume_test_topic"
+      val producer = new KafkaProducer[String, String](Map(
+        ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:6001",
+        ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer].getName,
+        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer].getName
+      ))
+
+      messages.foreach { message =>
+        producer.send(new ProducerRecord[String, String](topic, message))
+      }
+
+      producer.flush()
+
+      a[TimeoutException] shouldBe thrownBy {
+        consumeNumberStringMessagesFrom(topic, messages.size + 1)
+      }
+
+      producer.close()
+    }
+  }
+
   "the aKafkaProducerThat method" should {
     "return a producer that encodes messages for the given encoder" in {
       val producer = aKafkaProducer thatSerializesValuesWith classOf[ByteArraySerializer]
