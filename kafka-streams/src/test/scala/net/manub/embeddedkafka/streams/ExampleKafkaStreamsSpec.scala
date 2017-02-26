@@ -7,9 +7,13 @@ import org.apache.kafka.common.serialization.{Serde, Serdes}
 import org.apache.kafka.streams.kstream.{KStream, KStreamBuilder}
 import org.scalatest.{Matchers, WordSpec}
 
-class ExampleKafkaStreamsSpec extends WordSpec with Matchers with EmbeddedKafkaStreamsAllInOne {
+class ExampleKafkaStreamsSpec
+    extends WordSpec
+    with Matchers
+    with EmbeddedKafkaStreamsAllInOne {
 
-  implicit val config = EmbeddedKafkaConfig(kafkaPort = 7000, zooKeeperPort = 7001)
+  implicit val config =
+    EmbeddedKafkaConfig(kafkaPort = 7000, zooKeeperPort = 7001)
 
   val (inTopic, outTopic) = ("in", "out")
 
@@ -18,7 +22,8 @@ class ExampleKafkaStreamsSpec extends WordSpec with Matchers with EmbeddedKafkaS
   "A Kafka streams test" should {
     "be easy to run with streams and consumer lifecycle management" in {
       val streamBuilder = new KStreamBuilder
-      val stream: KStream[String, String] = streamBuilder.stream(stringSerde, stringSerde, inTopic)
+      val stream: KStream[String, String] =
+        streamBuilder.stream(stringSerde, stringSerde, inTopic)
 
       stream.to(stringSerde, stringSerde, outTopic)
 
@@ -27,16 +32,19 @@ class ExampleKafkaStreamsSpec extends WordSpec with Matchers with EmbeddedKafkaS
         publishToKafka(inTopic, "foo", "bar")
         publishToKafka(inTopic, "baz", "yaz")
         withConsumer[String, String, Unit] { consumer =>
-          val consumedMessages: Stream[(String, String)] = consumer.consumeLazily(outTopic)
-          consumedMessages.take(2) should be (Seq("hello" -> "world", "foo" -> "bar"))
-          consumedMessages.drop(2).head should be ("baz" -> "yaz")
+          val consumedMessages: Stream[(String, String)] =
+            consumer.consumeLazily(outTopic)
+          consumedMessages.take(2) should be(
+            Seq("hello" -> "world", "foo" -> "bar"))
+          consumedMessages.drop(2).head should be("baz" -> "yaz")
         }
       }
     }
 
     "allow support creating custom consumers" in {
       val streamBuilder = new KStreamBuilder
-      val stream: KStream[String, String] = streamBuilder.stream(stringSerde, stringSerde, inTopic)
+      val stream: KStream[String, String] =
+        streamBuilder.stream(stringSerde, stringSerde, inTopic)
 
       stream.to(stringSerde, stringSerde, outTopic)
 
@@ -44,20 +52,23 @@ class ExampleKafkaStreamsSpec extends WordSpec with Matchers with EmbeddedKafkaS
         publishToKafka(inTopic, "hello", "world")
         publishToKafka(inTopic, "foo", "bar")
         val consumer = newConsumer[String, String]()
-        consumer.consumeLazily(outTopic).take(2) should be (Seq("hello" -> "world", "foo" -> "bar"))
+        consumer.consumeLazily(outTopic).take(2) should be(
+          Seq("hello" -> "world", "foo" -> "bar"))
         consumer.close()
       }
     }
 
     "allow for easy string based testing" in {
       val streamBuilder = new KStreamBuilder
-      val stream: KStream[String, String] = streamBuilder.stream(stringSerde, stringSerde, inTopic)
+      val stream: KStream[String, String] =
+        streamBuilder.stream(stringSerde, stringSerde, inTopic)
 
       stream.to(stringSerde, stringSerde, outTopic)
 
-      runStreamsWithStringConsumer(Seq(inTopic, outTopic), streamBuilder) { consumer =>
-        publishToKafka(inTopic, "hello", "world")
-        consumer.consumeLazily(outTopic).head should be ("hello" -> "world")
+      runStreamsWithStringConsumer(Seq(inTopic, outTopic), streamBuilder) {
+        consumer =>
+          publishToKafka(inTopic, "hello", "world")
+          consumer.consumeLazily(outTopic).head should be("hello" -> "world")
       }
     }
   }

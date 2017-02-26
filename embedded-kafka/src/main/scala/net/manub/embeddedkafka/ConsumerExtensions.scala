@@ -36,16 +36,16 @@ object ConsumerExtensions {
       * @param topic the topic to consume
       * @return the next batch of messages
       */
-    def getNextBatch(topic: String): Seq[(K, V)] = Try {
-      import scala.collection.JavaConversions._
-      consumer.subscribe(List(topic))
-      consumer.partitionsFor(topic)
-      val records = consumer.poll(2000)
-      // use toList to force eager evaluation. toSeq is lazy
-      records.iterator().toList.map(r => r.key -> r.value)
-    }.recover {
-      case ex: KafkaException => throw new KafkaUnavailableException(ex)
-    }.get
+    def getNextBatch(topic: String): Seq[(K, V)] =
+      Try {
+        import scala.collection.JavaConversions._
+        consumer.subscribe(List(topic))
+        consumer.partitionsFor(topic)
+        val records = consumer.poll(2000)
+        // use toList to force eager evaluation. toSeq is lazy
+        records.iterator().toList.map(r => r.key -> r.value)
+      }.recover {
+        case ex: KafkaException => throw new KafkaUnavailableException(ex)
+      }.get
   }
 }
-

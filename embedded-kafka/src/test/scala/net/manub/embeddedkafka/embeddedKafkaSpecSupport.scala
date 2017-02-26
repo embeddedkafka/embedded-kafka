@@ -7,18 +7,31 @@ import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.io.Tcp.{Connect, Connected}
 import akka.io.{IO, Tcp}
 import akka.testkit.{ImplicitSender, TestKit}
-import org.scalatest.concurrent.{Eventually, IntegrationPatience, JavaFutures, ScalaFutures}
+import org.scalatest.concurrent.{
+  Eventually,
+  IntegrationPatience,
+  JavaFutures,
+  ScalaFutures
+}
 import org.scalatest.time.{Milliseconds, Seconds, Span}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-abstract class EmbeddedKafkaSpecSupport extends TestKit(ActorSystem("embedded-kafka-spec"))
-  with WordSpecLike with Matchers with ImplicitSender with BeforeAndAfterAll with ScalaFutures with JavaFutures
-  with Eventually with IntegrationPatience {
+abstract class EmbeddedKafkaSpecSupport
+    extends TestKit(ActorSystem("embedded-kafka-spec"))
+    with WordSpecLike
+    with Matchers
+    with ImplicitSender
+    with BeforeAndAfterAll
+    with ScalaFutures
+    with JavaFutures
+    with Eventually
+    with IntegrationPatience {
 
-  implicit val config = PatienceConfig(Span(2, Seconds), Span(100, Milliseconds))
+  implicit val config =
+    PatienceConfig(Span(2, Seconds), Span(100, Milliseconds))
 
   override def afterAll(): Unit = {
     system.shutdown()
@@ -34,28 +47,35 @@ abstract class EmbeddedKafkaSpecSupport extends TestKit(ActorSystem("embedded-ka
   }
 
   def kafkaIsAvailable(kafkaPort: Int = 6001): Unit = {
-    system.actorOf(TcpClient.props(new InetSocketAddress("localhost", kafkaPort), testActor))
+    system.actorOf(
+      TcpClient.props(new InetSocketAddress("localhost", kafkaPort),
+                      testActor))
     expectMsg(1 second, ConnectionSuccessful)
   }
 
   def zookeeperIsAvailable(zookeeperPort: Int = 6000): Unit = {
-    system.actorOf(TcpClient.props(new InetSocketAddress("localhost", zookeeperPort), testActor))
+    system.actorOf(
+      TcpClient.props(new InetSocketAddress("localhost", zookeeperPort),
+                      testActor))
     expectMsg(1 second, ConnectionSuccessful)
   }
 
   def kafkaIsNotAvailable(): Unit = {
-    system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6001), testActor))
+    system.actorOf(
+      TcpClient.props(new InetSocketAddress("localhost", 6001), testActor))
     expectMsg(1 second, ConnectionFailed)
   }
 
   def zookeeperIsNotAvailable(): Unit = {
-    system.actorOf(TcpClient.props(new InetSocketAddress("localhost", 6000), testActor))
+    system.actorOf(
+      TcpClient.props(new InetSocketAddress("localhost", 6000), testActor))
     expectMsg(1 second, ConnectionFailed)
   }
 }
 
 object TcpClient {
-  def props(remote: InetSocketAddress, replies: ActorRef) = Props(classOf[TcpClient], remote, replies)
+  def props(remote: InetSocketAddress, replies: ActorRef) =
+    Props(classOf[TcpClient], remote, replies)
 }
 
 case object ConnectionSuccessful

@@ -8,9 +8,18 @@ import kafka.admin.AdminUtils
 import kafka.server.{KafkaConfig, KafkaServer}
 import kafka.utils.ZkUtils
 import org.apache.kafka.clients.consumer.{KafkaConsumer, OffsetAndMetadata}
-import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
+import org.apache.kafka.clients.producer.{
+  KafkaProducer,
+  ProducerConfig,
+  ProducerRecord
+}
 import org.apache.kafka.common.{KafkaException, TopicPartition}
-import org.apache.kafka.common.serialization.{Deserializer, Serializer, StringDeserializer, StringSerializer}
+import org.apache.kafka.common.serialization.{
+  Deserializer,
+  Serializer,
+  StringDeserializer,
+  StringSerializer
+}
 import org.apache.zookeeper.server.{ServerCnxnFactory, ZooKeeperServer}
 import org.scalatest.Suite
 
@@ -120,7 +129,8 @@ sealed trait EmbeddedKafkaSupport {
     * @param body   the function to execute
     * @param config an implicit [[EmbeddedKafkaConfig]]
     */
-  def withRunningKafka(body: => Any)(implicit config: EmbeddedKafkaConfig): Any = {
+  def withRunningKafka(body: => Any)(
+      implicit config: EmbeddedKafkaConfig): Any = {
 
     def cleanLogs(directories: Directory*): Unit = {
       directories.foreach(_.deleteRecursively())
@@ -211,7 +221,8 @@ sealed trait EmbeddedKafkaSupport {
     ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> 1000.toString
   )
 
-  private def baseConsumerConfig(implicit config: EmbeddedKafkaConfig) : Properties = {
+  private def baseConsumerConfig(
+      implicit config: EmbeddedKafkaConfig): Properties = {
     val props = new Properties()
     props.put("group.id", s"embedded-kafka-spec")
     props.put("bootstrap.servers", s"localhost:${config.kafkaPort}")
@@ -220,13 +231,19 @@ sealed trait EmbeddedKafkaSupport {
     props
   }
 
-  def consumeFirstStringMessageFrom(topic: String, autoCommit: Boolean = false)(
+  def consumeFirstStringMessageFrom(topic: String,
+                                    autoCommit: Boolean = false)(
       implicit config: EmbeddedKafkaConfig): String =
-    consumeFirstMessageFrom(topic, autoCommit)(config, new StringDeserializer())
+    consumeFirstMessageFrom(topic, autoCommit)(config,
+                                               new StringDeserializer())
 
-  def consumeNumberStringMessagesFrom(topic: String, number: Int, autoCommit: Boolean = false)(
+  def consumeNumberStringMessagesFrom(topic: String,
+                                      number: Int,
+                                      autoCommit: Boolean = false)(
       implicit config: EmbeddedKafkaConfig): List[String] =
-    consumeNumberMessagesFrom(topic, number, autoCommit)(config, new StringDeserializer())
+    consumeNumberMessagesFrom(topic, number, autoCommit)(
+      config,
+      new StringDeserializer())
 
   /**
     * Consumes the first message available in a given topic, deserializing it as a String.
@@ -300,9 +317,11 @@ sealed trait EmbeddedKafkaSupport {
     * @throws TimeoutException          if unable to consume a message within 5 seconds
     * @throws KafkaUnavailableException if unable to connect to Kafka
     */
-  def consumeNumberMessagesFrom[T](topic: String, number: Int, autoCommit: Boolean = false)(
-    implicit config: EmbeddedKafkaConfig,
-    deserializer: Deserializer[T]): List[T] = {
+  def consumeNumberMessagesFrom[T](topic: String,
+                                   number: Int,
+                                   autoCommit: Boolean = false)(
+      implicit config: EmbeddedKafkaConfig,
+      deserializer: Deserializer[T]): List[T] = {
 
     import scala.collection.JavaConverters._
 
@@ -343,7 +362,6 @@ sealed trait EmbeddedKafkaSupport {
       case ex: KafkaException => throw new KafkaUnavailableException(ex)
     }.get
   }
-
 
   object aKafkaProducer {
     private[this] var producers = Vector.empty[KafkaProducer[_, _]]

@@ -19,15 +19,14 @@ lazy val commonSettings = Seq(
   javaOptions += "-Xmx1G"
 )
 
-
 lazy val commonLibrarySettings = libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest" % "3.0.1",
-  "org.apache.kafka" %% "kafka" % kafkaVersion exclude(slf4jLog4jOrg, slf4jLog4jArtifact),
-  "org.apache.zookeeper" % "zookeeper" % "3.4.8" exclude(slf4jLog4jOrg, slf4jLog4jArtifact),
-  "org.apache.avro" % "avro" % "1.8.1" exclude(slf4jLog4jOrg, slf4jLog4jArtifact),
-  "com.typesafe.akka" %% "akka-actor" % akkaVersion % Test,
-  "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test
-)
+    "org.scalatest" %% "scalatest" % "3.0.1",
+    "org.apache.kafka" %% "kafka" % kafkaVersion exclude (slf4jLog4jOrg, slf4jLog4jArtifact),
+    "org.apache.zookeeper" % "zookeeper" % "3.4.8" exclude (slf4jLog4jOrg, slf4jLog4jArtifact),
+    "org.apache.avro" % "avro" % "1.8.1" exclude (slf4jLog4jOrg, slf4jLog4jArtifact),
+    "com.typesafe.akka" %% "akka-actor" % akkaVersion % Test,
+    "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test
+  )
 
 lazy val publishSettings = Seq(
   licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
@@ -65,7 +64,6 @@ lazy val root = (project in file("."))
   .settings(publishTo := Some(Resolver.defaultLocal))
   .aggregate(embeddedKafka, kafkaStreams)
 
-
 lazy val embeddedKafka = (project in file("embedded-kafka"))
   .settings(name := "scalatest-embedded-kafka")
   .settings(publishSettings: _*)
@@ -80,6 +78,6 @@ lazy val kafkaStreams = (project in file("kafka-streams"))
   .settings(commonLibrarySettings)
   .settings(releaseSettings: _*)
   .settings(libraryDependencies ++= Seq(
-    "org.apache.kafka" % "kafka-streams" % kafkaVersion exclude(slf4jLog4jOrg, slf4jLog4jArtifact)
+    "org.apache.kafka" % "kafka-streams" % kafkaVersion exclude (slf4jLog4jOrg, slf4jLog4jArtifact)
   ))
   .dependsOn(embeddedKafka)

@@ -4,8 +4,9 @@ import org.scalatest.exceptions.TestFailedException
 
 import scala.language.postfixOps
 
-class EmbeddedKafkaWithRunningKafkaSpec extends EmbeddedKafkaSpecSupport with EmbeddedKafka {
-
+class EmbeddedKafkaWithRunningKafkaSpec
+    extends EmbeddedKafkaSpecSupport
+    with EmbeddedKafka {
 
   "the withRunningKafka method" should {
     "start a Kafka broker on port 6001 by default" in {

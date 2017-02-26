@@ -12,10 +12,11 @@ case class TestAvroClass(var name: String) extends SpecificRecordBase {
   }
 
   override def put(i: Int, v: scala.Any): Unit = i match {
-    case 0 => name = v match {
-      case (utf8: org.apache.avro.util.Utf8) => utf8.toString
-      case _ => v.asInstanceOf[String]
-    }
+    case 0 =>
+      name = v match {
+        case (utf8: org.apache.avro.util.Utf8) => utf8.toString
+        case _ => v.asInstanceOf[String]
+      }
     case _ => throw new AvroRuntimeException("Bad index")
   }
 
@@ -23,8 +24,8 @@ case class TestAvroClass(var name: String) extends SpecificRecordBase {
 }
 
 object TestAvroClass {
-  val SCHEMA$ = (new Schema.Parser).parse(
-    """
+  val SCHEMA$ =
+    (new Schema.Parser).parse("""
       |{"namespace": "example",
       | "type": "record",
       | "namespace": "net.manub.embeddedkafka",
