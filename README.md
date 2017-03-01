@@ -77,6 +77,30 @@ class MySpec extends WordSpec with EmbeddedKafka {
 
 }
 ```
+
+The same implicit `EmbeddedKafkaConfig` is used to define custom consumer or producer properties
+
+```scala
+class MySpec extends WordSpec with EmbeddedKafka {
+
+"runs with custom producer and consumer properties" should {
+    val customBrokerConfig = Map("replica.fetch.max.bytes" -> "2000000",
+        "message.max.bytes" -> "2000000")
+        
+    val customProducerConfig = Map("max.request.size" -> "2000000")
+    val customConsumerConfig = Map("max.partition.fetch.bytes" -> "2000000")
+
+    implicit val customKafkaConfig = EmbeddedKafkaConfig(
+        customBrokerProperties = customBrokerConfig,
+        customProducerProperties = customProducerConfig,
+        customConsumerProperties = customConsumerConfig)
+
+    withRunningKafka {
+        // now a kafka broker is listening on port 12345
+    }
+
+}
+```
         
 This works for both `withRunningKafka` and `EmbeddedKafka.start()`
 
