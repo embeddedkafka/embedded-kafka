@@ -60,15 +60,15 @@ abstract class EmbeddedKafkaSpecSupport
     expectMsg(1 second, ConnectionSuccessful)
   }
 
-  def kafkaIsNotAvailable(): Unit = {
+  def kafkaIsNotAvailable(kafkaPort: Int = 6001): Unit = {
     system.actorOf(
-      TcpClient.props(new InetSocketAddress("localhost", 6001), testActor))
+      TcpClient.props(new InetSocketAddress("localhost", kafkaPort), testActor))
     expectMsg(1 second, ConnectionFailed)
   }
 
-  def zookeeperIsNotAvailable(): Unit = {
+  def zookeeperIsNotAvailable(zookeeperPort: Int = 6000): Unit = {
     system.actorOf(
-      TcpClient.props(new InetSocketAddress("localhost", 6000), testActor))
+      TcpClient.props(new InetSocketAddress("localhost", zookeeperPort), testActor))
     expectMsg(1 second, ConnectionFailed)
   }
 }

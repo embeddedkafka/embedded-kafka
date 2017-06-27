@@ -78,6 +78,27 @@ class MySpec extends WordSpec with EmbeddedKafka {
 }
 ```
 
+If you want to run ZooKeeper and Kafka on arbitrary available ports, you can
+use the `withRunningKafkaOnFoundPort` method. This is useful to make tests more
+reliable, especially when running tests in parallel or on machines where other
+tests or services may be running with port numbers you can't control.
+
+```scala
+class MySpec extends WordSpec with EmbeddedKafka {
+
+"runs with embedded kafka on arbitrary available ports" should {
+
+    val userDefinedConfig = EmbeddedKafkaConfig(kafkaPort = 0, zooKeeperPort = 0)
+
+    withRunningKafkaOnFoundPort(userDefinedConfig) { implicit actualConfig =>
+      // now a kafka broker is listening on actualConfig.kafkaPort
+      publishStringMessageToKafka("topic", "message")
+      consumeFirstStringMessageFrom("topic") shouldBe "message"
+    }
+
+}
+```
+
 The same implicit `EmbeddedKafkaConfig` is used to define custom consumer or producer properties
 
 ```scala
@@ -102,7 +123,7 @@ class MySpec extends WordSpec with EmbeddedKafka {
 }
 ```
         
-This works for both `withRunningKafka` and `EmbeddedKafka.start()`
+This works for `withRunningKafka`, `withRunningKafkaOnFoundPort`, and `EmbeddedKafka.start()`
 
 Also, it is now possible to provide custom properties to the broker while starting Kafka. `EmbeddedKafkaConfig` has a 
 `customBrokerProperties` field which can be used to provide extra properties contained in a `Map[String, String]`.

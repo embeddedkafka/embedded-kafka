@@ -129,26 +129,64 @@ sealed trait EmbeddedKafkaSupport {
     * @param body   the function to execute
     * @param config an implicit [[EmbeddedKafkaConfig]]
     */
-  def withRunningKafka(body: => Any)(
-      implicit config: EmbeddedKafkaConfig): Any = {
-
-    def cleanLogs(directories: Directory*): Unit = {
-      directories.foreach(_.deleteRecursively())
+  def withRunningKafka[T](body: => T)(
+      implicit config: EmbeddedKafkaConfig): T = {
+    withRunningZooKeeper(config.zooKeeperPort) { zkPort =>
+      withTempDir("kafka") { kafkaLogsDir =>
+        val broker = startKafka(config.copy(zooKeeperPort = zkPort), kafkaLogsDir)
+        try {
+          body
+        } finally {
+          broker.shutdown()
+          broker.awaitShutdown()
+        }
+      }
     }
+  }
 
-    val zkLogsDir = Directory.makeTemp("zookeeper-logs")
-    val kafkaLogsDir = Directory.makeTemp("kafka")
+  /**
+    * Starts a ZooKeeper instance and a Kafka broker, then executes the body passed as a parameter.
+    * The actual ZooKeeper and Kafka ports will be detected and inserted into a copied version of
+    * the EmbeddedKafkaConfig that gets passed to body. This is useful if you set either or both
+    * port to 0, which will listen on an arbitrary available port.
+    *
+    * @param config the user-defined [[EmbeddedKafkaConfig]]
+    * @param body   the function to execute, given an [[EmbeddedKafkaConfig]] with the actual
+    *               ports Kafka and ZooKeeper are running on
+    */
+  def withRunningKafkaOnFoundPort[T](config: EmbeddedKafkaConfig)(body: EmbeddedKafkaConfig => T): T = {
+    withRunningZooKeeper(config.zooKeeperPort) { zkPort =>
+      withTempDir("kafka") { kafkaLogsDir =>
+        val broker: KafkaServer = startKafka(config.copy(zooKeeperPort = zkPort), kafkaLogsDir)
+        val kafkaPort = broker.boundPort(broker.config.listeners.head.listenerName)
+        val actualConfig = config.copy(kafkaPort = kafkaPort, zooKeeperPort = zkPort)
+        try {
+          body(actualConfig)
+        } finally {
+          broker.shutdown()
+          broker.awaitShutdown()
+        }
+      }
+    }
+  }
 
-    val factory = startZooKeeper(config.zooKeeperPort, zkLogsDir)
-    val broker = startKafka(config, kafkaLogsDir)
+  private def withRunningZooKeeper[T](port: Int)(body: Int => T): T = {
+    withTempDir("zookeeper-logs") { zkLogsDir =>
+      val factory = startZooKeeper(port, zkLogsDir)
+      try {
+        body(factory.getLocalPort)
+      } finally {
+        factory.shutdown()
+      }
+    }
+  }
 
+  private def withTempDir[T](prefix: String)(body: Directory => T): T = {
+    val dir = Directory.makeTemp(prefix)
     try {
-      body
+      body(dir)
     } finally {
-      broker.shutdown()
-      broker.awaitShutdown()
-      factory.shutdown()
-      cleanLogs(zkLogsDir, kafkaLogsDir)
+      dir.deleteRecursively()
     }
   }
 
