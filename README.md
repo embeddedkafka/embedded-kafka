@@ -46,15 +46,15 @@ A `EmbeddedKafka` companion object is provided for usage without the `EmbeddedKa
 
 ```scala
 class MySpec extends WordSpec {
-    
-"runs with embedded kafka" should {
+  
+  "runs with embedded kafka" should {
 
     EmbeddedKafka.start()
     
     // ... code goes here
     
-    EmbeddedKafka.stop() 
-
+    EmbeddedKafka.stop()
+  }
 }
 ```
         
