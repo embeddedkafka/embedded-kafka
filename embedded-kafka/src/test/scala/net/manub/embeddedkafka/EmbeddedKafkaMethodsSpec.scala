@@ -289,6 +289,33 @@ class EmbeddedKafkaMethodsSpec
     }
   }
 
+  "the consumeNumberMessagesFromTopics method" should {
+    "consume from multiple topics" in {
+      val topicMessagesMap = Map("topic1" -> List("message 1"), "topic2" -> List("message 2a", "message 2b"))
+      val producer = new KafkaProducer[String, String](
+        Map(
+          ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:6001",
+          ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[
+            StringSerializer].getName,
+          ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[
+            StringSerializer].getName
+        ))
+      for ((topic, messages) <- topicMessagesMap; message <- messages) {
+        producer.send(new ProducerRecord[String, String](topic, message))
+      }
+
+      producer.flush()
+
+      implicit val deserializer = new StringDeserializer
+      val consumedMessages =
+        consumeNumberMessagesFromTopics(topicMessagesMap.keySet, topicMessagesMap.values.map(_.size).sum)
+
+      consumedMessages.mapValues(_.sorted) shouldEqual topicMessagesMap
+
+      producer.close()
+    }
+  }
+
   "the aKafkaProducerThat method" should {
     "return a producer that encodes messages for the given encoder" in {
       val producer = aKafkaProducer thatSerializesValuesWith classOf[
