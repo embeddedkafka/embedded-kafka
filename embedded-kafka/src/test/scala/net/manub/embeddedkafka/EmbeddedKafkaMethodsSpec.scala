@@ -4,7 +4,6 @@ import java.util.concurrent.TimeoutException
 
 import kafka.admin.AdminUtils
 import kafka.utils.ZkUtils
-import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.{
   KafkaProducer,
   ProducerConfig,
@@ -17,12 +16,14 @@ import org.apache.kafka.common.serialization.{
 }
 import org.scalatest.BeforeAndAfterAll
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 class EmbeddedKafkaMethodsSpec
     extends EmbeddedKafkaSpecSupport
     with EmbeddedKafka
     with BeforeAndAfterAll {
+
+  val consumerPollTimeout = 5000
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -37,17 +38,16 @@ class EmbeddedKafkaMethodsSpec
   "the publishToKafka method" should {
     "publish synchronously a String message to Kafka" in {
       implicit val serializer = new StringSerializer()
+      implicit val deserializer = new StringDeserializer()
       val message = "hello world!"
       val topic = "publish_test_topic"
 
       publishToKafka(topic, message)
 
-      val consumer = new KafkaConsumer[String, String](consumerProps,
-                                                       new StringDeserializer,
-                                                       new StringDeserializer)
-      consumer.subscribe(List(topic))
+      val consumer = kafkaConsumer
+      consumer.subscribe(List(topic).asJava)
 
-      val records = consumer.poll(ConsumerPollTimeout)
+      val records = consumer.poll(consumerPollTimeout)
 
       records.iterator().hasNext shouldBe true
       val record = records.iterator().next()
@@ -55,23 +55,21 @@ class EmbeddedKafkaMethodsSpec
       record.value() shouldBe message
 
       consumer.close()
-
     }
 
     "publish synchronously a String message with String key to Kafka" in {
       implicit val serializer = new StringSerializer()
+      implicit val deserializer = new StringDeserializer()
       val key = "key"
       val message = "hello world!"
-      val topic = "publish_test_topic"
+      val topic = "publish_test_topic_string_key"
 
       publishToKafka(topic, key, message)
 
-      val consumer = new KafkaConsumer[String, String](consumerProps,
-                                                       new StringDeserializer,
-                                                       new StringDeserializer)
-      consumer.subscribe(List(topic))
+      val consumer = kafkaConsumer
+      consumer.subscribe(List(topic).asJava)
 
-      val records = consumer.poll(ConsumerPollTimeout)
+      val records = consumer.poll(consumerPollTimeout)
 
       records.iterator().hasNext shouldBe true
       val record = records.iterator().next()
@@ -133,18 +131,20 @@ class EmbeddedKafkaMethodsSpec
   }
 
   "the consumeFirstStringMessageFrom method" should {
+    val config = EmbeddedKafkaConfig()
+
     "return a message published to a topic" in {
       val message = "hello world!"
       val topic = "consume_test_topic"
 
       val producer = new KafkaProducer[String, String](
-        Map(
-          ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:6001",
+        Map[String, Object](
+          ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
           ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[
             StringSerializer].getName,
           ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[
             StringSerializer].getName
-        ))
+        ).asJava)
 
       whenReady(
         producer.send(new ProducerRecord[String, String](topic, message))) {
@@ -160,13 +160,13 @@ class EmbeddedKafkaMethodsSpec
       val topic = "consume_test_topic"
 
       val producer = new KafkaProducer[String, String](
-        Map(
-          ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:6001",
+        Map[String, Object](
+          ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
           ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[
             StringSerializer].getName,
           ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[
             StringSerializer].getName
-        ))
+        ).asJava)
 
       messages.foreach { message =>
         producer.send(new ProducerRecord[String, String](topic, message))
@@ -174,7 +174,7 @@ class EmbeddedKafkaMethodsSpec
 
       producer.flush()
 
-      val consumedMessages = for (i <- 1 to messages.size) yield {
+      val consumedMessages = for (_ <- 1 to messages.size) yield {
         consumeFirstStringMessageFrom(topic)
       }
 
@@ -188,13 +188,13 @@ class EmbeddedKafkaMethodsSpec
       val topic = "consume_test_topic"
 
       val producer = new KafkaProducer[String, String](
-        Map(
-          ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:6001",
+        Map[String, Object](
+          ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
           ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[
             StringSerializer].getName,
           ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[
             StringSerializer].getName
-        ))
+        ).asJava)
 
       import Codecs._
       whenReady(
@@ -216,9 +216,9 @@ class EmbeddedKafkaMethodsSpec
         specificAvroDeserializer[TestAvroClass](TestAvroClass.SCHEMA$)
 
       val producer = new KafkaProducer[String, TestAvroClass](
-        Map(
-          ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:6001"
-        ),
+        Map[String, Object](
+          ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}"
+        ).asJava,
         new StringSerializer,
         specificAvroSerializer[TestAvroClass])
 
@@ -237,17 +237,19 @@ class EmbeddedKafkaMethodsSpec
   }
 
   "the consumeNumberStringMessagesFrom method" should {
+    val config = EmbeddedKafkaConfig()
+
     "consume set number of messages when multiple messages have been published to a topic" in {
       val messages = Set("message 1", "message 2", "message 3")
       val topic = "consume_test_topic"
       val producer = new KafkaProducer[String, String](
-        Map(
-          ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:6001",
+        Map[String, Object](
+          ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
           ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[
             StringSerializer].getName,
           ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[
             StringSerializer].getName
-        ))
+        ).asJava)
 
       messages.foreach { message =>
         producer.send(new ProducerRecord[String, String](topic, message))
@@ -267,13 +269,13 @@ class EmbeddedKafkaMethodsSpec
       val messages = Set("message 1", "message 2", "message 3")
       val topic = "consume_test_topic"
       val producer = new KafkaProducer[String, String](
-        Map(
-          ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:6001",
+        Map[String, Object](
+          ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
           ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[
             StringSerializer].getName,
           ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[
             StringSerializer].getName
-        ))
+        ).asJava)
 
       messages.foreach { message =>
         producer.send(new ProducerRecord[String, String](topic, message))
@@ -291,15 +293,16 @@ class EmbeddedKafkaMethodsSpec
 
   "the consumeNumberMessagesFromTopics method" should {
     "consume from multiple topics" in {
+      val config = EmbeddedKafkaConfig()
       val topicMessagesMap = Map("topic1" -> List("message 1"), "topic2" -> List("message 2a", "message 2b"))
       val producer = new KafkaProducer[String, String](
-        Map(
-          ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:6001",
+        Map[String, Object](
+          ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
           ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[
             StringSerializer].getName,
           ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[
             StringSerializer].getName
-        ))
+        ).asJava)
       for ((topic, messages) <- topicMessagesMap; message <- messages) {
         producer.send(new ProducerRecord[String, String](topic, message))
       }
@@ -344,7 +347,4 @@ class EmbeddedKafkaMethodsSpec
       producer.close()
     }
   }
-
-  val ConsumerPollTimeout = 3000
-
 }

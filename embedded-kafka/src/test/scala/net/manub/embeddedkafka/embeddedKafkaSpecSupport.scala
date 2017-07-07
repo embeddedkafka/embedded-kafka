@@ -1,7 +1,6 @@
 package net.manub.embeddedkafka
 
 import java.net.InetSocketAddress
-import java.util.Properties
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.io.Tcp.{Connect, Connected}
@@ -36,14 +35,6 @@ abstract class EmbeddedKafkaSpecSupport
   override def afterAll(): Unit = {
     system.shutdown()
     super.afterAll()
-  }
-
-  lazy val consumerProps: Properties = {
-    val props = new Properties()
-    props.put("group.id", "test")
-    props.put("bootstrap.servers", "localhost:6001")
-    props.put("auto.offset.reset", "earliest")
-    props
   }
 
   def kafkaIsAvailable(kafkaPort: Int = 6001): Unit = {

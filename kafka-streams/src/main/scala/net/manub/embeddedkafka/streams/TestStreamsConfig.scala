@@ -25,7 +25,6 @@ trait TestStreamsConfig {
     val defaultConfig = Map(
       StreamsConfig.APPLICATION_ID_CONFIG -> streamName,
       StreamsConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${kafkaConfig.kafkaPort}",
-      StreamsConfig.ZOOKEEPER_CONNECT_CONFIG -> s"localhost:${kafkaConfig.zooKeeperPort}",
       StreamsConfig.STATE_DIR_CONFIG -> Files
         .createTempDirectory(streamName)
         .toString,
