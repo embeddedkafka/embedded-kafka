@@ -42,7 +42,7 @@ class MySpec extends WordSpec with EmbeddedKafka {
 
 ### Use without the `withRunningKafka` method
 
-A `EmbeddedKafka` companion object is provided for usage without the `EmbeddedKafka` trait. Zookeeper and Kafka can be started an stopped in a programmatic way.
+A `EmbeddedKafka` companion object is provided for usage without the `EmbeddedKafka` trait. Zookeeper and Kafka can be started and stopped in a programmatic way.
 
 ```scala
 class MySpec extends WordSpec {
