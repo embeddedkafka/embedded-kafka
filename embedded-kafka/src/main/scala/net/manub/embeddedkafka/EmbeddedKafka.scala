@@ -444,7 +444,7 @@ sealed trait EmbeddedKafkaSupport {
     val zkAddress = s"localhost:${config.zooKeeperPort}"
     val listener = s"PLAINTEXT://localhost:${config.kafkaPort}"
 
-    val properties: Properties = new Properties
+    val properties = new Properties
     properties.setProperty("zookeeper.connect", zkAddress)
     properties.setProperty("broker.id", "0")
     properties.setProperty("listeners", listener)
@@ -454,6 +454,7 @@ sealed trait EmbeddedKafkaSupport {
     properties.setProperty("log.flush.interval.messages", 1.toString)
     properties.setProperty("offsets.topic.replication.factor", 1.toString)
     properties.setProperty("offsets.topic.num.partitions", 1.toString)
+    properties.setProperty("transaction.state.log.replication.factor", 1.toString)
 
     // The total memory used for log deduplication across all cleaner threads, keep it small to not exhaust suite memory
     properties.setProperty("log.cleaner.dedupe.buffer.size", "1048577")
