@@ -25,28 +25,43 @@ object ConsumerExtensions {
       *         to evaluate the requested number of messages.
       */
     def consumeLazily(topic: String, maximumAttempts: Int = 3, poll: Long = 2000): Stream[(K, V)] = {
+      consumeLazilyOnTopics(List(topic), maximumAttempts, poll).map { case (t, k, v) => (k, v) }
+    }
+
+    /** Consume messages from a given list of topics and return them as a lazily evaluated Scala Stream.
+      * Depending on how many messages are taken from the Scala Stream it will try up to 3 times
+      * to consume batches from the given topic, until it reaches the number of desired messages or
+      * return otherwise.
+      *
+      * @param topics          the topics from which to consume messages
+      * @param maximumAttempts the maximum number of attempts to try and get the batch (defaults to 3)
+      * @param poll            the amount of time, in milliseconds, to wait in the buffer for any messages to be available (defaults to 2000)
+      * @return the stream of consumed messages that you can do `.take(n: Int).toList`
+      *         to evaluate the requested number of messages.
+      */
+    def consumeLazilyOnTopics(topics: List[String], maximumAttempts: Int = 3, poll: Long = 2000): Stream[(String, K, V)] = {
       val attempts = 1 to maximumAttempts
       attempts.toStream.flatMap { attempt =>
-        val batch: Seq[(K, V)] = getNextBatch(topic, poll)
-        logger.debug(s"----> Batch $attempt ($topic) | ${batch.mkString("|")}")
+        val batch: Seq[(String, K, V)] = getNextBatch(topics, poll)
+        logger.debug(s"----> Batch $attempt ($topics) | ${batch.mkString("|")}")
         batch
       }
     }
 
     /** Get the next batch of messages from Kafka.
       *
-      * @param topic the topic to consume
+      * @param topics the topic to consume
       * @param poll  the amount of time, in milliseconds, to wait in the buffer for any messages to be available
       * @return the next batch of messages
       */
-    private def getNextBatch(topic: String, poll: Long): Seq[(K, V)] =
+    private def getNextBatch(topics: List[String], poll: Long): Seq[(String, K, V)] =
       Try {
         import scala.collection.JavaConverters._
-        consumer.subscribe(List(topic).asJava)
-        consumer.partitionsFor(topic)
+        consumer.subscribe(topics.asJava)
+        topics.foreach(consumer.partitionsFor)
         val records = consumer.poll(poll)
         // use toList to force eager evaluation. toSeq is lazy
-        records.iterator().asScala.toList.map(r => r.key -> r.value)
+        records.iterator().asScala.toList.map(r => (r.topic, r.key, r.value))
       }.recover {
         case ex: KafkaException => throw new KafkaUnavailableException(ex)
       }.get
