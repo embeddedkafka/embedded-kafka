@@ -5,6 +5,7 @@ import java.util.Properties
 import java.util.concurrent.Executors
 
 import kafka.admin.AdminUtils
+import kafka.server.KafkaConfig._
 import kafka.server.{KafkaConfig, KafkaServer}
 import kafka.utils.ZkUtils
 import org.apache.kafka.clients.consumer.{KafkaConsumer, OffsetAndMetadata}
@@ -32,7 +33,8 @@ import scala.language.{higherKinds, postfixOps}
 import scala.reflect.io.Directory
 import scala.util.Try
 
-trait EmbeddedKafka extends EmbeddedKafkaSupport { this: Suite =>
+trait EmbeddedKafka extends EmbeddedKafkaSupport {
+  this: Suite =>
 }
 
 object EmbeddedKafka extends EmbeddedKafkaSupport {
@@ -61,7 +63,7 @@ object EmbeddedKafka extends EmbeddedKafkaSupport {
     * Starts a Zookeeper instance in memory, storing logs in a specific location.
     *
     * @param zkLogsDir the path for the Zookeeper logs
-    * @param config an implicit [[EmbeddedKafkaConfig]]
+    * @param config    an implicit [[EmbeddedKafkaConfig]]
     */
   def startZooKeeper(zkLogsDir: Directory)(
       implicit config: EmbeddedKafkaConfig): Unit = {
@@ -72,7 +74,7 @@ object EmbeddedKafka extends EmbeddedKafkaSupport {
     * Starts a Kafka broker in memory, storing logs in a specific location.
     *
     * @param kafkaLogDir the path for the Kafka logs
-    * @param config an implicit [[EmbeddedKafkaConfig]]
+    * @param config      an implicit [[EmbeddedKafkaConfig]]
     */
   def startKafka(kafkaLogDir: Directory)(
       implicit config: EmbeddedKafkaConfig): Unit = {
@@ -133,7 +135,8 @@ sealed trait EmbeddedKafkaSupport {
       implicit config: EmbeddedKafkaConfig): T = {
     withRunningZooKeeper(config.zooKeeperPort) { zkPort =>
       withTempDir("kafka") { kafkaLogsDir =>
-        val broker = startKafka(config.copy(zooKeeperPort = zkPort), kafkaLogsDir)
+        val broker =
+          startKafka(config.copy(zooKeeperPort = zkPort), kafkaLogsDir)
         try {
           body
         } finally {
@@ -154,12 +157,16 @@ sealed trait EmbeddedKafkaSupport {
     * @param body   the function to execute, given an [[EmbeddedKafkaConfig]] with the actual
     *               ports Kafka and ZooKeeper are running on
     */
-  def withRunningKafkaOnFoundPort[T](config: EmbeddedKafkaConfig)(body: EmbeddedKafkaConfig => T): T = {
+  def withRunningKafkaOnFoundPort[T](config: EmbeddedKafkaConfig)(
+      body: EmbeddedKafkaConfig => T): T = {
     withRunningZooKeeper(config.zooKeeperPort) { zkPort =>
       withTempDir("kafka") { kafkaLogsDir =>
-        val broker: KafkaServer = startKafka(config.copy(zooKeeperPort = zkPort), kafkaLogsDir)
-        val kafkaPort = broker.boundPort(broker.config.listeners.head.listenerName)
-        val actualConfig = config.copy(kafkaPort = kafkaPort, zooKeeperPort = zkPort)
+        val broker: KafkaServer =
+          startKafka(config.copy(zooKeeperPort = zkPort), kafkaLogsDir)
+        val kafkaPort =
+          broker.boundPort(broker.config.listeners.head.listenerName)
+        val actualConfig =
+          config.copy(kafkaPort = kafkaPort, zooKeeperPort = zkPort)
         try {
           body(actualConfig)
         } finally {
@@ -254,20 +261,24 @@ sealed trait EmbeddedKafkaSupport {
   }
 
   def kafkaProducer[K, T](topic: String, key: K, message: T)(
-    implicit config: EmbeddedKafkaConfig,
-    keySerializer: Serializer[K],
-    serializer: Serializer[T]) = new KafkaProducer[K, T](baseProducerConfig.asJava, keySerializer, serializer)
+      implicit config: EmbeddedKafkaConfig,
+      keySerializer: Serializer[K],
+      serializer: Serializer[T]) =
+    new KafkaProducer[K, T](baseProducerConfig.asJava,
+                            keySerializer,
+                            serializer)
 
-  def kafkaConsumer[K, T](
-    implicit config: EmbeddedKafkaConfig,
-    keyDeserializer: Deserializer[K],
-    deserializer: Deserializer[T]) = new KafkaConsumer[K, T](baseConsumerConfig, keyDeserializer, deserializer)
+  def kafkaConsumer[K, T](implicit config: EmbeddedKafkaConfig,
+                          keyDeserializer: Deserializer[K],
+                          deserializer: Deserializer[T]) =
+    new KafkaConsumer[K, T](baseConsumerConfig, keyDeserializer, deserializer)
 
-  private def baseProducerConfig(implicit config: EmbeddedKafkaConfig) = Map[String, Object](
-    ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
-    ProducerConfig.MAX_BLOCK_MS_CONFIG -> 10000.toString,
-    ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> 1000.toString
-  ) ++ config.customProducerProperties
+  private def baseProducerConfig(implicit config: EmbeddedKafkaConfig) =
+    Map[String, Object](
+      ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
+      ProducerConfig.MAX_BLOCK_MS_CONFIG -> 10000.toString,
+      ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> 1000.toString
+    ) ++ config.customProducerProperties
 
   private def baseConsumerConfig(
       implicit config: EmbeddedKafkaConfig): Properties = {
@@ -280,11 +291,9 @@ sealed trait EmbeddedKafkaSupport {
     props
   }
 
-  def consumeFirstStringMessageFrom(topic: String,
-                                    autoCommit: Boolean = false)(
+  def consumeFirstStringMessageFrom(topic: String, autoCommit: Boolean = false)(
       implicit config: EmbeddedKafkaConfig): String =
-    consumeFirstMessageFrom(topic, autoCommit)(config,
-                                               new StringDeserializer())
+    consumeFirstMessageFrom(topic, autoCommit)(config, new StringDeserializer())
 
   def consumeNumberStringMessagesFrom(topic: String,
                                       number: Int,
@@ -315,14 +324,16 @@ sealed trait EmbeddedKafkaSupport {
   def consumeFirstMessageFrom[T](topic: String, autoCommit: Boolean = false)(
       implicit config: EmbeddedKafkaConfig,
       deserializer: Deserializer[T]): T =
-  consumeNumberMessagesFrom(topic, 1, autoCommit)(config, deserializer).head
+    consumeNumberMessagesFrom(topic, 1, autoCommit)(config, deserializer).head
 
   def consumeNumberMessagesFrom[T](topic: String,
                                    number: Int,
                                    autoCommit: Boolean = false)(
       implicit config: EmbeddedKafkaConfig,
       deserializer: Deserializer[T]): List[T] =
-    consumeNumberMessagesFromTopics(Set(topic), number, autoCommit)(config, deserializer)(topic)
+    consumeNumberMessagesFromTopics(Set(topic), number, autoCommit)(
+      config,
+      deserializer)(topic)
 
   /**
     * Consumes the first n messages available in given topics, deserializes them as type [[T]], and returns
@@ -331,18 +342,18 @@ sealed trait EmbeddedKafkaSupport {
     * Only the messages that are returned are committed if autoCommit is false.
     * If autoCommit is true then all messages that were polled will be committed.
     *
-    * @param topics       the topics to consume messages from
-    * @param number       the number of messages to consume in a batch
-    * @param autoCommit   if false, only the offset for the consumed messages will be commited.
-    *                     if true, the offset for the last polled message will be committed instead.
-    *                     Defaulted to false.
-    * @param timeout      the interval to wait for messages before throwing TimeoutException
+    * @param topics                    the topics to consume messages from
+    * @param number                    the number of messages to consume in a batch
+    * @param autoCommit                if false, only the offset for the consumed messages will be commited.
+    *                                  if true, the offset for the last polled message will be committed instead.
+    *                                  Defaulted to false.
+    * @param timeout                   the interval to wait for messages before throwing TimeoutException
     * @param resetTimeoutOnEachMessage when true, throw TimeoutException if we have a silent period
     *                                  (no incoming messages) for the timeout interval; when false,
     *                                  throw TimeoutException after the timeout interval if we
     *                                  haven't received all of the expected messages
-    * @param config       an implicit [[EmbeddedKafkaConfig]]
-    * @param deserializer an implicit [[org.apache.kafka.common.serialization.Deserializer]] for the type [[T]]
+    * @param config                    an implicit [[EmbeddedKafkaConfig]]
+    * @param deserializer              an implicit [[org.apache.kafka.common.serialization.Deserializer]] for the type [[T]]
     * @return the List of messages consumed from the given topics, each with a type [[T]]
     * @throws TimeoutException          if unable to consume messages within specified timeout
     * @throws KafkaUnavailableException if unable to connect to Kafka
@@ -351,7 +362,8 @@ sealed trait EmbeddedKafkaSupport {
                                          number: Int,
                                          autoCommit: Boolean = false,
                                          timeout: Duration = 5.seconds,
-                                         resetTimeoutOnEachMessage: Boolean = true)(
+                                         resetTimeoutOnEachMessage: Boolean =
+                                           true)(
       implicit config: EmbeddedKafkaConfig,
       deserializer: Deserializer[T]): Map[String, List[T]] = {
 
@@ -387,7 +399,8 @@ sealed trait EmbeddedKafkaSupport {
         }
       }
       if (messagesRead < number) {
-        throw new TimeoutException(s"Unable to retrieve $number message(s) from Kafka in $timeout")
+        throw new TimeoutException(
+          s"Unable to retrieve $number message(s) from Kafka in $timeout")
       }
       messagesBuffers.map { case (topic, messages) => topic -> messages.toList }
     }
@@ -417,9 +430,10 @@ sealed trait EmbeddedKafkaSupport {
 
     def apply[V](implicit valueSerializer: Serializer[V],
                  config: EmbeddedKafkaConfig): KafkaProducer[String, V] = {
-      val producer = new KafkaProducer[String, V](baseProducerConfig(config).asJava,
-                                                  new StringSerializer,
-                                                  valueSerializer)
+      val producer = new KafkaProducer[String, V](
+        baseProducerConfig(config).asJava,
+        new StringSerializer,
+        valueSerializer)
       producers :+= producer
       producer
     }
@@ -445,19 +459,20 @@ sealed trait EmbeddedKafkaSupport {
     val listener = s"PLAINTEXT://localhost:${config.kafkaPort}"
 
     val properties = new Properties
-    properties.setProperty("zookeeper.connect", zkAddress)
-    properties.setProperty("broker.id", "0")
-    properties.setProperty("listeners", listener)
-    properties.setProperty("advertised.listeners", listener)
-    properties.setProperty("auto.create.topics.enable", "true")
-    properties.setProperty("log.dir", kafkaLogDir.toAbsolute.path)
-    properties.setProperty("log.flush.interval.messages", 1.toString)
-    properties.setProperty("offsets.topic.replication.factor", 1.toString)
-    properties.setProperty("offsets.topic.num.partitions", 1.toString)
-    properties.setProperty("transaction.state.log.replication.factor", 1.toString)
+    properties.setProperty(ZkConnectProp, zkAddress)
+    properties.setProperty(BrokerIdProp, "0")
+    properties.setProperty(ListenersProp, listener)
+    properties.setProperty(AdvertisedListenersProp, listener)
+    properties.setProperty(AutoCreateTopicsEnableProp, "true")
+    properties.setProperty(LogDirProp, kafkaLogDir.toAbsolute.path)
+    properties.setProperty(LogFlushIntervalMessagesProp, 1.toString)
+    properties.setProperty(OffsetsTopicReplicationFactorProp, 1.toString)
+    properties.setProperty(OffsetsTopicPartitionsProp, 1.toString)
+    properties.setProperty(TransactionsTopicReplicationFactorProp, 1.toString)
+    properties.setProperty(TransactionsTopicMinISRProp, 1.toString)
 
     // The total memory used for log deduplication across all cleaner threads, keep it small to not exhaust suite memory
-    properties.setProperty("log.cleaner.dedupe.buffer.size", "1048577")
+    properties.setProperty(LogCleanerDedupeBufferSizeProp, "1048577")
 
     config.customBrokerProperties.foreach {
       case (key, value) => properties.setProperty(key, value)
