@@ -459,20 +459,20 @@ sealed trait EmbeddedKafkaSupport {
     val listener = s"PLAINTEXT://localhost:${config.kafkaPort}"
 
     val properties = new Properties
-    properties.setProperty(ZkConnectProp, zkAddress)
-    properties.setProperty(BrokerIdProp, "0")
-    properties.setProperty(ListenersProp, listener)
-    properties.setProperty(AdvertisedListenersProp, listener)
-    properties.setProperty(AutoCreateTopicsEnableProp, "true")
-    properties.setProperty(LogDirProp, kafkaLogDir.toAbsolute.path)
-    properties.setProperty(LogFlushIntervalMessagesProp, 1.toString)
-    properties.setProperty(OffsetsTopicReplicationFactorProp, 1.toString)
-    properties.setProperty(OffsetsTopicPartitionsProp, 1.toString)
-    properties.setProperty(TransactionsTopicReplicationFactorProp, 1.toString)
-    properties.setProperty(TransactionsTopicMinISRProp, 1.toString)
+    properties.setProperty("zookeeper.connect", zkAddress)
+    properties.setProperty("broker.id", "0")
+    properties.setProperty("listeners", listener)
+    properties.setProperty("advertised.listeners", listener)
+    properties.setProperty("auto.create.topics.enable", "true")
+    properties.setProperty("log.dir", kafkaLogDir.toAbsolute.path)
+    properties.setProperty("log.flush.interval.messages", 1.toString)
+    properties.setProperty("offsets.topic.replication.factor", 1.toString)
+    properties.setProperty("offsets.topic.num.partitions", 1.toString)
+    properties.setProperty("transaction.state.log.replication.factor", 1.toString)
+    properties.setProperty("transaction.state.log.min.isr", 1.toString)
 
     // The total memory used for log deduplication across all cleaner threads, keep it small to not exhaust suite memory
-    properties.setProperty(LogCleanerDedupeBufferSizeProp, "1048577")
+    properties.setProperty("log.cleaner.dedupe.buffer.size", "1048577")
 
     config.customBrokerProperties.foreach {
       case (key, value) => properties.setProperty(key, value)
