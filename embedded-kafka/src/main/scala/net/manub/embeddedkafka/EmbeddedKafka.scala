@@ -293,7 +293,7 @@ sealed trait EmbeddedKafkaSupport {
 
   def consumeFirstStringMessageFrom(topic: String, autoCommit: Boolean = false)(
       implicit config: EmbeddedKafkaConfig): String =
-    consumeFirstMessageFrom(topic, autoCommit)(config, new StringDeserializer())
+    consumeNumberStringMessagesFrom(topic, 1, autoCommit)(config).head
 
   def consumeNumberStringMessagesFrom(topic: String,
                                       number: Int,
@@ -304,7 +304,7 @@ sealed trait EmbeddedKafkaSupport {
       new StringDeserializer())
 
   /**
-    * Consumes the first message available in a given topic, deserializing it as type [[T]].
+    * Consumes the first message available in a given topic, deserializing it as type [[V]].
     *
     * Only the message that is returned is committed if autoCommit is false.
     * If autoCommit is true then all messages that were polled will be committed.
@@ -314,30 +314,62 @@ sealed trait EmbeddedKafkaSupport {
     *                     if true, the offset for the last polled message will be committed instead.
     *                     Defaulted to false.
     * @param config       an implicit [[EmbeddedKafkaConfig]]
-    * @param deserializer an implicit [[org.apache.kafka.common.serialization.Deserializer]] for the type [[T]]
-    * @return the first message consumed from the given topic, with a type [[T]]
+    * @param valueDeserializer an implicit [[org.apache.kafka.common.serialization.Deserializer]] for the type [[V]]
+    * @return the first message consumed from the given topic, with a type [[V]]
     * @throws TimeoutException          if unable to consume a message within 5 seconds
     * @throws KafkaUnavailableException if unable to connect to Kafka
     */
   @throws(classOf[TimeoutException])
   @throws(classOf[KafkaUnavailableException])
-  def consumeFirstMessageFrom[T](topic: String, autoCommit: Boolean = false)(
-      implicit config: EmbeddedKafkaConfig,
-      deserializer: Deserializer[T]): T =
-    consumeNumberMessagesFrom(topic, 1, autoCommit)(config, deserializer).head
-
-  def consumeNumberMessagesFrom[T](topic: String,
-                                   number: Int,
-                                   autoCommit: Boolean = false)(
-      implicit config: EmbeddedKafkaConfig,
-      deserializer: Deserializer[T]): List[T] =
-    consumeNumberMessagesFromTopics(Set(topic), number, autoCommit)(
-      config,
-      deserializer)(topic)
+  def consumeFirstMessageFrom[V](topic: String, autoCommit: Boolean = false)(
+    implicit config: EmbeddedKafkaConfig,
+    valueDeserializer: Deserializer[V]): V =
+    consumeNumberMessagesFrom[V](topic, 1, autoCommit)(config, valueDeserializer).head
 
   /**
-    * Consumes the first n messages available in given topics, deserializes them as type [[T]], and returns
-    * the n messages in a Map from topic name to List[T].
+    * Consumes the first message available in a given topic, deserializing it as type [[(K, V)]].
+    *
+    * Only the message that is returned is committed if autoCommit is false.
+    * If autoCommit is true then all messages that were polled will be committed.
+    *
+    * @param topic        the topic to consume a message from
+    * @param autoCommit   if false, only the offset for the consumed message will be commited.
+    *                     if true, the offset for the last polled message will be committed instead.
+    *                     Defaulted to false.
+    * @param config       an implicit [[EmbeddedKafkaConfig]]
+    * @param keyDeserializer an implicit [[org.apache.kafka.common.serialization.Deserializer]] for the type [[K]]
+    * @param valueDeserializer an implicit [[org.apache.kafka.common.serialization.Deserializer]] for the type [[V]]
+    * @return the first message consumed from the given topic, with a type [[(K, V)]]
+    * @throws TimeoutException          if unable to consume a message within 5 seconds
+    * @throws KafkaUnavailableException if unable to connect to Kafka
+    */
+  @throws(classOf[TimeoutException])
+  @throws(classOf[KafkaUnavailableException])
+  def consumeFirstKeyedMessageFrom[K, V](topic: String, autoCommit: Boolean = false)(
+      implicit config: EmbeddedKafkaConfig,
+      keyDeserializer: Deserializer[K],
+      valueDeserializer: Deserializer[V]): (K, V) =
+    consumeNumberKeyedMessagesFrom[K, V](topic, 1, autoCommit)(config, keyDeserializer, valueDeserializer).head
+
+  def consumeNumberMessagesFrom[V](topic: String,
+                                   number: Int,
+                                   autoCommit: Boolean = false)(
+                                   implicit config: EmbeddedKafkaConfig,
+                                   valueDeserializer: Deserializer[V]): List[V] =
+    consumeNumberMessagesFromTopics(Set(topic), number, autoCommit)(config, valueDeserializer)(topic)
+
+  def consumeNumberKeyedMessagesFrom[K, V](topic: String,
+                                           number: Int,
+                                           autoCommit: Boolean = false)(
+      implicit config: EmbeddedKafkaConfig,
+      keyDeserializer: Deserializer[K],
+      valueDeserializer: Deserializer[V]): List[(K, V)] =
+    consumeNumberKeyedMessagesFromTopics(Set(topic), number, autoCommit)(config, keyDeserializer,
+      valueDeserializer)(topic)
+
+  /**
+    * Consumes the first n messages available in given topics, deserializes them as type [[V]], and returns
+    * the n messages in a Map from topic name to List[V].
     *
     * Only the messages that are returned are committed if autoCommit is false.
     * If autoCommit is true then all messages that were polled will be committed.
@@ -353,19 +385,57 @@ sealed trait EmbeddedKafkaSupport {
     *                                  throw TimeoutException after the timeout interval if we
     *                                  haven't received all of the expected messages
     * @param config                    an implicit [[EmbeddedKafkaConfig]]
-    * @param deserializer              an implicit [[org.apache.kafka.common.serialization.Deserializer]] for the type [[T]]
-    * @return the List of messages consumed from the given topics, each with a type [[T]]
+    * @param                           valueDeserializer an implicit [[org.apache.kafka.common.serialization.Deserializer]]
+    *                                  for the type [[V]]
+    * @return the List of messages consumed from the given topics, each with a type [[V]]
     * @throws TimeoutException          if unable to consume messages within specified timeout
     * @throws KafkaUnavailableException if unable to connect to Kafka
     */
-  def consumeNumberMessagesFromTopics[T](topics: Set[String],
+  def consumeNumberMessagesFromTopics[V](topics: Set[String],
                                          number: Int,
                                          autoCommit: Boolean = false,
                                          timeout: Duration = 5.seconds,
                                          resetTimeoutOnEachMessage: Boolean =
                                            true)(
       implicit config: EmbeddedKafkaConfig,
-      deserializer: Deserializer[T]): Map[String, List[T]] = {
+      valueDeserializer: Deserializer[V]): Map[String, List[V]] = {
+    consumeNumberKeyedMessagesFromTopics(topics, number, autoCommit, timeout,
+      resetTimeoutOnEachMessage)(config, new StringDeserializer(), valueDeserializer)
+      .mapValues(_.map(_._2))
+  }
+
+  /**
+    * Consumes the first n messages available in given topics, deserializes them as type [[(K, V)]], and returns
+    * the n messages in a Map from topic name to List[(K, V)].
+    *
+    * Only the messages that are returned are committed if autoCommit is false.
+    * If autoCommit is true then all messages that were polled will be committed.
+    *
+    * @param topics       the topics to consume messages from
+    * @param number       the number of messages to consume in a batch
+    * @param autoCommit   if false, only the offset for the consumed messages will be commited.
+    *                     if true, the offset for the last polled message will be committed instead.
+    *                     Defaulted to false.
+    * @param timeout      the interval to wait for messages before throwing TimeoutException
+    * @param resetTimeoutOnEachMessage when true, throw TimeoutException if we have a silent period
+    *                                  (no incoming messages) for the timeout interval; when false,
+    *                                  throw TimeoutException after the timeout interval if we
+    *                                  haven't received all of the expected messages
+    * @param config       an implicit [[EmbeddedKafkaConfig]]
+    * @param keyDeserializer an implicit [[org.apache.kafka.common.serialization.Deserializer]] for the type [[K]]
+    * @param valueDeserializer an implicit [[org.apache.kafka.common.serialization.Deserializer]] for the type [[V]]
+    * @return the List of messages consumed from the given topics, each with a type [[(K, V)]]
+    * @throws TimeoutException          if unable to consume messages within specified timeout
+    * @throws KafkaUnavailableException if unable to connect to Kafka
+    */
+  def consumeNumberKeyedMessagesFromTopics[K, V](topics: Set[String],
+                                                 number: Int,
+                                                 autoCommit: Boolean = false,
+                                                 timeout: Duration = 5.seconds,
+                                                 resetTimeoutOnEachMessage: Boolean = true)(
+      implicit config: EmbeddedKafkaConfig,
+      keyDeserializer: Deserializer[K],
+      valueDeserializer: Deserializer[V]): Map[String, List[(K, V)]] = {
 
     import scala.collection.JavaConverters._
 
@@ -374,10 +444,10 @@ sealed trait EmbeddedKafkaSupport {
 
     var timeoutNanoTime = System.nanoTime + timeout.toNanos
     val consumer =
-      new KafkaConsumer[String, T](props, new StringDeserializer, deserializer)
+      new KafkaConsumer[K, V](props, keyDeserializer, valueDeserializer)
 
     val messages = Try {
-      val messagesBuffers = topics.map(_ -> ListBuffer.empty[T]).toMap
+      val messagesBuffers = topics.map(_ -> ListBuffer.empty[(K, V)]).toMap
       var messagesRead = 0
       consumer.subscribe(topics.asJava)
       topics.foreach(consumer.partitionsFor)
@@ -391,7 +461,8 @@ sealed trait EmbeddedKafkaSupport {
         while (recordIter.hasNext && messagesRead < number) {
           val record = recordIter.next()
           val topic = record.topic()
-          messagesBuffers(topic) += record.value()
+          val message = (record.key(), record.value())
+          messagesBuffers(topic) += message
           val tp = new TopicPartition(topic, record.partition())
           val om = new OffsetAndMetadata(record.offset() + 1)
           consumer.commitSync(Map(tp -> om).asJava)
