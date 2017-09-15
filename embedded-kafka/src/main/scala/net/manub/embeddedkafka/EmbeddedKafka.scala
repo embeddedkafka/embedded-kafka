@@ -247,8 +247,40 @@ sealed trait EmbeddedKafkaSupport {
       new KafkaProducer(baseProducerConfig.asJava, keySerializer, serializer),
       new ProducerRecord(topic, key, message))
 
+
+  /**
+    * Publishes synchronously a batch of message to the running Kafka broker.
+    *
+    * @param topic      the topic to which publish the message (it will be auto-created)
+    * @param messages    the keys and messages of type [[(K, T)]] to publish
+    * @param config     an implicit [[EmbeddedKafkaConfig]]
+    * @param keySerializer an implicit [[Serializer]] for the type [[K]]
+    * @param serializer an implicit [[Serializer]] for the type [[T]]
+    * @throws KafkaUnavailableException if unable to connect to Kafka
+    */
+  @throws(classOf[KafkaUnavailableException])
+  def publishToKafka[K, T](topic: String, messages: Seq[(K, T)])(
+    implicit config: EmbeddedKafkaConfig,
+    keySerializer: Serializer[K],
+    serializer: Serializer[T]): Unit = {
+
+    val producer = new KafkaProducer(baseProducerConfig.asJava, keySerializer, serializer)
+
+    val tupleToRecord = (new ProducerRecord(topic, _: K, _: T)).tupled
+
+    val futureSend = tupleToRecord andThen producer.send
+
+    val futures = messages.map(futureSend)
+
+    // Assure all messages sent before returning, and fail on first send error
+    val records = futures.map(f => Try(f.get(10, SECONDS)))
+    records.find(_.isFailure).foreach(record => throw new KafkaUnavailableException(record.failed.get))
+
+    producer.close()
+  }
+
   private def publishToKafka[K, T](kafkaProducer: KafkaProducer[K, T],
-                                   record: ProducerRecord[K, T]) = {
+                                   record: ProducerRecord[K, T]): Unit = {
     val sendFuture = kafkaProducer.send(record)
     val sendResult = Try {
       sendFuture.get(10, SECONDS)

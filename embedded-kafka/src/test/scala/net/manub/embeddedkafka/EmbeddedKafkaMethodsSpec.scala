@@ -79,6 +79,38 @@ class EmbeddedKafkaMethodsSpec
 
       consumer.close()
     }
+
+    "publish synchronously a batch of String messages with String keys to Kafka" in {
+      implicit val serializer = new StringSerializer()
+      implicit val deserializer = new StringDeserializer()
+      val key1 = "key1"
+      val message1 = "hello world!"
+      val key2 = "key2"
+      val message2 = "goodbye world!"
+      val topic = "publish_test_topic_batch_string_key"
+
+      val messages = List((key1, message1), (key2, message2))
+
+      publishToKafka(topic, messages)
+
+      val consumer = kafkaConsumer
+      consumer.subscribe(List(topic).asJava)
+
+      val records = consumer.poll(consumerPollTimeout).iterator()
+
+      records.hasNext shouldBe true
+
+      val record1 = records.next()
+      record1.key() shouldBe key1
+      record1.value() shouldBe message1
+
+      records.hasNext shouldBe true
+      val record2 = records.next()
+      record2.key() shouldBe key2
+      record2.value() shouldBe message2
+
+      consumer.close()
+    }
   }
 
   "the createCustomTopic method" should {
