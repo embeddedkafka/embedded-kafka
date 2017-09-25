@@ -29,7 +29,7 @@ class EmbeddedKafkaWithRunningKafkaOnFoundPortSpec
           // Confirm both actual configs are running on separate non-zero ports, but otherwise equal
           allConfigs.map(_.kafkaPort).distinct should have size 3
           allConfigs.map(_.zooKeeperPort).distinct should have size 3
-          allConfigs.map(_.copy(kafkaPort = 0, zooKeeperPort = 0)).distinct should have size 1
+          allConfigs.map(config => EmbeddedKafkaConfigImpl(kafkaPort = 0, zooKeeperPort = 0, config.customBrokerProperties, config.customProducerProperties, config.customConsumerProperties)).distinct should have size 1
           actualConfig2
         }
         bothKafkaAndZkAreNotAvailable(actualConfig2)

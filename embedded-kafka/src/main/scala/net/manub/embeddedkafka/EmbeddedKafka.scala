@@ -5,22 +5,12 @@ import java.util.Properties
 import java.util.concurrent.Executors
 
 import kafka.admin.AdminUtils
-import kafka.server.KafkaConfig._
 import kafka.server.{KafkaConfig, KafkaServer}
 import kafka.utils.ZkUtils
 import org.apache.kafka.clients.consumer.{KafkaConsumer, OffsetAndMetadata}
-import org.apache.kafka.clients.producer.{
-  KafkaProducer,
-  ProducerConfig,
-  ProducerRecord
-}
+import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
+import org.apache.kafka.common.serialization.{Deserializer, Serializer, StringDeserializer, StringSerializer}
 import org.apache.kafka.common.{KafkaException, TopicPartition}
-import org.apache.kafka.common.serialization.{
-  Deserializer,
-  Serializer,
-  StringDeserializer,
-  StringSerializer
-}
 import org.apache.zookeeper.server.{ServerCnxnFactory, ZooKeeperServer}
 import org.scalatest.Suite
 
@@ -28,7 +18,7 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext, TimeoutException}
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutorService, TimeoutException}
 import scala.language.{higherKinds, postfixOps}
 import scala.reflect.io.Directory
 import scala.util.Try
@@ -118,7 +108,7 @@ object EmbeddedKafka extends EmbeddedKafkaSupport {
 
 sealed trait EmbeddedKafkaSupport {
   private val executorService = Executors.newFixedThreadPool(2)
-  implicit private val executionContext =
+  implicit private val executionContext: ExecutionContextExecutorService =
     ExecutionContext.fromExecutorService(executorService)
 
   val zkSessionTimeoutMs = 10000
@@ -136,7 +126,7 @@ sealed trait EmbeddedKafkaSupport {
     withRunningZooKeeper(config.zooKeeperPort) { zkPort =>
       withTempDir("kafka") { kafkaLogsDir =>
         val broker =
-          startKafka(config.copy(zooKeeperPort = zkPort), kafkaLogsDir)
+          startKafka(config.kafkaPort, zkPort, config.customBrokerProperties, kafkaLogsDir)
         try {
           body
         } finally {
@@ -162,11 +152,11 @@ sealed trait EmbeddedKafkaSupport {
     withRunningZooKeeper(config.zooKeeperPort) { zkPort =>
       withTempDir("kafka") { kafkaLogsDir =>
         val broker: KafkaServer =
-          startKafka(config.copy(zooKeeperPort = zkPort), kafkaLogsDir)
+          startKafka(config.kafkaPort, zkPort, config.customBrokerProperties, kafkaLogsDir)
         val kafkaPort =
           broker.boundPort(broker.config.listeners.head.listenerName)
         val actualConfig =
-          config.copy(kafkaPort = kafkaPort, zooKeeperPort = zkPort)
+          EmbeddedKafkaConfigImpl(kafkaPort, zkPort, config.customBrokerProperties, config.customProducerProperties, config.customConsumerProperties)
         try {
           body(actualConfig)
         } finally {
@@ -556,10 +546,12 @@ sealed trait EmbeddedKafkaSupport {
     factory
   }
 
-  def startKafka(config: EmbeddedKafkaConfig,
-                 kafkaLogDir: Directory): KafkaServer = {
-    val zkAddress = s"localhost:${config.zooKeeperPort}"
-    val listener = s"PLAINTEXT://localhost:${config.kafkaPort}"
+  private def startKafka(kafkaPort: Int,
+                         zooKeeperPort: Int,
+                         customBrokerProperties: Map[String, String],
+                         kafkaLogDir: Directory) = {
+    val zkAddress = s"localhost:$zooKeeperPort"
+    val listener = s"PLAINTEXT://localhost:$kafkaPort"
 
     val properties = new Properties
     properties.setProperty("zookeeper.connect", zkAddress)
@@ -577,13 +569,18 @@ sealed trait EmbeddedKafkaSupport {
     // The total memory used for log deduplication across all cleaner threads, keep it small to not exhaust suite memory
     properties.setProperty("log.cleaner.dedupe.buffer.size", "1048577")
 
-    config.customBrokerProperties.foreach {
+    customBrokerProperties.foreach {
       case (key, value) => properties.setProperty(key, value)
     }
 
     val broker = new KafkaServer(new KafkaConfig(properties))
     broker.startup()
     broker
+  }
+
+  def startKafka(config: EmbeddedKafkaConfig,
+                 kafkaLogDir: Directory): KafkaServer = {
+    startKafka(config.kafkaPort, config.zooKeeperPort, config.customBrokerProperties, kafkaLogDir)
   }
 
   /**
