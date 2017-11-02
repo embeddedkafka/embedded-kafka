@@ -4,7 +4,8 @@ import net.manub.embeddedkafka.Codecs._
 import net.manub.embeddedkafka.ConsumerExtensions._
 import net.manub.embeddedkafka.EmbeddedKafkaConfig
 import org.apache.kafka.common.serialization.{Serde, Serdes}
-import org.apache.kafka.streams.kstream.{KStream, KStreamBuilder}
+import org.apache.kafka.streams.{Consumed, StreamsBuilder}
+import org.apache.kafka.streams.kstream.{KStream, Produced}
 import org.scalatest.{Matchers, WordSpec}
 
 class ExampleKafkaStreamsSpec
@@ -21,13 +22,13 @@ class ExampleKafkaStreamsSpec
 
   "A Kafka streams test" should {
     "be easy to run with streams and consumer lifecycle management" in {
-      val streamBuilder = new KStreamBuilder
+      val streamBuilder = new StreamsBuilder
       val stream: KStream[String, String] =
-        streamBuilder.stream(stringSerde, stringSerde, inTopic)
+        streamBuilder.stream(inTopic, Consumed.`with`(stringSerde, stringSerde))
 
-      stream.to(stringSerde, stringSerde, outTopic)
+      stream.to(outTopic, Produced.`with`(stringSerde, stringSerde))
 
-      runStreams(Seq(inTopic, outTopic), streamBuilder) {
+      runStreams(Seq(inTopic, outTopic), streamBuilder.build()) {
         publishToKafka(inTopic, "hello", "world")
         publishToKafka(inTopic, "foo", "bar")
         publishToKafka(inTopic, "baz", "yaz")
@@ -42,13 +43,13 @@ class ExampleKafkaStreamsSpec
     }
 
     "allow support creating custom consumers" in {
-      val streamBuilder = new KStreamBuilder
+      val streamBuilder = new StreamsBuilder
       val stream: KStream[String, String] =
-        streamBuilder.stream(stringSerde, stringSerde, inTopic)
+        streamBuilder.stream(inTopic, Consumed.`with`(stringSerde, stringSerde))
 
-      stream.to(stringSerde, stringSerde, outTopic)
+      stream.to(outTopic, Produced.`with`(stringSerde, stringSerde))
 
-      runStreams(Seq(inTopic, outTopic), streamBuilder) {
+      runStreams(Seq(inTopic, outTopic), streamBuilder.build()) {
         publishToKafka(inTopic, "hello", "world")
         publishToKafka(inTopic, "foo", "bar")
         val consumer = newConsumer[String, String]()
@@ -59,13 +60,13 @@ class ExampleKafkaStreamsSpec
     }
 
     "allow for easy string based testing" in {
-      val streamBuilder = new KStreamBuilder
+      val streamBuilder = new StreamsBuilder
       val stream: KStream[String, String] =
-        streamBuilder.stream(stringSerde, stringSerde, inTopic)
+        streamBuilder.stream(inTopic, Consumed.`with`(stringSerde, stringSerde))
 
-      stream.to(stringSerde, stringSerde, outTopic)
+      stream.to(outTopic, Produced.`with`(stringSerde, stringSerde))
 
-      runStreamsWithStringConsumer(Seq(inTopic, outTopic), streamBuilder) {
+      runStreamsWithStringConsumer(Seq(inTopic, outTopic), streamBuilder.build()) {
         consumer =>
           publishToKafka(inTopic, "hello", "world")
           consumer.consumeLazily(outTopic).head should be("hello" -> "world")

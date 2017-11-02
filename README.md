@@ -178,7 +178,7 @@ consumer.consumeLazily("from-this-topic").take(3).toList should be (Seq(
 ## scalatest-embedded-kafka-streams
 
 A library that builds on top of `scalatest-embedded-kafka` to offer easy testing of [Kafka Streams](https://cwiki.apache.org/confluence/display/KAFKA/Kafka+Streams) with ScalaTest.
-It uses Kafka Streams 0.11.0.0.
+It uses Kafka Streams 1.0.0.
 
 It takes care of instantiating and starting your streams as well as closing them after running your test-case code.
 
@@ -190,13 +190,13 @@ It takes care of instantiating and starting your streams as well as closing them
 * If you only want to use the streams management without the test consumers just have the `Spec` extend the `EmbeddedKafkaStreams` trait.
 * Use the `runStreamsWithStringConsumer` to:
     * Create any topics that need to exist for the streams to operate (usually sources and sinks).
-    * Pass the Stream or Topology builder that will then be used to instantiate and start the Kafka Streams. This will be done while using the `withRunningKafka` closure internally so that your stream runs with an embedded Kafka and Zookeeper.
+    * Pass the Topology that will be used to instantiate and start the Kafka Streams. This will be done while using the `withRunningKafka` closure internally so that your stream runs with an embedded Kafka and Zookeeper.
     * Pass the `{code block}` that needs a running instance of your streams. This is where your actual test code will sit. You can publish messages to your source topics and consume messages from your sink topics that the Kafka Streams should have generated. This method also offers a pre-instantiated consumer that can read String keys and values.
 * For more flexibility, use `runStreams` and `withConsumer`. This allows you to create your own consumers of custom types as seen in the [example test](kafka-streams/src/test/scala/net/manub/embeddedkafka/streams/ExampleKafkaStreamsSpec.scala).
 
 ```scala
 import net.manub.embeddedkafka.ConsumerExtensions._
-import org.apache.kafka.streams.kstream.KStreamBuilder
+import org.apache.kafka.streams.StreamsBuilder
 import org.scalatest.{Matchers, WordSpec}
 
 class MySpec extends WordSpec with Matchers with EmbeddedKafkaStreamsAllInOne {
@@ -205,14 +205,14 @@ class MySpec extends WordSpec with Matchers with EmbeddedKafkaStreamsAllInOne {
       val inputTopic = "input-topic"
       val outputTopic = "output-topic"
       // your code for building the stream goes here e.g.
-      val streamBuilder = new KStreamBuilder
+      val streamBuilder = new StreamsBuilder
       streamBuilder.stream(inputTopic).to(outputTopic)
       // tell the stream test
       // 1. what topics need to be created before the stream starts
-      // 2. the builder to be used for initializing and starting the stream
+      // 2. the stream topology to be used for initializing and starting the stream
       runStreamsWithStringConsumer(
         topicsToCreate = Seq(inputTopic, outputTopic),
-        builder = streamBuilder
+        topology = streamBuilder.build()
       ){ consumer =>
         // your test code goes here
         publishToKafka(inputTopic, key = "hello", message = "world")

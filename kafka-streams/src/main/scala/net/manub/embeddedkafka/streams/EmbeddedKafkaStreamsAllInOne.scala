@@ -2,7 +2,7 @@ package net.manub.embeddedkafka.streams
 
 import net.manub.embeddedkafka.{Consumers, EmbeddedKafkaConfig}
 import org.apache.kafka.clients.consumer.KafkaConsumer
-import org.apache.kafka.streams.processor.TopologyBuilder
+import org.apache.kafka.streams.Topology
 import org.scalatest.Suite
 
 /** Convenience trait for testing Kafka Streams with ScalaTest.
@@ -11,7 +11,7 @@ import org.scalatest.Suite
   *
   * e.g.
   * {{{
-  *runStreams(Seq("inputTopic", "outputTopic", streamBuilder) {
+  *runStreams(Seq("inputTopic", "outputTopic", streamTopology) {
   *  withConsumer[String, String, Unit] { consumer =>
   *    // here you can publish and consume messages and make assertions
   *    publishToKafka(in, Seq("one-string", "another-string"))
@@ -35,14 +35,13 @@ trait EmbeddedKafkaStreamsAllInOne
     *                       that the Streams-under-test use for inputs and outputs. They need to be
     *                       created before running the streams and
     *                       this is automatically taken care of.
-    * @param builder        the streams builder that contains the stream topology that will be instantiated
+    * @param topology       the streams topology that will be instantiated
     * @param block          the block of testing code that will be executed by passing the simple
     *                       String-based consumer.
     * @return the result of the testing code
     */
-  def runStreamsWithStringConsumer(
-      topicsToCreate: Seq[String],
-      builder: TopologyBuilder)(block: KafkaConsumer[String, String] => Any)(
-      implicit config: EmbeddedKafkaConfig): Any =
-    runStreams(topicsToCreate, builder)(withStringConsumer[Any](block))(config)
+  def runStreamsWithStringConsumer(topicsToCreate: Seq[String], topology: Topology)
+                                  (block: KafkaConsumer[String, String] => Any)
+                                  (implicit config: EmbeddedKafkaConfig): Any =
+    runStreams(topicsToCreate, topology)(withStringConsumer[Any](block))(config)
 }

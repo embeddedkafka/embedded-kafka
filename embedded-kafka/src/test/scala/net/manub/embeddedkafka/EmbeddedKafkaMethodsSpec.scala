@@ -17,6 +17,7 @@ import org.apache.kafka.common.serialization.{
 import org.scalatest.BeforeAndAfterAll
 
 import scala.collection.JavaConverters._
+import org.scalatest.OptionValues._
 
 class EmbeddedKafkaMethodsSpec
     extends EmbeddedKafkaSpecSupport
@@ -153,10 +154,9 @@ class EmbeddedKafkaMethodsSpec
                             zkConnectionTimeoutMs,
                             zkSecurityEnabled)
       try {
-        AdminUtils
-          .fetchTopicMetadataFromZk(topic, zkUtils)
-          .partitionMetadata()
-          .size shouldBe 2
+        zkUtils
+          .getTopicPartitionCount(topic)
+          .value shouldBe 2
       } finally zkUtils.close()
 
     }

@@ -2,7 +2,7 @@ import sbtrelease.Version
 
 parallelExecution in ThisBuild := false
 
-val kafkaVersion = "0.11.0.1"
+val kafkaVersion = "1.0.0"
 val zookeeperVersion = "3.4.10"
 val akkaVersion = "2.4.20"
 

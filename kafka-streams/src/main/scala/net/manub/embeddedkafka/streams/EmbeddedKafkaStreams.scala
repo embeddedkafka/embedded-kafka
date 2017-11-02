@@ -1,8 +1,7 @@
 package net.manub.embeddedkafka.streams
 
 import net.manub.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig, UUIDs}
-import org.apache.kafka.streams.KafkaStreams
-import org.apache.kafka.streams.processor.TopologyBuilder
+import org.apache.kafka.streams.{KafkaStreams, Topology}
 import org.apache.log4j.Logger
 import org.scalatest.Suite
 
@@ -24,7 +23,7 @@ trait EmbeddedKafkaStreams extends EmbeddedKafka with TestStreamsConfig {
     * e.g.
     *
     * {{{
-    *runStreams(Seq("inputTopic", "outputTopic", streamBuilder) {
+    *runStreams(Seq("inputTopic", "outputTopic", topology) {
     *  // here you can publish and consume messages and make assertions
     *  publishToKafka(in, Seq("one-string", "another-string"))
     *  consumeFirstStringMessageFrom(in) should be ("one-string")
@@ -32,7 +31,7 @@ trait EmbeddedKafkaStreams extends EmbeddedKafka with TestStreamsConfig {
     * }}}
     *
     * @param topicsToCreate the topics that should be created in Kafka before launching the streams.
-    * @param builder        the streams builder that will be used to instantiate the streams with
+    * @param topology       the streams topology that will be used to instantiate the streams with
     *                       a default configuration (all state directories are different and
     *                       in temp folders)
     * @param extraConfig    additional KafkaStreams configuration (overwrite existing keys in
@@ -40,13 +39,14 @@ trait EmbeddedKafkaStreams extends EmbeddedKafka with TestStreamsConfig {
     * @param block          the code block that will executed while the streams are active.
     *                       Once the block has been executed the streams will be closed.
     */
-  def runStreams(topicsToCreate: Seq[String], builder: TopologyBuilder, extraConfig: Map[String, AnyRef] = Map.empty)(
-      block: => Any)(implicit config: EmbeddedKafkaConfig): Any =
+  def runStreams(topicsToCreate: Seq[String], topology: Topology, extraConfig: Map[String, AnyRef] = Map.empty)
+                (block: => Any)
+                (implicit config: EmbeddedKafkaConfig): Any =
     withRunningKafka {
       topicsToCreate.foreach(topic => createCustomTopic(topic))
       val streamId = UUIDs.newUuid().toString
       logger.debug(s"Creating stream with Application ID: [$streamId]")
-      val streams = new KafkaStreams(builder, streamConfig(streamId, extraConfig))
+      val streams = new KafkaStreams(topology, streamConfig(streamId, extraConfig))
       streams.start()
       try {
         block
