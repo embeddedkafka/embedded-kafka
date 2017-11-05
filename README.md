@@ -161,14 +161,16 @@ Use the `Consumer` trait that easily creates consumers of arbitrary key-value ty
 
 ### Easy message consumption
 
-With `ConsumerExtensions` you can turn a consumer to a Scala lazy Stream of key-value pairs and treat it as a collection for easy assertion.
+With `ConsumerExtensions` you can turn a consumer to a Scala lazy Stream of `T` and treat it as a collection for easy assertion.
 * Just import the extensions.
+* Bring an implicit `ConsumerRecord[_, _] => T` transform function into scope (some common functions are provided in `Codecs`).
 * On any `KafkaConsumer` instance you can now do:
  
 ```scala
 import net.manub.embeddedkafka.ConsumerExtensions._
+import net.manub.embeddedkafka.Codecs.stringKeyValueCrDecoder
 ...
-consumer.consumeLazily("from-this-topic").take(3).toList should be (Seq(
+consumer.consumeLazily[(String, String)]("from-this-topic").take(3).toList should be (Seq(
   "1" -> "one", 
   "2" -> "two", 
   "3" -> "three"

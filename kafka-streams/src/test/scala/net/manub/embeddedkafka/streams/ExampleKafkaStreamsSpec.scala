@@ -13,6 +13,8 @@ class ExampleKafkaStreamsSpec
     with Matchers
     with EmbeddedKafkaStreamsAllInOne {
 
+  import net.manub.embeddedkafka.Codecs.stringKeyValueCrDecoder
+
   implicit val config =
     EmbeddedKafkaConfig(kafkaPort = 7000, zooKeeperPort = 7001)
 
@@ -53,7 +55,7 @@ class ExampleKafkaStreamsSpec
         publishToKafka(inTopic, "hello", "world")
         publishToKafka(inTopic, "foo", "bar")
         val consumer = newConsumer[String, String]()
-        consumer.consumeLazily(outTopic).take(2) should be(
+        consumer.consumeLazily[(String, String)](outTopic).take(2) should be(
           Seq("hello" -> "world", "foo" -> "bar"))
         consumer.close()
       }
@@ -69,7 +71,8 @@ class ExampleKafkaStreamsSpec
       runStreamsWithStringConsumer(Seq(inTopic, outTopic), streamBuilder.build()) {
         consumer =>
           publishToKafka(inTopic, "hello", "world")
-          consumer.consumeLazily(outTopic).head should be("hello" -> "world")
+          consumer.consumeLazily[(String, String)](outTopic).head should be(
+            "hello" -> "world")
       }
     }
   }
