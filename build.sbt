@@ -11,8 +11,8 @@ val slf4jLog4jArtifact = "slf4j-log4j12"
 
 lazy val commonSettings = Seq(
   organization := "net.manub",
-  scalaVersion := "2.12.3",
-  crossScalaVersions := Seq("2.12.3", "2.11.11"),
+  scalaVersion := "2.12.4",
+  crossScalaVersions := Seq("2.12.4", "2.11.11"),
   homepage := Some(url("https://github.com/manub/scalatest-embedded-kafka")),
   parallelExecution in Test := false,
   logBuffered in Test := false,
