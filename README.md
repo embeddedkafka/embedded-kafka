@@ -153,10 +153,10 @@ For more information about how to use the utility methods, you can either look a
 
 ### Custom consumers
 
-Use the `Consumer` trait that easily creates consumers of arbitrary key-value types and manages their lifecycle (via a loaner pattern).
-* For basic String consumption use `Consumer.withStringConsumer { your code here }`.
-* For arbitrary key and value types, expose implicit `Deserializer`s for each type and use `Consumer.withConsumer { your code here }`.
-* If you just want to create a consumer and manage its lifecycle yourself then try `Consumer.newConsumer()`.
+Use the `Consumers` trait that easily creates consumers of arbitrary key-value types and manages their lifecycle (via a loaner pattern).
+* For basic String consumption use `Consumers.withStringConsumer { your code here }`.
+* For arbitrary key and value types, expose implicit `Deserializer`s for each type and use `Consumers.withConsumer { your code here }`.
+* If you just want to create a consumer and manage its lifecycle yourself then try `Consumers.newConsumer()`.
 
 ### Easy message consumption
 
