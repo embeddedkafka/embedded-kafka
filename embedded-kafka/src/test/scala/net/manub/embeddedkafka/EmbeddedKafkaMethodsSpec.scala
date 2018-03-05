@@ -9,6 +9,7 @@ import org.apache.kafka.clients.producer.{
   ProducerConfig,
   ProducerRecord
 }
+import org.apache.kafka.common.header.internals.RecordHeaders
 import org.apache.kafka.common.serialization.{
   ByteArraySerializer,
   StringDeserializer,
@@ -54,6 +55,33 @@ class EmbeddedKafkaMethodsSpec
       val record = records.iterator().next()
 
       record.value() shouldBe message
+
+      consumer.close()
+    }
+
+    "publish synchronously a String message with a header to Kafka" in {
+      implicit val serializer = new StringSerializer()
+      implicit val deserializer = new StringDeserializer()
+      val message = "hello world!"
+      val topic = "publish_test_topic_with_header"
+      val headerValue = "my_header_value"
+      val headers = new RecordHeaders().add("my_header", headerValue.toCharArray.map(_.toByte))
+      val producerRecord = new ProducerRecord[String, String](topic, null, "key", message, headers)
+
+      publishToKafka(topic, producerRecord)
+
+      val consumer = kafkaConsumer
+      consumer.subscribe(List(topic).asJava)
+
+      val records = consumer.poll(consumerPollTimeout)
+
+      records.iterator().hasNext shouldBe true
+      val record = records.iterator().next()
+
+      record.value() shouldBe message
+      val myHeader = record.headers().lastHeader("my_header")
+      val actualHeaderValue = new String(myHeader.value().map(_.toChar))
+      actualHeaderValue shouldBe headerValue
 
       consumer.close()
     }

@@ -221,6 +221,24 @@ sealed trait EmbeddedKafkaSupport {
   /**
     * Publishes synchronously a message to the running Kafka broker.
     *
+    * @param topic          the topic to which publish the message (it will be auto-created)
+    * @param producerRecord the producerRecord of type [[T]] to publish
+    * @param config         an implicit [[EmbeddedKafkaConfig]]
+    * @param serializer     an implicit [[Serializer]] for the type [[T]]
+    * @throws KafkaUnavailableException if unable to connect to Kafka
+    */
+  @throws(classOf[KafkaUnavailableException])
+  def publishToKafka[T](topic: String, producerRecord: ProducerRecord[String, T])(
+      implicit config: EmbeddedKafkaConfig,
+      serializer: Serializer[T]): Unit =
+    publishToKafka(new KafkaProducer(baseProducerConfig.asJava,
+                                     new StringSerializer(),
+                                     serializer),
+      producerRecord)
+
+  /**
+    * Publishes synchronously a message to the running Kafka broker.
+    *
     * @param topic      the topic to which publish the message (it will be auto-created)
     * @param key        the key of type [[K]] to publish
     * @param message    the message of type [[T]] to publish
