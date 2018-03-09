@@ -15,7 +15,6 @@ import org.apache.zookeeper.server.{ServerCnxnFactory, ZooKeeperServer}
 import org.scalatest.Suite
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutorService, TimeoutException}
@@ -29,9 +28,7 @@ trait EmbeddedKafka extends EmbeddedKafkaSupport {
 
 object EmbeddedKafka extends EmbeddedKafkaSupport {
 
-  private[this] var factory: Option[ServerCnxnFactory] = None
-  private[this] var broker: Option[KafkaServer] = None
-  private[this] val logsDirs = mutable.Buffer.empty[Directory]
+  private[this] var servers: Seq[EmbeddedServer] = Seq.empty
 
   /**
     * Starts a ZooKeeper instance and a Kafka broker in memory, using temporary directories for storing logs.
@@ -39,14 +36,15 @@ object EmbeddedKafka extends EmbeddedKafkaSupport {
     *
     * @param config an implicit [[EmbeddedKafkaConfig]]
     */
-  def start()(implicit config: EmbeddedKafkaConfig): Unit = {
+  def start()(implicit config: EmbeddedKafkaConfig): EmbeddedK = {
     val zkLogsDir = Directory.makeTemp("zookeeper-logs")
     val kafkaLogsDir = Directory.makeTemp("kafka-logs")
 
-    factory = Option(startZooKeeper(config.zooKeeperPort, zkLogsDir))
-    broker = Option(startKafka(config, kafkaLogsDir))
+    val factory = EmbeddedZ(startZooKeeper(config.zooKeeperPort, zkLogsDir), zkLogsDir)
+    val broker = EmbeddedK(Option(factory), startKafka(config, kafkaLogsDir), kafkaLogsDir)
 
-    logsDirs ++= Seq(zkLogsDir, kafkaLogsDir)
+    servers :+= broker
+    broker
   }
 
   /**
@@ -54,56 +52,83 @@ object EmbeddedKafka extends EmbeddedKafkaSupport {
     *
     * @param zkLogsDir the path for the Zookeeper logs
     * @param config    an implicit [[EmbeddedKafkaConfig]]
+    * @return          an [[EmbeddedZ]] server
     */
   def startZooKeeper(zkLogsDir: Directory)(
-      implicit config: EmbeddedKafkaConfig): Unit = {
-    factory = Option(startZooKeeper(config.zooKeeperPort, zkLogsDir))
+    implicit config: EmbeddedKafkaConfig): EmbeddedZ = {
+    val factory = EmbeddedZ(startZooKeeper(config.zooKeeperPort, zkLogsDir), zkLogsDir)
+    servers :+= factory
+    factory
   }
 
   /**
     * Starts a Kafka broker in memory, storing logs in a specific location.
     *
-    * @param kafkaLogDir the path for the Kafka logs
-    * @param config      an implicit [[EmbeddedKafkaConfig]]
+    * @param kafkaLogsDir the path for the Kafka logs
+    * @param config       an implicit [[EmbeddedKafkaConfig]]
+    * @return             an [[EmbeddedK]] server
     */
-  def startKafka(kafkaLogDir: Directory)(
-      implicit config: EmbeddedKafkaConfig): Unit = {
-    broker = Option(startKafka(config, kafkaLogDir))
+  def startKafka(kafkaLogsDir: Directory)(
+    implicit config: EmbeddedKafkaConfig): EmbeddedK = {
+    val broker = EmbeddedK(startKafka(config, kafkaLogsDir), kafkaLogsDir)
+    servers :+= broker
+    broker
   }
 
   /**
-    * Stops the in memory ZooKeeper instance and Kafka broker, and deletes the log directories.
+    * Stops all in memory ZooKeeper instances and Kafka brokers, and deletes the log directories.
     */
   def stop(): Unit = {
-    stopKafka()
-    stopZooKeeper()
-    logsDirs.foreach(_.deleteRecursively())
-    logsDirs.clear()
+    servers.foreach(_.stop(true))
+    servers = Seq.empty
   }
 
   /**
-    * Stops the in memory Zookeeper instance, preserving the logs directory.
+    * Stops a specific [[EmbeddedServer]] instance, and deletes the log directory.
+    *
+    * @param server the [[EmbeddedServer]] to be stopped.
+    */
+  def stop(server: EmbeddedServer): Unit = {
+    server.stop(true)
+    servers = servers.filter(x => x != server)
+  }
+
+  /**
+    * Stops all in memory Zookeeper instances, preserving the logs directories.
     */
   def stopZooKeeper(): Unit = {
-    factory.foreach(_.shutdown())
-    factory = None
+    val factories = servers.toFilteredSeq[EmbeddedZ](isEmbeddedZ)
+
+    factories
+      .foreach(_.stop(false))
+
+    servers = servers.filter(!factories.contains(_))
   }
 
   /**
-    * Stops the in memory Kafka instance, preserving the logs directory.
+    * Stops all in memory Kafka instances, preserving the logs directories.
     */
   def stopKafka(): Unit = {
-    broker.foreach { b =>
-      b.shutdown()
-      b.awaitShutdown()
-    }
-    broker = None
+    val brokers = servers.toFilteredSeq[EmbeddedK](isEmbeddedK)
+
+    brokers
+      .foreach(_.stop(false))
+
+    servers = servers.filter(!brokers.contains(_))
   }
 
   /**
-    * Returns whether the in memory Kafka and Zookeeper are running.
+    * Returns whether the in memory Kafka and Zookeeper are both running.
     */
-  def isRunning: Boolean = factory.nonEmpty && broker.nonEmpty
+  def isRunning: Boolean = servers.toFilteredSeq[EmbeddedK](isEmbeddedK).exists(_.factory.isDefined)
+
+  private def isEmbeddedK(server: EmbeddedServer): Boolean = server.isInstanceOf[EmbeddedK]
+  private def isEmbeddedZ(server: EmbeddedServer): Boolean = server.isInstanceOf[EmbeddedZ]
+
+  implicit class ServerOps(servers: Seq[EmbeddedServer]) {
+    def toFilteredSeq[T <: EmbeddedServer](filter: EmbeddedServer => Boolean): Seq[T] =
+      servers.filter(filter).asInstanceOf[Seq[T]]
+  }
 }
 
 sealed trait EmbeddedKafkaSupport {

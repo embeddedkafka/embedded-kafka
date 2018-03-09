@@ -1,6 +1,14 @@
 package net.manub.embeddedkafka
 
+import org.apache.kafka.common.serialization.{StringDeserializer, StringSerializer}
+import net.manub.embeddedkafka.EmbeddedKafka._
+
+import scala.collection.JavaConverters._
+import scala.reflect.io.Directory
+
 class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
+
+  val consumerPollTimeout = 5000
 
   "the EmbeddedKafka object" when {
     "invoking the start and stop methods" should {
@@ -26,12 +34,82 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
 
         EmbeddedKafka.stop()
       }
+
+      "start and stop a specific Kafka" in {
+        val firstBroker = EmbeddedKafka.start()(EmbeddedKafkaConfig(kafkaPort = 7000, zooKeeperPort = 7001))
+        EmbeddedKafka.start()(EmbeddedKafkaConfig(kafkaPort = 8000, zooKeeperPort = 8001))
+
+        kafkaIsAvailable(7000)
+        zookeeperIsAvailable(7001)
+
+        kafkaIsAvailable(8000)
+        zookeeperIsAvailable(8001)
+
+        EmbeddedKafka.stop(firstBroker)
+
+        kafkaIsNotAvailable(7000)
+        zookeeperIsNotAvailable(7001)
+
+        kafkaIsAvailable(8000)
+        zookeeperIsAvailable(8001)
+
+        EmbeddedKafka.stop()
+      }
+
+      "start and stop multiple Kafka instances on specified ports" in {
+        val someConfig = EmbeddedKafkaConfig(kafkaPort = 12345, zooKeeperPort = 32111)
+        val someBroker = EmbeddedKafka.start()(someConfig)
+
+        val someOtherConfig = EmbeddedKafkaConfig(kafkaPort = 23456, zooKeeperPort = 43211)
+        val someOtherBroker = EmbeddedKafka.start()(someOtherConfig)
+
+        val topic = "publish_test_topic_1"
+        val someOtherMessage = "another message!"
+
+        val serializer = new StringSerializer
+        val deserializer = new StringDeserializer
+
+        publishToKafka(topic, "hello world!")(someConfig, serializer)
+        publishToKafka(topic, someOtherMessage)(someOtherConfig, serializer)
+
+        kafkaIsAvailable(someConfig.kafkaPort)
+        EmbeddedKafka.stop(someBroker)
+
+        val anotherConsumer = kafkaConsumer(someOtherConfig, deserializer, deserializer)
+        anotherConsumer.subscribe(List(topic).asJava)
+
+        val moreRecords = anotherConsumer.poll(consumerPollTimeout)
+        moreRecords.count shouldBe 1
+
+        val someOtherRecord = moreRecords.iterator().next
+        someOtherRecord.value shouldBe someOtherMessage
+
+        EmbeddedKafka.stop(someOtherBroker)
+      }
     }
 
-    "invoking the isRunnning method" should {
-      "return whether both Kafka and Zookeeper are running" in {
+    "invoking the isRunning method" should {
+      "return true when both Kafka and Zookeeper are running" in {
         EmbeddedKafka.start()
         EmbeddedKafka.isRunning shouldBe true
+        EmbeddedKafka.stop()
+        EmbeddedKafka.isRunning shouldBe false
+      }
+
+      "return false when only Kafka is running" in {
+        val unmanagedZookeeper = EmbeddedKafka.startZooKeeper(6000, Directory.makeTemp("zookeeper-test-logs"))
+
+        EmbeddedKafka.startKafka(Directory.makeTemp("kafka-test-logs"))
+        EmbeddedKafka.isRunning shouldBe false
+        EmbeddedKafka.stop()
+        EmbeddedKafka.isRunning shouldBe false
+
+        unmanagedZookeeper.shutdown()
+      }
+
+      "return false when only Zookeeper is running" in {
+        EmbeddedKafka.startZooKeeper(Directory.makeTemp("zookeeper-test-logs"))
+        EmbeddedKafka.isRunning shouldBe false
         EmbeddedKafka.stop()
         EmbeddedKafka.isRunning shouldBe false
       }
