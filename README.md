@@ -27,17 +27,22 @@ Versions match the version of Kafka they're built against.
 * In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka" % "1.1.0" % "test"`
 * Have your `Spec` extend the `EmbeddedKafka` trait.
 * Enclose the code that needs a running instance of Kafka within the `withRunningKafka` closure.
+
 ```scala
 class MySpec extends WordSpec with EmbeddedKafka {
 
-"runs with embedded kafka" should {
+  "runs with embedded kafka" should {
 
-    withRunningKafka {
+    "work" in {
+
+      withRunningKafka {
         // ... code goes here
+      }
     }
-
+  }
 }
 ```
+
 * In-memory Zookeeper and Kafka will be instantiated respectively on port 6000 and 6001 and automatically shutdown at the end of the test.
 
 ### Use without the `withRunningKafka` method
@@ -49,11 +54,13 @@ class MySpec extends WordSpec {
   
   "runs with embedded kafka" should {
 
-    EmbeddedKafka.start()
+    "work" in {
+      EmbeddedKafka.start()
     
-    // ... code goes here
+      // ... code goes here
     
-    EmbeddedKafka.stop()
+      EmbeddedKafka.stop()
+    }
   }
 }
 ```
@@ -67,14 +74,16 @@ It's possible to change the ports on which Zookeeper and Kafka are started by pr
 ```scala
 class MySpec extends WordSpec with EmbeddedKafka {
 
-"runs with embedded kafka on a specific port" should {
+  "runs with embedded kafka on a specific port" should {
 
-    implicit val config = EmbeddedKafkaConfig(kafkaPort = 12345)
+    "work" in {
+      implicit val config = EmbeddedKafkaConfig(kafkaPort = 12345)
 
-    withRunningKafka {
+      withRunningKafka {
         // now a kafka broker is listening on port 12345
+      }
     }
-
+  }
 }
 ```
 
@@ -86,16 +95,18 @@ tests or services may be running with port numbers you can't control.
 ```scala
 class MySpec extends WordSpec with EmbeddedKafka {
 
-"runs with embedded kafka on arbitrary available ports" should {
+  "runs with embedded kafka on arbitrary available ports" should {
 
-    val userDefinedConfig = EmbeddedKafkaConfig(kafkaPort = 0, zooKeeperPort = 0)
+    "work" in {
+      val userDefinedConfig = EmbeddedKafkaConfig(kafkaPort = 0, zooKeeperPort = 0)
 
-    withRunningKafkaOnFoundPort(userDefinedConfig) { implicit actualConfig =>
-      // now a kafka broker is listening on actualConfig.kafkaPort
-      publishStringMessageToKafka("topic", "message")
-      consumeFirstStringMessageFrom("topic") shouldBe "message"
+      withRunningKafkaOnFoundPort(userDefinedConfig) { implicit actualConfig =>
+        // now a kafka broker is listening on actualConfig.kafkaPort
+        publishStringMessageToKafka("topic", "message")
+        consumeFirstStringMessageFrom("topic") shouldBe "message"
+      }
     }
-
+  }
 }
 ```
 
@@ -104,22 +115,24 @@ The same implicit `EmbeddedKafkaConfig` is used to define custom consumer or pro
 ```scala
 class MySpec extends WordSpec with EmbeddedKafka {
 
-"runs with custom producer and consumer properties" should {
-    val customBrokerConfig = Map("replica.fetch.max.bytes" -> "2000000",
+  "runs with custom producer and consumer properties" should {
+    "work" in {
+      val customBrokerConfig = Map("replica.fetch.max.bytes" -> "2000000",
         "message.max.bytes" -> "2000000")
         
-    val customProducerConfig = Map("max.request.size" -> "2000000")
-    val customConsumerConfig = Map("max.partition.fetch.bytes" -> "2000000")
+      val customProducerConfig = Map("max.request.size" -> "2000000")
+      val customConsumerConfig = Map("max.partition.fetch.bytes" -> "2000000")
 
-    implicit val customKafkaConfig = EmbeddedKafkaConfig(
+      implicit val customKafkaConfig = EmbeddedKafkaConfig(
         customBrokerProperties = customBrokerConfig,
         customProducerProperties = customProducerConfig,
         customConsumerProperties = customConsumerConfig)
 
-    withRunningKafka {
+      withRunningKafka {
         // now a kafka broker is listening on port 12345
+      }
     }
-
+  }
 }
 ```
         
@@ -197,6 +210,7 @@ It takes care of instantiating and starting your streams as well as closing them
 
 ```scala
 import net.manub.embeddedkafka.ConsumerExtensions._
+import net.manub.embeddedkafka.streams.EmbeddedKafkaStreamsAllInOne
 import org.apache.kafka.streams.StreamsBuilder
 import org.scalatest.{Matchers, WordSpec}
 
@@ -217,7 +231,7 @@ class MySpec extends WordSpec with Matchers with EmbeddedKafkaStreamsAllInOne {
       ){ consumer =>
         // your test code goes here
         publishToKafka(inputTopic, key = "hello", message = "world")
-        consumer.consumeLazily(outputTopic).head should be ("hello" -> "world")
+        consumer.consumeLazily[String](outputTopic).head should be ("hello" -> "world")
       }
     }
   }
