@@ -68,7 +68,7 @@ class EmbeddedKafkaMethodsSpec
       val headers = new RecordHeaders().add("my_header", headerValue.toCharArray.map(_.toByte))
       val producerRecord = new ProducerRecord[String, String](topic, null, "key", message, headers)
 
-      publishToKafka(topic, producerRecord)
+      publishToKafka(producerRecord)
 
       val consumer = kafkaConsumer
       consumer.subscribe(List(topic).asJava)
