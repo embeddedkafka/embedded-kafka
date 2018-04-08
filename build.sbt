@@ -4,7 +4,7 @@ parallelExecution in ThisBuild := false
 
 val kafkaVersion = "1.1.0"
 val zookeeperVersion = "3.4.11"
-val akkaVersion = "2.4.20"
+val akkaVersion = "2.5.11"
 
 val slf4jLog4jOrg = "org.slf4j"
 val slf4jLog4jArtifact = "slf4j-log4j12"
@@ -22,7 +22,7 @@ lazy val commonSettings = Seq(
 )
 
 lazy val commonLibrarySettings = libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest" % "3.0.4",
+  "org.scalatest" %% "scalatest" % "3.0.5",
   "org.apache.kafka" %% "kafka" % kafkaVersion exclude(slf4jLog4jOrg, slf4jLog4jArtifact),
   "org.apache.zookeeper" % "zookeeper" % zookeeperVersion exclude(slf4jLog4jOrg, slf4jLog4jArtifact),
   "org.apache.avro" % "avro" % "1.8.2" exclude(slf4jLog4jOrg, slf4jLog4jArtifact),
@@ -72,7 +72,7 @@ lazy val embeddedKafka = (project in file("embedded-kafka"))
   .settings(publishSettings: _*)
   .settings(commonSettings: _*)
   .settings(commonLibrarySettings)
-  .settings(libraryDependencies += "org.mockito" % "mockito-core" % "2.7.22" % Test)
+  .settings(libraryDependencies += "org.mockito" % "mockito-core" % "2.18.0" % Test)
   .settings(releaseSettings: _*)
 
 lazy val kafkaStreams = (project in file("kafka-streams"))
