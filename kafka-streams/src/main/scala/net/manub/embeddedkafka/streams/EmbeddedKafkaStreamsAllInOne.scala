@@ -25,9 +25,8 @@ import org.scalatest.Suite
   * @see [[Consumers]]
   * @see [[EmbeddedKafkaStreams]]
   */
-trait EmbeddedKafkaStreamsAllInOne
-    extends EmbeddedKafkaStreams
-    with Consumers { this: Suite =>
+trait EmbeddedKafkaStreamsAllInOne extends EmbeddedKafkaStreams with Consumers {
+  this: Suite =>
 
   /** Run Kafka Streams while offering a String-based consumer for easy testing of stream output.
     *
@@ -40,8 +39,9 @@ trait EmbeddedKafkaStreamsAllInOne
     *                       String-based consumer.
     * @return the result of the testing code
     */
-  def runStreamsWithStringConsumer(topicsToCreate: Seq[String], topology: Topology)
-                                  (block: KafkaConsumer[String, String] => Any)
-                                  (implicit config: EmbeddedKafkaConfig): Any =
+  def runStreamsWithStringConsumer(
+      topicsToCreate: Seq[String],
+      topology: Topology)(block: KafkaConsumer[String, String] => Any)(
+      implicit config: EmbeddedKafkaConfig): Any =
     runStreams(topicsToCreate, topology)(withStringConsumer[Any](block))(config)
 }

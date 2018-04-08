@@ -8,8 +8,17 @@ import kafka.admin.AdminUtils
 import kafka.server.{KafkaConfig, KafkaServer}
 import kafka.utils.ZkUtils
 import org.apache.kafka.clients.consumer.{KafkaConsumer, OffsetAndMetadata}
-import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
-import org.apache.kafka.common.serialization.{Deserializer, Serializer, StringDeserializer, StringSerializer}
+import org.apache.kafka.clients.producer.{
+  KafkaProducer,
+  ProducerConfig,
+  ProducerRecord
+}
+import org.apache.kafka.common.serialization.{
+  Deserializer,
+  Serializer,
+  StringDeserializer,
+  StringSerializer
+}
 import org.apache.kafka.common.{KafkaException, TopicPartition}
 import org.apache.zookeeper.server.{ServerCnxnFactory, ZooKeeperServer}
 import org.scalatest.Suite
@@ -17,7 +26,11 @@ import org.scalatest.Suite
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutorService, TimeoutException}
+import scala.concurrent.{
+  ExecutionContext,
+  ExecutionContextExecutorService,
+  TimeoutException
+}
 import scala.language.{higherKinds, postfixOps}
 import scala.reflect.io.Directory
 import scala.util.Try
@@ -40,8 +53,10 @@ object EmbeddedKafka extends EmbeddedKafkaSupport {
     val zkLogsDir = Directory.makeTemp("zookeeper-logs")
     val kafkaLogsDir = Directory.makeTemp("kafka-logs")
 
-    val factory = EmbeddedZ(startZooKeeper(config.zooKeeperPort, zkLogsDir), zkLogsDir)
-    val broker = EmbeddedK(Option(factory), startKafka(config, kafkaLogsDir), kafkaLogsDir)
+    val factory =
+      EmbeddedZ(startZooKeeper(config.zooKeeperPort, zkLogsDir), zkLogsDir)
+    val broker =
+      EmbeddedK(Option(factory), startKafka(config, kafkaLogsDir), kafkaLogsDir)
 
     servers :+= broker
     broker
@@ -55,8 +70,9 @@ object EmbeddedKafka extends EmbeddedKafkaSupport {
     * @return          an [[EmbeddedZ]] server
     */
   def startZooKeeper(zkLogsDir: Directory)(
-    implicit config: EmbeddedKafkaConfig): EmbeddedZ = {
-    val factory = EmbeddedZ(startZooKeeper(config.zooKeeperPort, zkLogsDir), zkLogsDir)
+      implicit config: EmbeddedKafkaConfig): EmbeddedZ = {
+    val factory =
+      EmbeddedZ(startZooKeeper(config.zooKeeperPort, zkLogsDir), zkLogsDir)
     servers :+= factory
     factory
   }
@@ -69,7 +85,7 @@ object EmbeddedKafka extends EmbeddedKafkaSupport {
     * @return             an [[EmbeddedK]] server
     */
   def startKafka(kafkaLogsDir: Directory)(
-    implicit config: EmbeddedKafkaConfig): EmbeddedK = {
+      implicit config: EmbeddedKafkaConfig): EmbeddedK = {
     val broker = EmbeddedK(startKafka(config, kafkaLogsDir), kafkaLogsDir)
     servers :+= broker
     broker
@@ -120,13 +136,17 @@ object EmbeddedKafka extends EmbeddedKafkaSupport {
   /**
     * Returns whether the in memory Kafka and Zookeeper are both running.
     */
-  def isRunning: Boolean = servers.toFilteredSeq[EmbeddedK](isEmbeddedK).exists(_.factory.isDefined)
+  def isRunning: Boolean =
+    servers.toFilteredSeq[EmbeddedK](isEmbeddedK).exists(_.factory.isDefined)
 
-  private def isEmbeddedK(server: EmbeddedServer): Boolean = server.isInstanceOf[EmbeddedK]
-  private def isEmbeddedZ(server: EmbeddedServer): Boolean = server.isInstanceOf[EmbeddedZ]
+  private def isEmbeddedK(server: EmbeddedServer): Boolean =
+    server.isInstanceOf[EmbeddedK]
+  private def isEmbeddedZ(server: EmbeddedServer): Boolean =
+    server.isInstanceOf[EmbeddedZ]
 
   implicit class ServerOps(servers: Seq[EmbeddedServer]) {
-    def toFilteredSeq[T <: EmbeddedServer](filter: EmbeddedServer => Boolean): Seq[T] =
+    def toFilteredSeq[T <: EmbeddedServer](
+        filter: EmbeddedServer => Boolean): Seq[T] =
       servers.filter(filter).asInstanceOf[Seq[T]]
   }
 }
@@ -151,7 +171,10 @@ sealed trait EmbeddedKafkaSupport {
     withRunningZooKeeper(config.zooKeeperPort) { zkPort =>
       withTempDir("kafka") { kafkaLogsDir =>
         val broker =
-          startKafka(config.kafkaPort, zkPort, config.customBrokerProperties, kafkaLogsDir)
+          startKafka(config.kafkaPort,
+                     zkPort,
+                     config.customBrokerProperties,
+                     kafkaLogsDir)
         try {
           body
         } finally {
@@ -177,11 +200,18 @@ sealed trait EmbeddedKafkaSupport {
     withRunningZooKeeper(config.zooKeeperPort) { zkPort =>
       withTempDir("kafka") { kafkaLogsDir =>
         val broker: KafkaServer =
-          startKafka(config.kafkaPort, zkPort, config.customBrokerProperties, kafkaLogsDir)
+          startKafka(config.kafkaPort,
+                     zkPort,
+                     config.customBrokerProperties,
+                     kafkaLogsDir)
         val kafkaPort =
           broker.boundPort(broker.config.listeners.head.listenerName)
         val actualConfig =
-          EmbeddedKafkaConfigImpl(kafkaPort, zkPort, config.customBrokerProperties, config.customProducerProperties, config.customConsumerProperties)
+          EmbeddedKafkaConfigImpl(kafkaPort,
+                                  zkPort,
+                                  config.customBrokerProperties,
+                                  config.customProducerProperties,
+                                  config.customConsumerProperties)
         try {
           body(actualConfig)
         } finally {
@@ -258,7 +288,7 @@ sealed trait EmbeddedKafkaSupport {
     publishToKafka(new KafkaProducer(baseProducerConfig.asJava,
                                      new StringSerializer(),
                                      serializer),
-      producerRecord)
+                   producerRecord)
 
   /**
     * Publishes synchronously a message to the running Kafka broker.
@@ -279,7 +309,6 @@ sealed trait EmbeddedKafkaSupport {
       new KafkaProducer(baseProducerConfig.asJava, keySerializer, serializer),
       new ProducerRecord(topic, key, message))
 
-
   /**
     * Publishes synchronously a batch of message to the running Kafka broker.
     *
@@ -292,11 +321,12 @@ sealed trait EmbeddedKafkaSupport {
     */
   @throws(classOf[KafkaUnavailableException])
   def publishToKafka[K, T](topic: String, messages: Seq[(K, T)])(
-    implicit config: EmbeddedKafkaConfig,
-    keySerializer: Serializer[K],
-    serializer: Serializer[T]): Unit = {
+      implicit config: EmbeddedKafkaConfig,
+      keySerializer: Serializer[K],
+      serializer: Serializer[T]): Unit = {
 
-    val producer = new KafkaProducer(baseProducerConfig.asJava, keySerializer, serializer)
+    val producer =
+      new KafkaProducer(baseProducerConfig.asJava, keySerializer, serializer)
 
     val tupleToRecord = (new ProducerRecord(topic, _: K, _: T)).tupled
 
@@ -306,7 +336,9 @@ sealed trait EmbeddedKafkaSupport {
 
     // Assure all messages sent before returning, and fail on first send error
     val records = futures.map(f => Try(f.get(10, SECONDS)))
-    records.find(_.isFailure).foreach(record => throw new KafkaUnavailableException(record.failed.get))
+    records
+      .find(_.isFailure)
+      .foreach(record => throw new KafkaUnavailableException(record.failed.get))
 
     producer.close()
   }
@@ -386,9 +418,10 @@ sealed trait EmbeddedKafkaSupport {
   @throws(classOf[TimeoutException])
   @throws(classOf[KafkaUnavailableException])
   def consumeFirstMessageFrom[V](topic: String, autoCommit: Boolean = false)(
-    implicit config: EmbeddedKafkaConfig,
-    valueDeserializer: Deserializer[V]): V =
-    consumeNumberMessagesFrom[V](topic, 1, autoCommit)(config, valueDeserializer).head
+      implicit config: EmbeddedKafkaConfig,
+      valueDeserializer: Deserializer[V]): V =
+    consumeNumberMessagesFrom[V](topic, 1, autoCommit)(config,
+                                                       valueDeserializer).head
 
   /**
     * Consumes the first message available in a given topic, deserializing it as type [[(K, V)]].
@@ -409,18 +442,24 @@ sealed trait EmbeddedKafkaSupport {
     */
   @throws(classOf[TimeoutException])
   @throws(classOf[KafkaUnavailableException])
-  def consumeFirstKeyedMessageFrom[K, V](topic: String, autoCommit: Boolean = false)(
+  def consumeFirstKeyedMessageFrom[K, V](topic: String,
+                                         autoCommit: Boolean = false)(
       implicit config: EmbeddedKafkaConfig,
       keyDeserializer: Deserializer[K],
       valueDeserializer: Deserializer[V]): (K, V) =
-    consumeNumberKeyedMessagesFrom[K, V](topic, 1, autoCommit)(config, keyDeserializer, valueDeserializer).head
+    consumeNumberKeyedMessagesFrom[K, V](topic, 1, autoCommit)(
+      config,
+      keyDeserializer,
+      valueDeserializer).head
 
   def consumeNumberMessagesFrom[V](topic: String,
                                    number: Int,
                                    autoCommit: Boolean = false)(
-                                   implicit config: EmbeddedKafkaConfig,
-                                   valueDeserializer: Deserializer[V]): List[V] =
-    consumeNumberMessagesFromTopics(Set(topic), number, autoCommit)(config, valueDeserializer)(topic)
+      implicit config: EmbeddedKafkaConfig,
+      valueDeserializer: Deserializer[V]): List[V] =
+    consumeNumberMessagesFromTopics(Set(topic), number, autoCommit)(
+      config,
+      valueDeserializer)(topic)
 
   def consumeNumberKeyedMessagesFrom[K, V](topic: String,
                                            number: Int,
@@ -428,7 +467,9 @@ sealed trait EmbeddedKafkaSupport {
       implicit config: EmbeddedKafkaConfig,
       keyDeserializer: Deserializer[K],
       valueDeserializer: Deserializer[V]): List[(K, V)] =
-    consumeNumberKeyedMessagesFromTopics(Set(topic), number, autoCommit)(config, keyDeserializer,
+    consumeNumberKeyedMessagesFromTopics(Set(topic), number, autoCommit)(
+      config,
+      keyDeserializer,
       valueDeserializer)(topic)
 
   /**
@@ -463,8 +504,14 @@ sealed trait EmbeddedKafkaSupport {
                                            true)(
       implicit config: EmbeddedKafkaConfig,
       valueDeserializer: Deserializer[V]): Map[String, List[V]] = {
-    consumeNumberKeyedMessagesFromTopics(topics, number, autoCommit, timeout,
-      resetTimeoutOnEachMessage)(config, new StringDeserializer(), valueDeserializer)
+    consumeNumberKeyedMessagesFromTopics(topics,
+                                         number,
+                                         autoCommit,
+                                         timeout,
+                                         resetTimeoutOnEachMessage)(
+      config,
+      new StringDeserializer(),
+      valueDeserializer)
       .mapValues(_.map(_._2))
   }
 
@@ -492,11 +539,12 @@ sealed trait EmbeddedKafkaSupport {
     * @throws TimeoutException          if unable to consume messages within specified timeout
     * @throws KafkaUnavailableException if unable to connect to Kafka
     */
-  def consumeNumberKeyedMessagesFromTopics[K, V](topics: Set[String],
-                                                 number: Int,
-                                                 autoCommit: Boolean = false,
-                                                 timeout: Duration = 5.seconds,
-                                                 resetTimeoutOnEachMessage: Boolean = true)(
+  def consumeNumberKeyedMessagesFromTopics[K, V](
+      topics: Set[String],
+      number: Int,
+      autoCommit: Boolean = false,
+      timeout: Duration = 5.seconds,
+      resetTimeoutOnEachMessage: Boolean = true)(
       implicit config: EmbeddedKafkaConfig,
       keyDeserializer: Deserializer[K],
       valueDeserializer: Deserializer[V]): Map[String, List[(K, V)]] = {
@@ -605,7 +653,8 @@ sealed trait EmbeddedKafkaSupport {
     properties.setProperty("log.flush.interval.messages", 1.toString)
     properties.setProperty("offsets.topic.replication.factor", 1.toString)
     properties.setProperty("offsets.topic.num.partitions", 1.toString)
-    properties.setProperty("transaction.state.log.replication.factor", 1.toString)
+    properties.setProperty("transaction.state.log.replication.factor",
+                           1.toString)
     properties.setProperty("transaction.state.log.min.isr", 1.toString)
 
     // The total memory used for log deduplication across all cleaner threads, keep it small to not exhaust suite memory
@@ -622,7 +671,10 @@ sealed trait EmbeddedKafkaSupport {
 
   def startKafka(config: EmbeddedKafkaConfig,
                  kafkaLogDir: Directory): KafkaServer = {
-    startKafka(config.kafkaPort, config.zooKeeperPort, config.customBrokerProperties, kafkaLogDir)
+    startKafka(config.kafkaPort,
+               config.zooKeeperPort,
+               config.customBrokerProperties,
+               kafkaLogDir)
   }
 
   /**

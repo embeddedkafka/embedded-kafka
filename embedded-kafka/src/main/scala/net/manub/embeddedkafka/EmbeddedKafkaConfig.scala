@@ -9,22 +9,26 @@ trait EmbeddedKafkaConfig {
 }
 
 case class EmbeddedKafkaConfigImpl(
-                                    kafkaPort: Int,
-                                    zooKeeperPort: Int,
-                                    customBrokerProperties: Map[String, String],
-                                    customProducerProperties: Map[String, String],
-                                    customConsumerProperties: Map[String, String]
-                                  ) extends EmbeddedKafkaConfig
+    kafkaPort: Int,
+    zooKeeperPort: Int,
+    customBrokerProperties: Map[String, String],
+    customProducerProperties: Map[String, String],
+    customConsumerProperties: Map[String, String]
+) extends EmbeddedKafkaConfig
 
 object EmbeddedKafkaConfig {
   implicit val defaultConfig: EmbeddedKafkaConfig = apply()
 
   def apply(
-             kafkaPort: Int = 6001,
-             zooKeeperPort: Int = 6000,
-             customBrokerProperties: Map[String, String] = Map.empty,
-             customProducerProperties: Map[String, String] = Map.empty,
-             customConsumerProperties: Map[String, String] = Map.empty
-           ) : EmbeddedKafkaConfig =
-    EmbeddedKafkaConfigImpl(kafkaPort, zooKeeperPort, customBrokerProperties, customProducerProperties, customConsumerProperties)
+      kafkaPort: Int = 6001,
+      zooKeeperPort: Int = 6000,
+      customBrokerProperties: Map[String, String] = Map.empty,
+      customProducerProperties: Map[String, String] = Map.empty,
+      customConsumerProperties: Map[String, String] = Map.empty
+  ): EmbeddedKafkaConfig =
+    EmbeddedKafkaConfigImpl(kafkaPort,
+                            zooKeeperPort,
+                            customBrokerProperties,
+                            customProducerProperties,
+                            customConsumerProperties)
 }
