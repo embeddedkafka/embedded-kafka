@@ -58,5 +58,13 @@ class EmbeddedKafkaWithRunningKafkaSpec
         zookeeperIsAvailable(12345)
       }
     }
+
+    "start a Schema Registry server on a specified port" in {
+      implicit val config = EmbeddedKafkaConfig(schemaRegistryPort = Some(12345))
+
+      withRunningKafka {
+        schemaRegistryIsAvailable(12345)
+      }
+    }
   }
 }

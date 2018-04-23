@@ -3,16 +3,19 @@ import sbtrelease.Version
 parallelExecution in ThisBuild := false
 
 val kafkaVersion = "1.1.0"
-val zookeeperVersion = "3.4.11"
+val confluentVersion = "4.1.0"
 val akkaVersion = "2.5.11"
 
 val slf4jLog4jOrg = "org.slf4j"
 val slf4jLog4jArtifact = "slf4j-log4j12"
 
+lazy val confluentMavenRepo = "confluent" at "https://packages.confluent.io/maven/"
+
 lazy val commonSettings = Seq(
   organization := "net.manub",
   scalaVersion := "2.12.5",
   crossScalaVersions := Seq("2.12.5", "2.11.12"),
+  resolvers ++= Seq(confluentMavenRepo),
   homepage := Some(url("https://github.com/manub/scalatest-embedded-kafka")),
   parallelExecution in Test := false,
   logBuffered in Test := false,
@@ -22,10 +25,11 @@ lazy val commonSettings = Seq(
 )
 
 lazy val commonLibrarySettings = libraryDependencies ++= Seq(
+  "io.confluent" % "kafka-avro-serializer" % confluentVersion,
+  "io.confluent" % "kafka-schema-registry" % confluentVersion,
+  "io.confluent" % "kafka-schema-registry" % confluentVersion classifier "tests",
   "org.scalatest" %% "scalatest" % "3.0.5",
   "org.apache.kafka" %% "kafka" % kafkaVersion exclude(slf4jLog4jOrg, slf4jLog4jArtifact),
-  "org.apache.zookeeper" % "zookeeper" % zookeeperVersion exclude(slf4jLog4jOrg, slf4jLog4jArtifact),
-  "org.apache.avro" % "avro" % "1.8.2" exclude(slf4jLog4jOrg, slf4jLog4jArtifact),
   "com.typesafe.akka" %% "akka-actor" % akkaVersion % Test,
   "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
   slf4jLog4jOrg % slf4jLog4jArtifact % "1.7.25" % Test

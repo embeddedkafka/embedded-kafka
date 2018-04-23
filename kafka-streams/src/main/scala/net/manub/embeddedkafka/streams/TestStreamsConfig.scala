@@ -2,6 +2,7 @@ package net.manub.embeddedkafka.streams
 
 import java.nio.file.Files
 
+import net.manub.embeddedkafka.avro
 import net.manub.embeddedkafka.EmbeddedKafkaConfig
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.streams.StreamsConfig
@@ -31,7 +32,9 @@ trait TestStreamsConfig {
       // force stream consumers to start reading from the beginning so as not to lose messages
       ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> "earliest"
     )
-    val configOverwrittenByExtra = defaultConfig ++ extraConfig
+    val configOverwrittenByExtra = defaultConfig ++
+      avro.schemaregistry.consumerConfigForSchemaRegistry
+        .getOrElse(Map.empty) ++ extraConfig
     new StreamsConfig(configOverwrittenByExtra.asJava)
   }
 }

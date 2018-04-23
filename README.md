@@ -190,6 +190,37 @@ consumer.consumeLazily[(String, String)]("from-this-topic").take(3).toList shoul
 )
 ```
 
+## Confuent Schema Registry support
+
+If you need to serialize and deserialize messages using Avro, a [Confluent Schema Registry](https://docs.confluent.io/current/schema-registry/docs/index.html) instance can be provided to test your code.
+
+### How to use
+
+* Provide an implicit `EmbeddedKafkaConfig` specifying a port for Schema Registry to use (a value of 0 means random available port will be selected).
+
+```scala
+class MySpec extends WordSpec with EmbeddedKafka {
+
+  "runs with embedded kafka and Schema Registry" should {
+
+    "work" in {
+      implicit val config = EmbeddedKafkaConfig(schemaRegistryPort = Some(12345))
+
+      withRunningKafka {
+        // ... code goes here
+      }
+    }
+  }
+}
+```
+
+* A Schema Registry server will be started and automatically shutdown at the end of the test.
+* Have a look at the [example test](kafka-streams/src/test/scala/net/manub/embeddedkafka/streams/ExampleKafkaStreamsSchemaRegistrySpec.scala).
+
+### Utility methods
+
+The `net.manub.embeddedkafka.avro.schemaregistry` package object provides useful implicit converters for testing with Avro and Schema Registry.
+
 ## scalatest-embedded-kafka-streams
 
 A library that builds on top of `scalatest-embedded-kafka` to offer easy testing of [Kafka Streams](https://cwiki.apache.org/confluence/display/KAFKA/Kafka+Streams) with ScalaTest.

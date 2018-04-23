@@ -44,6 +44,13 @@ abstract class EmbeddedKafkaSpecSupport
     expectMsg(1 second, ConnectionSuccessful)
   }
 
+  def schemaRegistryIsAvailable(schemaRegistryPort: Int = 6002): Unit = {
+    system.actorOf(
+      TcpClient.props(new InetSocketAddress("localhost", schemaRegistryPort),
+                      testActor))
+    expectMsg(1 second, ConnectionSuccessful)
+  }
+
   def zookeeperIsAvailable(zookeeperPort: Int = 6000): Unit = {
     system.actorOf(
       TcpClient.props(new InetSocketAddress("localhost", zookeeperPort),
@@ -54,6 +61,13 @@ abstract class EmbeddedKafkaSpecSupport
   def kafkaIsNotAvailable(kafkaPort: Int = 6001): Unit = {
     system.actorOf(
       TcpClient.props(new InetSocketAddress("localhost", kafkaPort), testActor))
+    expectMsg(1 second, ConnectionFailed)
+  }
+
+  def schemaRegistryIsNotAvailable(schemaRegistryPort: Int = 6002): Unit = {
+    system.actorOf(
+      TcpClient.props(new InetSocketAddress("localhost", schemaRegistryPort),
+                      testActor))
     expectMsg(1 second, ConnectionFailed)
   }
 
