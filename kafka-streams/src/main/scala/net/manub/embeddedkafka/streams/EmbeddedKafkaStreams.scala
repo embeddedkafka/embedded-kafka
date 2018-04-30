@@ -27,10 +27,10 @@ trait EmbeddedKafkaStreams extends EmbeddedKafka with TestStreamsConfig {
     * @param block          the code block that will executed while the streams are active.
     *                       Once the block has been executed the streams will be closed.
     */
-  def runStreams(topicsToCreate: Seq[String],
-                 topology: Topology,
-                 extraConfig: Map[String, AnyRef] = Map.empty)(block: => Any)(
-      implicit config: EmbeddedKafkaConfig): Any =
+  def runStreams[T](topicsToCreate: Seq[String],
+                    topology: Topology,
+                    extraConfig: Map[String, AnyRef] = Map.empty)(block: => T)(
+      implicit config: EmbeddedKafkaConfig): T =
     withRunningKafka {
       topicsToCreate.foreach(topic => createCustomTopic(topic))
       val streamId = UUIDs.newUuid().toString
