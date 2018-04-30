@@ -9,19 +9,6 @@ import org.scalatest.Suite
   * It exposes `EmbeddedKafkaStreams.runStreams` as well as `Consumers` api
   * for easily creating and querying consumers in tests.
   *
-  * e.g.
-  * {{{
-  *runStreams(Seq("inputTopic", "outputTopic", streamTopology) {
-  *  withConsumer[String, String, Unit] { consumer =>
-  *    // here you can publish and consume messages and make assertions
-  *    publishToKafka(in, Seq("one-string", "another-string"))
-  *    consumeLazily(out).take(2).toList should be (
-  *      Seq("one-string" -> "true", "another-string" -> "true")
-  *    )
-  *  }
-  *}
-  * }}}
-  *
   * @see [[Consumers]]
   * @see [[EmbeddedKafkaStreams]]
   */

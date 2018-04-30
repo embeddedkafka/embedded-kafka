@@ -17,18 +17,6 @@ trait EmbeddedKafkaStreams extends EmbeddedKafka with TestStreamsConfig {
   /** Execute Kafka streams and pass a block of code that can
     * operate while the streams are active.
     * The code block can be used for publishing and consuming messages in Kafka.
-    * The block gets a pre-initialized kafka consumer that can be used implicitly for
-    * util methods such as `consumeLazily(String)`.
-    *
-    * e.g.
-    *
-    * {{{
-    *runStreams(Seq("inputTopic", "outputTopic", topology) {
-    *  // here you can publish and consume messages and make assertions
-    *  publishToKafka(in, Seq("one-string", "another-string"))
-    *  consumeFirstStringMessageFrom(in) should be ("one-string")
-    *}
-    * }}}
     *
     * @param topicsToCreate the topics that should be created in Kafka before launching the streams.
     * @param topology       the streams topology that will be used to instantiate the streams with

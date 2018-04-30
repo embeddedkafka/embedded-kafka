@@ -37,7 +37,7 @@ case class EmbeddedZ(factory: ServerCnxnFactory, logsDirs: Directory)(
 }
 
 /**
-  * An instance of an embedded Kafka serer.
+  * An instance of an embedded Kafka server.
   *
   * @param factory         the optional [[EmbeddedZ]] server which Kafka relies upon.
   * @param broker          the Kafka server.

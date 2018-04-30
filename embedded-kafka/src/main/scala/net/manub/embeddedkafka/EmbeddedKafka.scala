@@ -442,7 +442,7 @@ sealed trait EmbeddedKafkaSupport {
     * If autoCommit is true then all messages that were polled will be committed.
     *
     * @param topic        the topic to consume a message from
-    * @param autoCommit   if false, only the offset for the consumed message will be commited.
+    * @param autoCommit   if false, only the offset for the consumed message will be committed.
     *                     if true, the offset for the last polled message will be committed instead.
     *                     Defaulted to false.
     * @param config       an implicit [[EmbeddedKafkaConfig]]
@@ -466,7 +466,7 @@ sealed trait EmbeddedKafkaSupport {
     * If autoCommit is true then all messages that were polled will be committed.
     *
     * @param topic        the topic to consume a message from
-    * @param autoCommit   if false, only the offset for the consumed message will be commited.
+    * @param autoCommit   if false, only the offset for the consumed message will be committed.
     *                     if true, the offset for the last polled message will be committed instead.
     *                     Defaulted to false.
     * @param config       an implicit [[EmbeddedKafkaConfig]]
@@ -517,7 +517,7 @@ sealed trait EmbeddedKafkaSupport {
     *
     * @param topics                    the topics to consume messages from
     * @param number                    the number of messages to consume in a batch
-    * @param autoCommit                if false, only the offset for the consumed messages will be commited.
+    * @param autoCommit                if false, only the offset for the consumed messages will be committed.
     *                                  if true, the offset for the last polled message will be committed instead.
     *                                  Defaulted to false.
     * @param timeout                   the interval to wait for messages before throwing TimeoutException
@@ -560,7 +560,7 @@ sealed trait EmbeddedKafkaSupport {
     *
     * @param topics       the topics to consume messages from
     * @param number       the number of messages to consume in a batch
-    * @param autoCommit   if false, only the offset for the consumed messages will be commited.
+    * @param autoCommit   if false, only the offset for the consumed messages will be committed.
     *                     if true, the offset for the last polled message will be committed instead.
     *                     Defaulted to false.
     * @param timeout      the interval to wait for messages before throwing TimeoutException
