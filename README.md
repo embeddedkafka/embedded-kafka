@@ -5,7 +5,7 @@ Inspired by https://github.com/chbatey/kafka-unit
 
 [![Build Status](https://travis-ci.org/manub/scalatest-embedded-kafka.svg?branch=master)](https://travis-ci.org/manub/scalatest-embedded-kafka)
 
-[![Codacy Badge](https://www.codacy.com/project/badge/c7b26292335d4331b49a81317884dd17)](https://www.codacy.com/app/emanuele-blanco/scalatest-embedded-kafka)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c7b26292335d4331b49a81317884dd17?branch=master)](https://www.codacy.com/app/emanuele-blanco/scalatest-embedded-kafka)
 
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/manub/scalatest-embedded-kafka)
 
