@@ -6,9 +6,8 @@ import java.util.concurrent.Executors
 
 import io.confluent.kafka.schemaregistry.RestApp
 import io.confluent.kafka.schemaregistry.avro.AvroCompatibilityLevel
-import kafka.admin.AdminUtils
 import kafka.server.{KafkaConfig, KafkaServer}
-import kafka.utils.ZkUtils
+import org.apache.kafka.clients.admin.{AdminClient, AdminClientConfig, NewTopic}
 import org.apache.kafka.clients.consumer.{KafkaConsumer, OffsetAndMetadata}
 import org.apache.kafka.clients.producer.{
   KafkaProducer,
@@ -180,7 +179,6 @@ sealed trait EmbeddedKafkaSupport {
 
   val zkSessionTimeoutMs = 10000
   val zkConnectionTimeoutMs = 10000
-  val zkSecurityEnabled = false
 
   /**
     * Starts a ZooKeeper instance, a Kafka broker, and optionally a Schema Registry app, then executes the body passed as a parameter.
@@ -742,21 +740,22 @@ sealed trait EmbeddedKafkaSupport {
                         partitions: Int = 1,
                         replicationFactor: Int = 1)(
       implicit config: EmbeddedKafkaConfig): Unit = {
+    val adminClient = AdminClient.create(
+      Map[String, Object](
+        AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
+        AdminClientConfig.CLIENT_ID_CONFIG -> "embedded-kafka-admin-client",
+        AdminClientConfig.REQUEST_TIMEOUT_MS_CONFIG -> zkSessionTimeoutMs.toString,
+        AdminClientConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG -> zkConnectionTimeoutMs.toString
+      ).asJava)
+    val newTopic = new NewTopic(topic, partitions, replicationFactor.toShort)
+      .configs(topicConfig.asJava)
 
-    val zkUtils = ZkUtils(s"localhost:${config.zooKeeperPort}",
-                          zkSessionTimeoutMs,
-                          zkConnectionTimeoutMs,
-                          zkSecurityEnabled)
-    val topicProperties = topicConfig.foldLeft(new Properties) {
-      case (props, (k, v)) => props.put(k, v); props
-    }
-
-    try AdminUtils.createTopic(zkUtils,
-                               topic,
-                               partitions,
-                               replicationFactor,
-                               topicProperties)
-    finally zkUtils.close()
+    try {
+      adminClient
+        .createTopics(Seq(newTopic).asJava)
+        .all
+        .get(2, SECONDS)
+    } finally adminClient.close()
   }
 
 }
