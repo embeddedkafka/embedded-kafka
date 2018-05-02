@@ -2,7 +2,6 @@ package net.manub.embeddedkafka.streams
 
 import net.manub.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig, UUIDs}
 import org.apache.kafka.streams.{KafkaStreams, Topology}
-import org.apache.log4j.Logger
 import org.scalatest.Suite
 
 /** Helper trait for testing Kafka Streams.
@@ -11,8 +10,6 @@ import org.scalatest.Suite
   */
 trait EmbeddedKafkaStreams extends EmbeddedKafka with TestStreamsConfig {
   this: Suite =>
-
-  private val logger = Logger.getLogger(classOf[EmbeddedKafkaStreams])
 
   /** Execute Kafka streams and pass a block of code that can
     * operate while the streams are active.
@@ -34,7 +31,6 @@ trait EmbeddedKafkaStreams extends EmbeddedKafka with TestStreamsConfig {
     withRunningKafka {
       topicsToCreate.foreach(topic => createCustomTopic(topic))
       val streamId = UUIDs.newUuid().toString
-      logger.debug(s"Creating stream with Application ID: [$streamId]")
       val streams =
         new KafkaStreams(topology, streamConfig(streamId, extraConfig))
       streams.start()

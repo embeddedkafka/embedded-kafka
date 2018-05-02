@@ -2,7 +2,6 @@ package net.manub.embeddedkafka
 
 import org.apache.kafka.clients.consumer.{ConsumerRecord, KafkaConsumer}
 import org.apache.kafka.common.KafkaException
-import org.apache.log4j.Logger
 
 import scala.util.Try
 
@@ -12,8 +11,6 @@ object ConsumerExtensions {
   case class ConsumerRetryConfig(maximumAttempts: Int = 3, poll: Long = 2000)
 
   implicit class ConsumerOps[K, V](val consumer: KafkaConsumer[K, V]) {
-
-    private val logger = Logger.getLogger(getClass)
 
     /** Consume messages from one or many topics and return them as a lazily evaluated Scala Stream.
       * Depending on how many messages are taken from the Scala Stream it will try up to retryConf.maximumAttempts times
@@ -34,7 +31,6 @@ object ConsumerExtensions {
       val attempts = 1 to retryConf.maximumAttempts
       attempts.toStream.flatMap { attempt =>
         val batch: Seq[T] = getNextBatch(retryConf.poll, topics)
-        logger.debug(s"----> Batch $attempt ($topics) | ${batch.mkString("|")}")
         batch
       }
     }

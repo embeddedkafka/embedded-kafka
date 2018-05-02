@@ -6,9 +6,6 @@ val kafkaVersion = "1.1.0"
 val confluentVersion = "4.1.0"
 val akkaVersion = "2.5.11"
 
-val slf4jLog4jOrg = "org.slf4j"
-val slf4jLog4jArtifact = "slf4j-log4j12"
-
 lazy val confluentMavenRepo = "confluent" at "https://packages.confluent.io/maven/"
 
 lazy val commonSettings = Seq(
@@ -30,10 +27,9 @@ lazy val commonLibrarySettings = libraryDependencies ++= Seq(
   "io.confluent" % "kafka-schema-registry" % confluentVersion,
   "io.confluent" % "kafka-schema-registry" % confluentVersion classifier "tests",
   "org.scalatest" %% "scalatest" % "3.0.5",
-  "org.apache.kafka" %% "kafka" % kafkaVersion exclude(slf4jLog4jOrg, slf4jLog4jArtifact),
+  "org.apache.kafka" %% "kafka" % kafkaVersion,
   "com.typesafe.akka" %% "akka-actor" % akkaVersion % Test,
-  "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
-  slf4jLog4jOrg % slf4jLog4jArtifact % "1.7.25" % Test
+  "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test
 )
 
 lazy val publishSettings = Seq(
@@ -87,6 +83,6 @@ lazy val kafkaStreams = (project in file("kafka-streams"))
   .settings(commonLibrarySettings)
   .settings(releaseSettings: _*)
   .settings(libraryDependencies ++= Seq(
-    "org.apache.kafka" % "kafka-streams" % kafkaVersion exclude(slf4jLog4jOrg, slf4jLog4jArtifact)
+    "org.apache.kafka" % "kafka-streams" % kafkaVersion
   ))
   .dependsOn(embeddedKafka)
