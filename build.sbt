@@ -21,7 +21,8 @@ lazy val commonSettings = Seq(
   logBuffered in Test := false,
   fork in Test := true,
   javaOptions += "-Xmx1G",
-  scalacOptions += "-deprecation"
+  scalacOptions += "-deprecation",
+  scalafmtOnCompile := true
 )
 
 lazy val commonLibrarySettings = libraryDependencies ++= Seq(
