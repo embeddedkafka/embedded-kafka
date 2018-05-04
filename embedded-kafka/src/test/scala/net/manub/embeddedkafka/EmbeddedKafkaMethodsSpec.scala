@@ -67,8 +67,10 @@ class EmbeddedKafkaMethodsSpec
       val message = "hello world!"
       val topic = "publish_test_topic_with_header"
       val headerValue = "my_header_value"
-      val headers = new RecordHeaders().add("my_header", headerValue.toCharArray.map(_.toByte))
-      val producerRecord = new ProducerRecord[String, String](topic, null, "key", message, headers)
+      val headers = new RecordHeaders()
+        .add("my_header", headerValue.toCharArray.map(_.toByte))
+      val producerRecord =
+        new ProducerRecord[String, String](topic, null, "key", message, headers)
 
       publishToKafka(producerRecord)
 
@@ -296,7 +298,8 @@ class EmbeddedKafkaMethodsSpec
           ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}"
         ).asJava,
         new StringSerializer,
-        specificAvroSerializer[TestAvroClass])
+        specificAvroSerializer[TestAvroClass]
+      )
 
       whenReady(producer.send(new ProducerRecord(topic, message))) { _ =>
         consumeFirstMessageFrom[TestAvroClass](topic) shouldBe message
@@ -325,11 +328,11 @@ class EmbeddedKafkaMethodsSpec
 
       import Codecs._
       whenReady(
-        producer.send(new ProducerRecord[String, String](topic, key, message))) {
-        _ =>
-          val res = consumeFirstKeyedMessageFrom[Array[Byte], Array[Byte]](topic)
-          res._1 shouldBe key.getBytes
-          res._2 shouldBe message.getBytes
+        producer
+          .send(new ProducerRecord[String, String](topic, key, message))) { _ =>
+        val res = consumeFirstKeyedMessageFrom[Array[Byte], Array[Byte]](topic)
+        res._1 shouldBe key.getBytes
+        res._2 shouldBe message.getBytes
       }
 
       producer.close()
@@ -350,7 +353,8 @@ class EmbeddedKafkaMethodsSpec
           ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}"
         ).asJava,
         specificAvroSerializer[TestAvroClass],
-        specificAvroSerializer[TestAvroClass])
+        specificAvroSerializer[TestAvroClass]
+      )
 
       whenReady(producer.send(new ProducerRecord(topic, key, message))) { _ =>
         consumeFirstKeyedMessageFrom[TestAvroClass, TestAvroClass](topic) shouldBe (key, message)
@@ -375,7 +379,8 @@ class EmbeddedKafkaMethodsSpec
           ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}"
         ).asJava,
         new StringSerializer,
-        specificAvroSerializer[TestAvroClass])
+        specificAvroSerializer[TestAvroClass]
+      )
 
       whenReady(producer.send(new ProducerRecord(topic, key, message))) { _ =>
         consumeFirstKeyedMessageFrom[String, TestAvroClass](topic) shouldBe (key, message)
@@ -443,7 +448,8 @@ class EmbeddedKafkaMethodsSpec
   "the consumeNumberMessagesFromTopics method" should {
     "consume from multiple topics" in {
       val config = EmbeddedKafkaConfig()
-      val topicMessagesMap = Map("topic1" -> List("message 1"), "topic2" -> List("message 2a", "message 2b"))
+      val topicMessagesMap = Map("topic1" -> List("message 1"),
+                                 "topic2" -> List("message 2a", "message 2b"))
       val producer = new KafkaProducer[String, String](
         Map[String, Object](
           ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
@@ -460,7 +466,8 @@ class EmbeddedKafkaMethodsSpec
 
       implicit val deserializer = new StringDeserializer
       val consumedMessages =
-        consumeNumberMessagesFromTopics(topicMessagesMap.keySet, topicMessagesMap.values.map(_.size).sum)
+        consumeNumberMessagesFromTopics(topicMessagesMap.keySet,
+                                        topicMessagesMap.values.map(_.size).sum)
 
       consumedMessages.mapValues(_.sorted) shouldEqual topicMessagesMap
 
@@ -471,8 +478,9 @@ class EmbeddedKafkaMethodsSpec
   "the consumeNumberKeyedMessagesFromTopics method" should {
     "consume from multiple topics" in {
       val config = EmbeddedKafkaConfig()
-      val topicMessagesMap = Map("topic1" -> List(("m1", "message 1")),
-        "topic2" -> List(("m2a", "message 2a"), ("m2b", "message 2b")))
+      val topicMessagesMap =
+        Map("topic1" -> List(("m1", "message 1")),
+            "topic2" -> List(("m2a", "message 2a"), ("m2b", "message 2b")))
       val producer = new KafkaProducer[String, String](
         Map[String, Object](
           ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
@@ -482,14 +490,17 @@ class EmbeddedKafkaMethodsSpec
             StringSerializer].getName
         ).asJava)
       for ((topic, messages) <- topicMessagesMap; message <- messages) {
-        producer.send(new ProducerRecord[String, String](topic, message._1, message._2))
+        producer.send(
+          new ProducerRecord[String, String](topic, message._1, message._2))
       }
 
       producer.flush()
 
       implicit val deserializer = new StringDeserializer
       val consumedMessages =
-        consumeNumberKeyedMessagesFromTopics(topicMessagesMap.keySet, topicMessagesMap.values.map(_.size).sum)
+        consumeNumberKeyedMessagesFromTopics(
+          topicMessagesMap.keySet,
+          topicMessagesMap.values.map(_.size).sum)
 
       consumedMessages.mapValues(_.sorted) shouldEqual topicMessagesMap
 
@@ -500,7 +511,7 @@ class EmbeddedKafkaMethodsSpec
   "the aKafkaProducerThat method" should {
     "return a producer that encodes messages for the given encoder" in {
       val producer = aKafkaProducer thatSerializesValuesWith classOf[
-          ByteArraySerializer]
+        ByteArraySerializer]
       producer.send(
         new ProducerRecord[String, Array[Byte]]("a_topic",
                                                 "a message".getBytes))

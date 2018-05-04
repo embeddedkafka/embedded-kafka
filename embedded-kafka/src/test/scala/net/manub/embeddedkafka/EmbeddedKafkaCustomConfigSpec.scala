@@ -6,7 +6,9 @@ import org.apache.kafka.clients.producer.ProducerConfig
 
 import scala.language.postfixOps
 
-class EmbeddedKafkaCustomConfigSpec extends EmbeddedKafkaSpecSupport with EmbeddedKafka {
+class EmbeddedKafkaCustomConfigSpec
+    extends EmbeddedKafkaSpecSupport
+    with EmbeddedKafka {
   val TwoMegabytes = 2097152
   val ThreeMegabytes = 3145728
 
@@ -22,10 +24,10 @@ class EmbeddedKafkaCustomConfigSpec extends EmbeddedKafkaSpecSupport with Embedd
         Map(
           ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG -> s"$ThreeMegabytes")
 
-      implicit val customKafkaConfig = EmbeddedKafkaConfig(
-        customBrokerProperties = customBrokerConfig,
-        customProducerProperties = customProducerConfig,
-        customConsumerProperties = customConsumerConfig)
+      implicit val customKafkaConfig =
+        EmbeddedKafkaConfig(customBrokerProperties = customBrokerConfig,
+                            customProducerProperties = customProducerConfig,
+                            customConsumerProperties = customConsumerConfig)
 
       val bigMessage = generateMessageOfLength(TwoMegabytes)
       val topic = "big-message-topic"
@@ -37,5 +39,6 @@ class EmbeddedKafkaCustomConfigSpec extends EmbeddedKafkaSpecSupport with Embedd
     }
   }
 
-  def generateMessageOfLength(length: Int): String = Stream.continually(util.Random.nextPrintableChar) take length mkString
+  def generateMessageOfLength(length: Int): String =
+    Stream.continually(util.Random.nextPrintableChar) take length mkString
 }

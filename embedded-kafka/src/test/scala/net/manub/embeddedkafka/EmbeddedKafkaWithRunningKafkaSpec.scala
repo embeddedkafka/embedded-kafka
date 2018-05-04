@@ -60,7 +60,8 @@ class EmbeddedKafkaWithRunningKafkaSpec
     }
 
     "start a Schema Registry server on a specified port" in {
-      implicit val config = EmbeddedKafkaConfig(schemaRegistryPort = Some(12345))
+      implicit val config =
+        EmbeddedKafkaConfig(schemaRegistryPort = Some(12345))
 
       withRunningKafka {
         schemaRegistryIsAvailable(12345)

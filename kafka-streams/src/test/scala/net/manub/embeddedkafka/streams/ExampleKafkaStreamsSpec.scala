@@ -68,11 +68,11 @@ class ExampleKafkaStreamsSpec
 
       stream.to(outTopic, Produced.`with`(stringSerde, stringSerde))
 
-      runStreamsWithStringConsumer(Seq(inTopic, outTopic), streamBuilder.build()) {
-        consumer =>
-          publishToKafka(inTopic, "hello", "world")
-          consumer.consumeLazily[(String, String)](outTopic).head should be(
-            "hello" -> "world")
+      runStreamsWithStringConsumer(Seq(inTopic, outTopic),
+                                   streamBuilder.build()) { consumer =>
+        publishToKafka(inTopic, "hello", "world")
+        consumer.consumeLazily[(String, String)](outTopic).head should be(
+          "hello" -> "world")
       }
     }
   }

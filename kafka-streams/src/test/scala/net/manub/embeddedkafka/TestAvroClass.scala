@@ -15,7 +15,7 @@ case class TestAvroClass(var name: String) extends SpecificRecordBase {
     case 0 =>
       name = v match {
         case (utf8: org.apache.avro.util.Utf8) => utf8.toString
-        case _ => v.asInstanceOf[String]
+        case _                                 => v.asInstanceOf[String]
       }
     case _ => throw new AvroRuntimeException("Bad index")
   }

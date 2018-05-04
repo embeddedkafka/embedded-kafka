@@ -1,6 +1,9 @@
 package net.manub.embeddedkafka
 
-import org.apache.kafka.common.serialization.{StringDeserializer, StringSerializer}
+import org.apache.kafka.common.serialization.{
+  StringDeserializer,
+  StringSerializer
+}
 import net.manub.embeddedkafka.EmbeddedKafka._
 
 import scala.collection.JavaConverters._
@@ -38,8 +41,8 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
       "start and stop Kafka, Zookeeper, and Schema Registry on different specified ports using an implicit configuration" in {
         implicit val config =
           EmbeddedKafkaConfig(kafkaPort = 12345,
-            zooKeeperPort = 54321,
-            schemaRegistryPort = Some(13542))
+                              zooKeeperPort = 54321,
+                              schemaRegistryPort = Some(13542))
         EmbeddedKafka.start()
 
         schemaRegistryIsAvailable(13542)
@@ -50,8 +53,10 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
       }
 
       "start and stop a specific Kafka" in {
-        val firstBroker = EmbeddedKafka.start()(EmbeddedKafkaConfig(kafkaPort = 7000, zooKeeperPort = 7001))
-        EmbeddedKafka.start()(EmbeddedKafkaConfig(kafkaPort = 8000, zooKeeperPort = 8001))
+        val firstBroker = EmbeddedKafka.start()(
+          EmbeddedKafkaConfig(kafkaPort = 7000, zooKeeperPort = 7001))
+        EmbeddedKafka.start()(
+          EmbeddedKafkaConfig(kafkaPort = 8000, zooKeeperPort = 8001))
 
         kafkaIsAvailable(7000)
         zookeeperIsAvailable(7001)
@@ -71,8 +76,14 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
       }
 
       "start and stop a specific Kafka along with Schema Registry" in {
-        val firstBroker = EmbeddedKafka.start()(EmbeddedKafkaConfig(kafkaPort = 7000, zooKeeperPort = 7001, schemaRegistryPort = Some(7002)))
-        EmbeddedKafka.start()(EmbeddedKafkaConfig(kafkaPort = 8000, zooKeeperPort = 8001, schemaRegistryPort = Some(8002)))
+        val firstBroker = EmbeddedKafka.start()(
+          EmbeddedKafkaConfig(kafkaPort = 7000,
+                              zooKeeperPort = 7001,
+                              schemaRegistryPort = Some(7002)))
+        EmbeddedKafka.start()(
+          EmbeddedKafkaConfig(kafkaPort = 8000,
+                              zooKeeperPort = 8001,
+                              schemaRegistryPort = Some(8002)))
 
         schemaRegistryIsAvailable(7002)
         kafkaIsAvailable(7000)
@@ -96,10 +107,12 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
       }
 
       "start and stop multiple Kafka instances on specified ports" in {
-        val someConfig = EmbeddedKafkaConfig(kafkaPort = 12345, zooKeeperPort = 32111)
+        val someConfig =
+          EmbeddedKafkaConfig(kafkaPort = 12345, zooKeeperPort = 32111)
         val someBroker = EmbeddedKafka.start()(someConfig)
 
-        val someOtherConfig = EmbeddedKafkaConfig(kafkaPort = 23456, zooKeeperPort = 43211)
+        val someOtherConfig =
+          EmbeddedKafkaConfig(kafkaPort = 23456, zooKeeperPort = 43211)
         val someOtherBroker = EmbeddedKafka.start()(someOtherConfig)
 
         val topic = "publish_test_topic_1"
@@ -114,7 +127,8 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
         kafkaIsAvailable(someConfig.kafkaPort)
         EmbeddedKafka.stop(someBroker)
 
-        val anotherConsumer = kafkaConsumer(someOtherConfig, deserializer, deserializer)
+        val anotherConsumer =
+          kafkaConsumer(someOtherConfig, deserializer, deserializer)
         anotherConsumer.subscribe(List(topic).asJava)
 
         val moreRecords = anotherConsumer.poll(consumerPollTimeout)
@@ -136,7 +150,9 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
       }
 
       "return false when only Kafka is running" in {
-        val unmanagedZookeeper = EmbeddedKafka.startZooKeeper(6000, Directory.makeTemp("zookeeper-test-logs"))
+        val unmanagedZookeeper = EmbeddedKafka.startZooKeeper(
+          6000,
+          Directory.makeTemp("zookeeper-test-logs"))
 
         EmbeddedKafka.startKafka(Directory.makeTemp("kafka-test-logs"))
         EmbeddedKafka.isRunning shouldBe false
