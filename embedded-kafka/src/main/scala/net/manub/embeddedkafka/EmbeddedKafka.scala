@@ -683,7 +683,7 @@ sealed trait EmbeddedKafkaSupport {
                                        tickTime)
 
     val factory = ServerCnxnFactory.createFactory
-    factory.configure(new InetSocketAddress("0.0.0.0", zooKeeperPort), 1024)
+    factory.configure(new InetSocketAddress("localhost", zooKeeperPort), 1024)
     factory.startup(zkServer)
     factory
   }
