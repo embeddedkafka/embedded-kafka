@@ -10,8 +10,8 @@ lazy val confluentMavenRepo = "confluent" at "https://packages.confluent.io/mave
 
 lazy val commonSettings = Seq(
   organization := "net.manub",
-  scalaVersion := "2.12.5",
-  crossScalaVersions := Seq("2.12.5", "2.11.12"),
+  scalaVersion := "2.12.6",
+  crossScalaVersions := Seq("2.12.6", "2.11.12"),
   resolvers ++= Seq(confluentMavenRepo),
   homepage := Some(url("https://github.com/manub/scalatest-embedded-kafka")),
   parallelExecution in Test := false,
