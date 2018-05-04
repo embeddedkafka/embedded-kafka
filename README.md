@@ -21,10 +21,12 @@ scalatest-embedded-kafka is available on Bintray and Maven Central, compiled for
 * Scala 2.12 is supported from `0.11.0`. 
 
 Versions match the version of Kafka they're built against.
+
+*If you're using Kafka 1.1.0, please use version `1.1.0-kafka-1.1`*
  
 ### How to use 
 
-* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka" % "1.1.0" % "test"`
+* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka" % "1.1.0-kafka1.1" % "test"`
 * Have your `Spec` extend the `EmbeddedKafka` trait.
 * Enclose the code that needs a running instance of Kafka within the `withRunningKafka` closure.
 
@@ -229,7 +231,7 @@ It takes care of instantiating and starting your streams as well as closing them
 
 ### How to use
 
-* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka-streams" % "1.1.0" % "test"`
+* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka-streams" % "1.1.0-kafka1.1" % "test"`
 * Have a look at the [example test](kafka-streams/src/test/scala/net/manub/embeddedkafka/streams/ExampleKafkaStreamsSpec.scala)
 * For most of the cases have your `Spec` extend the `EmbeddedKafkaStreamsAllInOne` trait. This offers both streams management and easy creation of consumers for asserting resulting messages in output/sink topics.
 * If you only want to use the streams management without the test consumers just have the `Spec` extend the `EmbeddedKafkaStreams` trait.
