@@ -1,5 +1,9 @@
 package net.manub.embeddedkafka
 
+import kafka.server.KafkaConfig
+import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.apache.kafka.clients.producer.ProducerConfig
+
 import scala.language.postfixOps
 
 class EmbeddedKafkaCustomConfigSpec extends EmbeddedKafkaSpecSupport with EmbeddedKafka {
@@ -8,12 +12,15 @@ class EmbeddedKafkaCustomConfigSpec extends EmbeddedKafkaSpecSupport with Embedd
 
   "the custom config" should {
     "allow pass additional producer parameters" in {
-      val customBrokerConfig = Map(
-        "replica.fetch.max.bytes" -> s"$ThreeMegabytes",
-        "message.max.bytes" -> s"$ThreeMegabytes")
+      val customBrokerConfig =
+        Map(KafkaConfig.ReplicaFetchMaxBytesProp -> s"$ThreeMegabytes",
+            KafkaConfig.MessageMaxBytesProp -> s"$ThreeMegabytes")
 
-      val customProducerConfig = Map("max.request.size" -> s"$ThreeMegabytes")
-      val customConsumerConfig = Map("max.partition.fetch.bytes" -> s"$ThreeMegabytes")
+      val customProducerConfig =
+        Map(ProducerConfig.MAX_REQUEST_SIZE_CONFIG -> s"$ThreeMegabytes")
+      val customConsumerConfig =
+        Map(
+          ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG -> s"$ThreeMegabytes")
 
       implicit val customKafkaConfig = EmbeddedKafkaConfig(
         customBrokerProperties = customBrokerConfig,

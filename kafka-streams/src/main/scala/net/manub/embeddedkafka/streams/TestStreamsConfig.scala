@@ -4,7 +4,7 @@ import java.nio.file.Files
 
 import net.manub.embeddedkafka.avro
 import net.manub.embeddedkafka.EmbeddedKafkaConfig
-import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.apache.kafka.clients.consumer.{ConsumerConfig, OffsetResetStrategy}
 import org.apache.kafka.streams.StreamsConfig
 
 /** Mixin trait for tests allowing to easily create Kafka Stream configurations for tests. */
@@ -30,7 +30,7 @@ trait TestStreamsConfig {
         .createTempDirectory(streamName)
         .toString,
       // force stream consumers to start reading from the beginning so as not to lose messages
-      ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> "earliest"
+      ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> OffsetResetStrategy.EARLIEST.toString.toLowerCase
     )
     val configOverwrittenByExtra = defaultConfig ++
       avro.schemaregistry.consumerConfigForSchemaRegistry
