@@ -33,8 +33,7 @@ trait TestStreamsConfig {
       ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> OffsetResetStrategy.EARLIEST.toString.toLowerCase
     )
     val configOverwrittenByExtra = defaultConfig ++
-      avro.schemaregistry.consumerConfigForSchemaRegistry
-        .getOrElse(Map.empty) ++ extraConfig
+      extraConfig
     new StreamsConfig(configOverwrittenByExtra.asJava)
   }
 }

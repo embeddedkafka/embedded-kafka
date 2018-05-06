@@ -1,4 +1,4 @@
-package net.manub.embeddedkafka.avro.schemaregistry
+package net.manub.embeddedkafka.schemaregistry.avro
 
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.clients.consumer.ConsumerRecord
