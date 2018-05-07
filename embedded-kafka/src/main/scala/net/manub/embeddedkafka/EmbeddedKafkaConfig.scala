@@ -6,6 +6,7 @@ trait EmbeddedKafkaConfig {
   def customBrokerProperties: Map[String, String]
   def customProducerProperties: Map[String, String]
   def customConsumerProperties: Map[String, String]
+  def numberOfThreads: Int
 }
 
 case class EmbeddedKafkaConfigImpl(
@@ -14,7 +15,9 @@ case class EmbeddedKafkaConfigImpl(
     customBrokerProperties: Map[String, String],
     customProducerProperties: Map[String, String],
     customConsumerProperties: Map[String, String]
-) extends EmbeddedKafkaConfig
+) extends EmbeddedKafkaConfig {
+  override val numberOfThreads: Int = 2
+}
 
 object EmbeddedKafkaConfig {
   implicit val defaultConfig: EmbeddedKafkaConfig = apply()

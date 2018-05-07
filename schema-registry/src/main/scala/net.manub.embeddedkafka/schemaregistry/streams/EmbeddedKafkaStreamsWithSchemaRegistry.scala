@@ -1,14 +1,16 @@
 package net.manub.embeddedkafka.schemaregistry.streams
 
 import net.manub.embeddedkafka.UUIDs
+import net.manub.embeddedkafka.schemaregistry.EmbeddedKafkaWithSchemaRegistry.consumerConfigForSchemaRegistry
 import net.manub.embeddedkafka.schemaregistry.{
   EmbeddedKafkaConfigWithSchemaRegistry,
-  EmbeddedKafkaWithSchemaRegistry,
-  _
+  EmbeddedKafkaWithSchemaRegistry
 }
 import net.manub.embeddedkafka.streams.TestStreamsConfig
 import org.apache.kafka.streams.{KafkaStreams, Topology}
 import org.scalatest.Suite
+
+// TODO: need to find a better way of not duplicating this code from the kafka-streams module
 
 /** Helper trait for testing Kafka Streams.
   * It creates an embedded Kafka Instance for each test case.

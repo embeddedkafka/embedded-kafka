@@ -6,6 +6,8 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.streams.Topology
 import org.scalatest.Suite
 
+// TODO: need to find a better way of not duplicating this code from the kafka-streams module
+
 /** Convenience trait for testing Kafka Streams with ScalaTest.
   * It exposes `EmbeddedKafkaStreams.runStreams` as well as `Consumers` api
   * for easily creating and querying consumers in tests.

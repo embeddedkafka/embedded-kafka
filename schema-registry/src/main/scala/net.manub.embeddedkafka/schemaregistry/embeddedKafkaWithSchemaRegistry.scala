@@ -4,6 +4,10 @@ import java.util.Properties
 
 import io.confluent.kafka.schemaregistry.RestApp
 import io.confluent.kafka.schemaregistry.avro.AvroCompatibilityLevel
+import io.confluent.kafka.serializers.{
+  AbstractKafkaAvroSerDeConfig,
+  KafkaAvroDeserializerConfig
+}
 import kafka.server.KafkaServer
 import net.manub.embeddedkafka.EmbeddedKafka.servers
 import net.manub.embeddedkafka.{
@@ -60,7 +64,7 @@ sealed trait EmbeddedKafkaWithSchemaRegistrySupport
   }
 
   /**
-    * Starts a ZooKeeper instance, a Kafka broker, and optionally a Schema Registry app, then executes the body passed as a parameter.
+    * Starts a ZooKeeper instance, a Kafka broker and a Schema Registry app, then executes the body passed as a parameter.
     * The actual ZooKeeper, Kafka, and Schema Registry ports will be detected and inserted into a copied version of
     * the EmbeddedKafkaConfig that gets passed to body. This is useful if you set any port to 0, which will listen on an arbitrary available port.
     *
@@ -80,7 +84,6 @@ sealed trait EmbeddedKafkaWithSchemaRegistrySupport
                      kafkaLogsDir)
         val kafkaPort =
           broker.boundPort(broker.config.listeners.head.listenerName)
-        // Optionally start Schema Registry
         val app =
           startSchemaRegistry(config.schemaRegistryPort, zkPort)
         val schemaRegistryPort = app.restServer.getURI.getPort
@@ -132,7 +135,7 @@ object EmbeddedKafkaWithSchemaRegistry
       ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
       ProducerConfig.MAX_BLOCK_MS_CONFIG -> 10000.toString,
       ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> 1000.toString
-    ) ++ config.customProducerProperties ++ configForSchemaRegistry
+    ) ++ configForSchemaRegistry ++ config.customProducerProperties
 
   override def baseConsumerConfig(
       implicit config: EmbeddedKafkaConfigWithSchemaRegistry)
@@ -142,7 +145,7 @@ object EmbeddedKafkaWithSchemaRegistry
       ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
       ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> OffsetResetStrategy.EARLIEST.toString.toLowerCase,
       ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> false.toString
-    ) ++ config.customConsumerProperties ++ consumerConfigForSchemaRegistry
+    ) ++ consumerConfigForSchemaRegistry ++ config.customConsumerProperties
 
   /**
     * Starts a ZooKeeper instance and a Kafka broker in memory, using temporary directories for storing logs.
@@ -197,6 +200,30 @@ object EmbeddedKafkaWithSchemaRegistry
     servers = servers.filter(!apps.contains(_))
   }
 
+  /**
+    * Returns a map of configuration to grant Schema Registry support.
+    *
+    * @param config an implicit [[EmbeddedKafkaConfig]].
+    * @return
+    */
+  def configForSchemaRegistry(
+      implicit config: EmbeddedKafkaConfigWithSchemaRegistry)
+    : Map[String, Object] =
+    Map(
+      AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG -> s"http://localhost:${config.schemaRegistryPort}")
+
+  /**
+    * Returns a map of Kafka Consumer configuration to grant Schema Registry support.
+    *
+    * @param config an implicit [[EmbeddedKafkaConfig]].
+    * @return
+    */
+  def consumerConfigForSchemaRegistry(
+      implicit config: EmbeddedKafkaConfigWithSchemaRegistry)
+    : Map[String, Object] =
+    configForSchemaRegistry ++ Map(
+      KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG -> true.toString
+    )
   private def isEmbeddedSR(server: EmbeddedServer): Boolean =
     server.isInstanceOf[EmbeddedSR]
 

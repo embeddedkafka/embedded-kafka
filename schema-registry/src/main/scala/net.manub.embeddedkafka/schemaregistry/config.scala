@@ -13,7 +13,9 @@ case class EmbeddedKafkaConfigWithSchemaRegistryImpl(
     customBrokerProperties: Map[String, String],
     customProducerProperties: Map[String, String],
     customConsumerProperties: Map[String, String]
-) extends EmbeddedKafkaConfigWithSchemaRegistry
+) extends EmbeddedKafkaConfigWithSchemaRegistry {
+  override val numberOfThreads: Int = 3
+}
 
 object EmbeddedKafkaConfigWithSchemaRegistry {
   implicit val defaultConfig: EmbeddedKafkaConfig = apply()

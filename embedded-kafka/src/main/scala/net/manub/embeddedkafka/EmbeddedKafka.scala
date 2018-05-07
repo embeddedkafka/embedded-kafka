@@ -57,7 +57,6 @@ object EmbeddedKafka extends EmbeddedKafkaSupport[EmbeddedKafkaConfig] {
 
   /**
     * Starts a ZooKeeper instance and a Kafka broker in memory, using temporary directories for storing logs.
-    * Optionally also starts a Schema Registry app.
     * The log directories will be cleaned after calling the [[stop()]] method or on JVM exit, whichever happens earlier.
     *
     * @param config an implicit [[EmbeddedKafkaConfig]]
@@ -179,9 +178,6 @@ object EmbeddedKafka extends EmbeddedKafkaSupport[EmbeddedKafkaConfig] {
 }
 
 private[embeddedkafka] trait EmbeddedKafkaSupport[C <: EmbeddedKafkaConfig] {
-  private val executorService = Executors.newFixedThreadPool(3)
-  implicit private val executionContext: ExecutionContextExecutorService =
-    ExecutionContext.fromExecutorService(executorService)
 
   val zkSessionTimeoutMs = 10000
   val zkConnectionTimeoutMs = 10000

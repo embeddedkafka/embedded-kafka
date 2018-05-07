@@ -1,10 +1,12 @@
 package net.manub.embeddedkafka
 
 import io.confluent.kafka.serializers.{
-  AbstractKafkaAvroSerDeConfig,
-  KafkaAvroDeserializerConfig,
   KafkaAvroDeserializer => ConfluentKafkaAvroDeserializer,
   KafkaAvroSerializer => ConfluentKafkaAvroSerializer
+}
+import net.manub.embeddedkafka.schemaregistry.EmbeddedKafkaWithSchemaRegistry.{
+  configForSchemaRegistry,
+  consumerConfigForSchemaRegistry
 }
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.{
@@ -35,30 +37,5 @@ package object schemaregistry {
   implicit def specificAvroDeserializer[T <: SpecificRecord](
       implicit config: EmbeddedKafkaConfigWithSchemaRegistry): Deserializer[T] =
     serdeFrom[T].deserializer
-
-  /**
-    * Returns a map of configuration to grant Schema Registry support.
-    *
-    * @param config an implicit [[EmbeddedKafkaConfig]].
-    * @return
-    */
-  def configForSchemaRegistry(
-      implicit config: EmbeddedKafkaConfigWithSchemaRegistry)
-    : Map[String, Object] =
-    Map(
-      AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG -> s"http://localhost:${config.schemaRegistryPort}")
-
-  /**
-    * Returns a map of Kafka Consumer configuration to grant Schema Registry support.
-    *
-    * @param config an implicit [[EmbeddedKafkaConfig]].
-    * @return
-    */
-  def consumerConfigForSchemaRegistry(
-      implicit config: EmbeddedKafkaConfigWithSchemaRegistry)
-    : Map[String, Object] =
-    configForSchemaRegistry ++ Map(
-      KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG -> true.toString
-    )
 
 }

@@ -6,13 +6,10 @@ val kafkaVersion = "1.1.0"
 val confluentVersion = "4.1.0"
 val akkaVersion = "2.5.11"
 
-lazy val confluentMavenRepo = "confluent" at "https://packages.confluent.io/maven/"
-
 lazy val commonSettings = Seq(
   organization := "net.manub",
   scalaVersion := "2.12.6",
   crossScalaVersions := Seq("2.12.6", "2.11.12"),
-  resolvers ++= Seq(confluentMavenRepo),
   homepage := Some(url("https://github.com/manub/scalatest-embedded-kafka")),
   parallelExecution in Test := false,
   logBuffered in Test := false,
@@ -91,6 +88,7 @@ lazy val schemaRegistry = (project in file("schema-registry"))
   .settings(commonSettings: _*)
   .settings(commonLibrarySettings)
   .settings(releaseSettings: _*)
+  .settings(resolvers ++= Seq("confluent" at "https://packages.confluent.io/maven/"))
   .settings(libraryDependencies ++= Seq(
     "org.apache.kafka" % "kafka-streams" % kafkaVersion,
     "io.confluent" % "kafka-avro-serializer" % confluentVersion,
