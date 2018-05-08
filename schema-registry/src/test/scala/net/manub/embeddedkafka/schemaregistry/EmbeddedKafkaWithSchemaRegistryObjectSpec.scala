@@ -11,7 +11,7 @@ class EmbeddedKafkaWithSchemaRegistryObjectSpec
         EmbeddedKafkaConfigWithSchemaRegistry(kafkaPort = 7000,
                                               zooKeeperPort = 7001,
                                               schemaRegistryPort = 7002))
-      EmbeddedKafka.start()(
+      EmbeddedKafkaWithSchemaRegistry.start()(
         EmbeddedKafkaConfigWithSchemaRegistry(kafkaPort = 8000,
                                               zooKeeperPort = 8001,
                                               schemaRegistryPort = 8002))
