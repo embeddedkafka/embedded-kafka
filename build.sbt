@@ -14,7 +14,7 @@ lazy val commonSettings = Seq(
   parallelExecution in Test := false,
   logBuffered in Test := false,
   fork in Test := true,
-  javaOptions += "-Xmx1G",
+  javaOptions ++= Seq("-Xms512m", "-Xmx2048m"),
   scalacOptions += "-deprecation",
   scalafmtOnCompile := true
 )
