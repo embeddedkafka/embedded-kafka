@@ -1,11 +1,14 @@
-package net.manub.embeddedkafka.streams
+package net.manub.embeddedkafka.schemaregistry.streams
 
-import net.manub.embeddedkafka.avro.schemaregistry._
-import net.manub.embeddedkafka.avro.schemaregistry.Codecs._
 import net.manub.embeddedkafka.Codecs._
 import net.manub.embeddedkafka.ConsumerExtensions._
-import net.manub.embeddedkafka.{EmbeddedKafkaConfig, TestAvroClass}
-import org.apache.kafka.common.serialization.{Serde, Serdes}
+import net.manub.embeddedkafka.TestAvroClass
+import net.manub.embeddedkafka.schemaregistry.avro.Codecs._
+import net.manub.embeddedkafka.schemaregistry.{
+  EmbeddedKafkaConfigWithSchemaRegistry,
+  _
+}
+import org.apache.kafka.common.serialization._
 import org.apache.kafka.streams.kstream.{KStream, Produced}
 import org.apache.kafka.streams.{Consumed, StreamsBuilder}
 import org.scalatest.{Matchers, WordSpec}
@@ -13,12 +16,12 @@ import org.scalatest.{Matchers, WordSpec}
 class ExampleKafkaStreamsSchemaRegistrySpec
     extends WordSpec
     with Matchers
-    with EmbeddedKafkaStreamsAllInOne {
+    with EmbeddedKafkaStreamsWithSchemaRegistryAllInOne {
 
-  implicit val config: EmbeddedKafkaConfig =
-    EmbeddedKafkaConfig(kafkaPort = 7000,
-                        zooKeeperPort = 7001,
-                        schemaRegistryPort = Some(7002))
+  implicit val config: EmbeddedKafkaConfigWithSchemaRegistry =
+    EmbeddedKafkaConfigWithSchemaRegistry(kafkaPort = 7000,
+                                          zooKeeperPort = 7001,
+                                          schemaRegistryPort = 7002)
 
   val (inTopic, outTopic) = ("in", "out")
 

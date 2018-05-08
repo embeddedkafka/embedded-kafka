@@ -1,28 +1,27 @@
-package net.manub.embeddedkafka
-
-import avro.schemaregistry._
+package net.manub.embeddedkafka.schemaregistry
 
 import net.manub.embeddedkafka.Codecs._
+import net.manub.embeddedkafka.{EmbeddedKafkaSpecSupport, TestAvroClass}
 import org.apache.kafka.clients.producer.ProducerRecord
 
 import scala.collection.JavaConverters._
 
-class EmbeddedKafkaSchemaRegistrySpec
+class EmbeddedKafkaWithSchemaRegistrySpec
     extends EmbeddedKafkaSpecSupport
-    with EmbeddedKafka {
+    with EmbeddedKafkaWithSchemaRegistry {
 
-  implicit lazy val embeddedKafkaConfig: EmbeddedKafkaConfig =
-    EmbeddedKafkaConfig(schemaRegistryPort = Some(6002))
+  implicit lazy val embeddedKafkaConfig: EmbeddedKafkaConfigWithSchemaRegistry =
+    EmbeddedKafkaConfigWithSchemaRegistry()
 
   val consumerPollTimeout = 5000
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    EmbeddedKafka.start()
+    EmbeddedKafkaWithSchemaRegistry.start()
   }
 
   override def afterAll(): Unit = {
-    EmbeddedKafka.stop()
+    EmbeddedKafkaWithSchemaRegistry.stop()
     super.afterAll()
   }
 

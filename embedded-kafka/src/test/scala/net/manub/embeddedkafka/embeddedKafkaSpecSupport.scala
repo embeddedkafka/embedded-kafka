@@ -30,7 +30,7 @@ abstract class EmbeddedKafkaSpecSupport
     with Eventually
     with IntegrationPatience {
 
-  implicit val config =
+  implicit val config: PatienceConfig =
     PatienceConfig(Span(2, Seconds), Span(100, Milliseconds))
 
   override def afterAll(): Unit = {

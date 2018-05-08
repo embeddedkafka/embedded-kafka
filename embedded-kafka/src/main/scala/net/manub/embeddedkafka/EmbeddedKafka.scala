@@ -4,8 +4,6 @@ import java.net.InetSocketAddress
 import java.util.Properties
 import java.util.concurrent.Executors
 
-import io.confluent.kafka.schemaregistry.RestApp
-import io.confluent.kafka.schemaregistry.avro.AvroCompatibilityLevel
 import kafka.server.{KafkaConfig, KafkaServer}
 import org.apache.kafka.clients.admin.{AdminClient, AdminClientConfig, NewTopic}
 import org.apache.kafka.clients.consumer.{
@@ -42,17 +40,23 @@ import scala.language.{higherKinds, postfixOps}
 import scala.reflect.io.Directory
 import scala.util.Try
 
-trait EmbeddedKafka extends EmbeddedKafkaSupport {
+trait EmbeddedKafka extends EmbeddedKafkaSupport[EmbeddedKafkaConfig] {
   this: Suite =>
+
+  override def baseConsumerConfig(
+      implicit config: EmbeddedKafkaConfig): Map[String, Object] =
+    EmbeddedKafka.baseConsumerConfig
+  override def baseProducerConfig(
+      implicit config: EmbeddedKafkaConfig): Map[String, Object] =
+    EmbeddedKafka.baseProducerConfig
 }
 
-object EmbeddedKafka extends EmbeddedKafkaSupport {
+object EmbeddedKafka extends EmbeddedKafkaSupport[EmbeddedKafkaConfig] {
 
-  private[this] var servers: Seq[EmbeddedServer] = Seq.empty
+  private[embeddedkafka] var servers: Seq[EmbeddedServer] = Seq.empty
 
   /**
     * Starts a ZooKeeper instance and a Kafka broker in memory, using temporary directories for storing logs.
-    * Optionally also starts a Schema Registry app.
     * The log directories will be cleaned after calling the [[stop()]] method or on JVM exit, whichever happens earlier.
     *
     * @param config an implicit [[EmbeddedKafkaConfig]]
@@ -65,12 +69,8 @@ object EmbeddedKafka extends EmbeddedKafkaSupport {
       EmbeddedZ(startZooKeeper(config.zooKeeperPort, zkLogsDir), zkLogsDir)
 
     val kafkaServer = startKafka(config, kafkaLogsDir)
-    // Optionally start Schema Registry
-    val restApp = config.schemaRegistryPort.map(schemaRegistryPort =>
-      EmbeddedSR(
-        startSchemaRegistry(schemaRegistryPort, factory.factory.getLocalPort)))
     val broker =
-      EmbeddedK(Option(factory), kafkaServer, restApp, kafkaLogsDir)
+      EmbeddedK(Option(factory), kafkaServer, kafkaLogsDir)
 
     servers :+= broker
     broker
@@ -148,17 +148,6 @@ object EmbeddedKafka extends EmbeddedKafkaSupport {
   }
 
   /**
-    * Stops all in memory Schema Registry instances.
-    */
-  def stopSchemaRegistry(): Unit = {
-    val apps = servers.toFilteredSeq[EmbeddedSR](isEmbeddedSR)
-
-    apps.foreach(_.stop())
-
-    servers = servers.filter(!apps.contains(_))
-  }
-
-  /**
     * Returns whether the in memory Kafka and Zookeeper are both running.
     */
   def isRunning: Boolean =
@@ -168,26 +157,36 @@ object EmbeddedKafka extends EmbeddedKafkaSupport {
     server.isInstanceOf[EmbeddedK]
   private def isEmbeddedZ(server: EmbeddedServer): Boolean =
     server.isInstanceOf[EmbeddedZ]
-  private def isEmbeddedSR(server: EmbeddedServer): Boolean =
-    server.isInstanceOf[EmbeddedSR]
 
-  implicit class ServerOps(servers: Seq[EmbeddedServer]) {
-    def toFilteredSeq[T <: EmbeddedServer](
-        filter: EmbeddedServer => Boolean): Seq[T] =
-      servers.filter(filter).asInstanceOf[Seq[T]]
-  }
+  override def baseProducerConfig(
+      implicit config: EmbeddedKafkaConfig): Map[String, Object] =
+    Map[String, Object](
+      ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
+      ProducerConfig.MAX_BLOCK_MS_CONFIG -> 10000.toString,
+      ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> 1000.toString
+    ) ++ config.customProducerProperties
+
+  override def baseConsumerConfig(
+      implicit config: EmbeddedKafkaConfig): Map[String, Object] =
+    Map[String, Object](
+      ConsumerConfig.GROUP_ID_CONFIG -> "embedded-kafka-spec",
+      ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
+      ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> OffsetResetStrategy.EARLIEST.toString.toLowerCase,
+      ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> false.toString
+    ) ++ config.customConsumerProperties
+
 }
 
-sealed trait EmbeddedKafkaSupport {
-  private val executorService = Executors.newFixedThreadPool(3)
-  implicit private val executionContext: ExecutionContextExecutorService =
-    ExecutionContext.fromExecutorService(executorService)
+private[embeddedkafka] trait EmbeddedKafkaSupport[C <: EmbeddedKafkaConfig] {
 
   val zkSessionTimeoutMs = 10000
   val zkConnectionTimeoutMs = 10000
 
+  def baseProducerConfig(implicit config: C): Map[String, Object]
+  def baseConsumerConfig(implicit config: C): Map[String, Object]
+
   /**
-    * Starts a ZooKeeper instance, a Kafka broker, and optionally a Schema Registry app, then executes the body passed as a parameter.
+    * Starts a ZooKeeper instance and a Kafka broker, then executes the body passed as a parameter.
     *
     * @param body   the function to execute
     * @param config an implicit [[EmbeddedKafkaConfig]]
@@ -201,14 +200,9 @@ sealed trait EmbeddedKafkaSupport {
                      zkPort,
                      config.customBrokerProperties,
                      kafkaLogsDir)
-        // Optionally start Schema Registry
-        val app = config.schemaRegistryPort.map(schemaRegistryPort =>
-          startSchemaRegistry(schemaRegistryPort, zkPort))
-
         try {
           body
         } finally {
-          app.foreach(_.stop())
           broker.shutdown()
           broker.awaitShutdown()
         }
@@ -217,7 +211,7 @@ sealed trait EmbeddedKafkaSupport {
   }
 
   /**
-    * Starts a ZooKeeper instance, a Kafka broker, and optionally a Schema Registry app, then executes the body passed as a parameter.
+    * Starts a ZooKeeper instance and a Kafka broker, then executes the body passed as a parameter.
     * The actual ZooKeeper, Kafka, and Schema Registry ports will be detected and inserted into a copied version of
     * the EmbeddedKafkaConfig that gets passed to body. This is useful if you set any port to 0, which will listen on an arbitrary available port.
     *
@@ -236,22 +230,15 @@ sealed trait EmbeddedKafkaSupport {
                      kafkaLogsDir)
         val kafkaPort =
           broker.boundPort(broker.config.listeners.head.listenerName)
-        // Optionally start Schema Registry
-        val app = config.schemaRegistryPort.map(schemaRegistryPort =>
-          startSchemaRegistry(schemaRegistryPort, zkPort))
-        val schemaRegistryPort = app.map(_.restServer.getURI.getPort)
-
         val actualConfig =
           EmbeddedKafkaConfigImpl(kafkaPort,
                                   zkPort,
-                                  schemaRegistryPort,
                                   config.customBrokerProperties,
                                   config.customProducerProperties,
                                   config.customConsumerProperties)
         try {
           body(actualConfig)
         } finally {
-          app.foreach(_.stop())
           broker.shutdown()
           broker.awaitShutdown()
         }
@@ -259,7 +246,8 @@ sealed trait EmbeddedKafkaSupport {
     }
   }
 
-  private def withRunningZooKeeper[T](port: Int)(body: Int => T): T = {
+  private[embeddedkafka] def withRunningZooKeeper[T](port: Int)(
+      body: Int => T): T = {
     withTempDir("zookeeper-logs") { zkLogsDir =>
       val factory = startZooKeeper(port, zkLogsDir)
       try {
@@ -270,7 +258,8 @@ sealed trait EmbeddedKafkaSupport {
     }
   }
 
-  private def withTempDir[T](prefix: String)(body: Directory => T): T = {
+  private[embeddedkafka] def withTempDir[T](prefix: String)(
+      body: Directory => T): T = {
     val dir = Directory.makeTemp(prefix)
     try {
       body(dir)
@@ -289,7 +278,7 @@ sealed trait EmbeddedKafkaSupport {
     * @throws KafkaUnavailableException if unable to connect to Kafka
     */
   def publishStringMessageToKafka(topic: String, message: String)(
-      implicit config: EmbeddedKafkaConfig): Unit =
+      implicit config: C): Unit =
     publishToKafka(topic, message)(config, new StringSerializer)
 
   /**
@@ -303,7 +292,7 @@ sealed trait EmbeddedKafkaSupport {
     */
   @throws(classOf[KafkaUnavailableException])
   def publishToKafka[T](topic: String, message: T)(
-      implicit config: EmbeddedKafkaConfig,
+      implicit config: C,
       serializer: Serializer[T]): Unit =
     publishToKafka(new KafkaProducer(baseProducerConfig.asJava,
                                      new StringSerializer(),
@@ -320,7 +309,7 @@ sealed trait EmbeddedKafkaSupport {
     */
   @throws(classOf[KafkaUnavailableException])
   def publishToKafka[T](producerRecord: ProducerRecord[String, T])(
-      implicit config: EmbeddedKafkaConfig,
+      implicit config: C,
       serializer: Serializer[T]): Unit =
     publishToKafka(new KafkaProducer(baseProducerConfig.asJava,
                                      new StringSerializer(),
@@ -339,7 +328,7 @@ sealed trait EmbeddedKafkaSupport {
     */
   @throws(classOf[KafkaUnavailableException])
   def publishToKafka[K, T](topic: String, key: K, message: T)(
-      implicit config: EmbeddedKafkaConfig,
+      implicit config: C,
       keySerializer: Serializer[K],
       serializer: Serializer[T]): Unit =
     publishToKafka(
@@ -358,7 +347,7 @@ sealed trait EmbeddedKafkaSupport {
     */
   @throws(classOf[KafkaUnavailableException])
   def publishToKafka[K, T](topic: String, messages: Seq[(K, T)])(
-      implicit config: EmbeddedKafkaConfig,
+      implicit config: C,
       keySerializer: Serializer[K],
       serializer: Serializer[T]): Unit = {
 
@@ -394,45 +383,28 @@ sealed trait EmbeddedKafkaSupport {
   }
 
   def kafkaProducer[K, T](topic: String, key: K, message: T)(
-      implicit config: EmbeddedKafkaConfig,
+      implicit config: C,
       keySerializer: Serializer[K],
       serializer: Serializer[T]) =
     new KafkaProducer[K, T](baseProducerConfig.asJava,
                             keySerializer,
                             serializer)
 
-  def kafkaConsumer[K, T](implicit config: EmbeddedKafkaConfig,
+  def kafkaConsumer[K, T](implicit config: C,
                           keyDeserializer: Deserializer[K],
                           deserializer: Deserializer[T]) =
     new KafkaConsumer[K, T](baseConsumerConfig.asJava,
                             keyDeserializer,
                             deserializer)
 
-  private def baseProducerConfig(implicit config: EmbeddedKafkaConfig) =
-    Map[String, Object](
-      ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
-      ProducerConfig.MAX_BLOCK_MS_CONFIG -> 10000.toString,
-      ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> 1000.toString
-    ) ++ avro.schemaregistry.configForSchemaRegistry
-      .getOrElse(Map.empty) ++ config.customProducerProperties
-
-  private def baseConsumerConfig(implicit config: EmbeddedKafkaConfig) =
-    Map[String, Object](
-      ConsumerConfig.GROUP_ID_CONFIG -> "embedded-kafka-spec",
-      ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
-      ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> OffsetResetStrategy.EARLIEST.toString.toLowerCase,
-      ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> false.toString
-    ) ++ avro.schemaregistry.consumerConfigForSchemaRegistry
-      .getOrElse(Map.empty) ++ config.customConsumerProperties
-
   def consumeFirstStringMessageFrom(topic: String, autoCommit: Boolean = false)(
-      implicit config: EmbeddedKafkaConfig): String =
+      implicit config: C): String =
     consumeNumberStringMessagesFrom(topic, 1, autoCommit)(config).head
 
-  def consumeNumberStringMessagesFrom(topic: String,
-                                      number: Int,
-                                      autoCommit: Boolean = false)(
-      implicit config: EmbeddedKafkaConfig): List[String] =
+  def consumeNumberStringMessagesFrom(
+      topic: String,
+      number: Int,
+      autoCommit: Boolean = false)(implicit config: C): List[String] =
     consumeNumberMessagesFrom(topic, number, autoCommit)(
       config,
       new StringDeserializer())
@@ -456,7 +428,7 @@ sealed trait EmbeddedKafkaSupport {
   @throws(classOf[TimeoutException])
   @throws(classOf[KafkaUnavailableException])
   def consumeFirstMessageFrom[V](topic: String, autoCommit: Boolean = false)(
-      implicit config: EmbeddedKafkaConfig,
+      implicit config: C,
       valueDeserializer: Deserializer[V]): V =
     consumeNumberMessagesFrom[V](topic, 1, autoCommit)(config,
                                                        valueDeserializer).head
@@ -482,7 +454,7 @@ sealed trait EmbeddedKafkaSupport {
   @throws(classOf[KafkaUnavailableException])
   def consumeFirstKeyedMessageFrom[K, V](topic: String,
                                          autoCommit: Boolean = false)(
-      implicit config: EmbeddedKafkaConfig,
+      implicit config: C,
       keyDeserializer: Deserializer[K],
       valueDeserializer: Deserializer[V]): (K, V) =
     consumeNumberKeyedMessagesFrom[K, V](topic, 1, autoCommit)(
@@ -493,7 +465,7 @@ sealed trait EmbeddedKafkaSupport {
   def consumeNumberMessagesFrom[V](topic: String,
                                    number: Int,
                                    autoCommit: Boolean = false)(
-      implicit config: EmbeddedKafkaConfig,
+      implicit config: C,
       valueDeserializer: Deserializer[V]): List[V] =
     consumeNumberMessagesFromTopics(Set(topic), number, autoCommit)(
       config,
@@ -502,7 +474,7 @@ sealed trait EmbeddedKafkaSupport {
   def consumeNumberKeyedMessagesFrom[K, V](topic: String,
                                            number: Int,
                                            autoCommit: Boolean = false)(
-      implicit config: EmbeddedKafkaConfig,
+      implicit config: C,
       keyDeserializer: Deserializer[K],
       valueDeserializer: Deserializer[V]): List[(K, V)] =
     consumeNumberKeyedMessagesFromTopics(Set(topic), number, autoCommit)(
@@ -540,7 +512,7 @@ sealed trait EmbeddedKafkaSupport {
                                          timeout: Duration = 5.seconds,
                                          resetTimeoutOnEachMessage: Boolean =
                                            true)(
-      implicit config: EmbeddedKafkaConfig,
+      implicit config: C,
       valueDeserializer: Deserializer[V]): Map[String, List[V]] = {
     consumeNumberKeyedMessagesFromTopics(topics,
                                          number,
@@ -583,7 +555,7 @@ sealed trait EmbeddedKafkaSupport {
       autoCommit: Boolean = false,
       timeout: Duration = 5.seconds,
       resetTimeoutOnEachMessage: Boolean = true)(
-      implicit config: EmbeddedKafkaConfig,
+      implicit config: C,
       keyDeserializer: Deserializer[K],
       valueDeserializer: Deserializer[V]): Map[String, List[(K, V)]] = {
     val consumerProperties = baseConsumerConfig ++ Map[String, Object](
@@ -639,7 +611,7 @@ sealed trait EmbeddedKafkaSupport {
     }
 
     def thatSerializesValuesWith[V](serializer: Class[_ <: Serializer[V]])(
-        implicit config: EmbeddedKafkaConfig): KafkaProducer[String, V] = {
+        implicit config: C): KafkaProducer[String, V] = {
       val producer = new KafkaProducer[String, V](
         (baseProducerConfig + (ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[
           StringSerializer].getName,
@@ -649,29 +621,13 @@ sealed trait EmbeddedKafkaSupport {
     }
 
     def apply[V](implicit valueSerializer: Serializer[V],
-                 config: EmbeddedKafkaConfig): KafkaProducer[String, V] = {
-      val producer = new KafkaProducer[String, V](
-        baseProducerConfig(config).asJava,
-        new StringSerializer,
-        valueSerializer)
+                 config: C): KafkaProducer[String, V] = {
+      val producer = new KafkaProducer[String, V](baseProducerConfig.asJava,
+                                                  new StringSerializer,
+                                                  valueSerializer)
       producers :+= producer
       producer
     }
-  }
-
-  // Make sure to start Schema Registry after Kafka and ZooKeeper
-  def startSchemaRegistry(schemaRegistryPort: Int,
-                          zooKeeperPort: Int,
-                          avroCompatibilityLevel: AvroCompatibilityLevel =
-                            AvroCompatibilityLevel.NONE,
-                          properties: Properties = new Properties): RestApp = {
-    val server = new RestApp(schemaRegistryPort,
-                             s"localhost:$zooKeeperPort",
-                             "_schemas",
-                             avroCompatibilityLevel.name,
-                             properties)
-    server.start()
-    server
   }
 
   def startZooKeeper(zooKeeperPort: Int,
@@ -688,10 +644,11 @@ sealed trait EmbeddedKafkaSupport {
     factory
   }
 
-  private def startKafka(kafkaPort: Int,
-                         zooKeeperPort: Int,
-                         customBrokerProperties: Map[String, String],
-                         kafkaLogDir: Directory) = {
+  private[embeddedkafka] def startKafka(
+      kafkaPort: Int,
+      zooKeeperPort: Int,
+      customBrokerProperties: Map[String, String],
+      kafkaLogDir: Directory) = {
     val zkAddress = s"localhost:$zooKeeperPort"
     val listener = s"${SecurityProtocol.PLAINTEXT}://localhost:$kafkaPort"
 

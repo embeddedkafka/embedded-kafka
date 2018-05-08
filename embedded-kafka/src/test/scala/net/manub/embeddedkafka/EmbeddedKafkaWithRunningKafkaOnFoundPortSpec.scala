@@ -17,20 +17,6 @@ class EmbeddedKafkaWithRunningKafkaOnFoundPortSpec
       noServerIsAvailable(actualConfig)
     }
 
-    "start and stop Kafka, Zookeeper, and Schema Registry successfully on non-zero ports" in {
-      val userDefinedConfig = EmbeddedKafkaConfig(kafkaPort = 12345,
-                                                  zooKeeperPort = 12346,
-                                                  schemaRegistryPort =
-                                                    Some(12347))
-      val actualConfig = withRunningKafkaOnFoundPort(userDefinedConfig) {
-        actualConfig =>
-          actualConfig shouldBe userDefinedConfig
-          everyServerIsAvailable(actualConfig)
-          actualConfig
-      }
-      noServerIsAvailable(actualConfig)
-    }
-
     "start and stop multiple Kafka and Zookeeper successfully on arbitrary available ports" in {
       val userDefinedConfig =
         EmbeddedKafkaConfig(kafkaPort = 0, zooKeeperPort = 0)
@@ -54,7 +40,6 @@ class EmbeddedKafkaWithRunningKafkaOnFoundPortSpec
                   config =>
                     EmbeddedKafkaConfigImpl(kafkaPort = 0,
                                             zooKeeperPort = 0,
-                                            schemaRegistryPort = None,
                                             config.customBrokerProperties,
                                             config.customProducerProperties,
                                             config.customConsumerProperties))
@@ -79,13 +64,11 @@ class EmbeddedKafkaWithRunningKafkaOnFoundPortSpec
 
   private def everyServerIsAvailable(config: EmbeddedKafkaConfig): Unit = {
     kafkaIsAvailable(config.kafkaPort)
-    config.schemaRegistryPort.foreach(schemaRegistryIsAvailable)
     zookeeperIsAvailable(config.zooKeeperPort)
   }
 
   private def noServerIsAvailable(config: EmbeddedKafkaConfig): Unit = {
     kafkaIsNotAvailable(config.kafkaPort)
-    config.schemaRegistryPort.foreach(schemaRegistryIsNotAvailable)
     zookeeperIsNotAvailable(config.zooKeeperPort)
   }
 }

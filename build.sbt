@@ -6,13 +6,10 @@ val kafkaVersion = "1.1.0"
 val confluentVersion = "4.1.0"
 val akkaVersion = "2.5.11"
 
-lazy val confluentMavenRepo = "confluent" at "https://packages.confluent.io/maven/"
-
 lazy val commonSettings = Seq(
   organization := "net.manub",
   scalaVersion := "2.12.6",
   crossScalaVersions := Seq("2.12.6", "2.11.12"),
-  resolvers ++= Seq(confluentMavenRepo),
   homepage := Some(url("https://github.com/manub/scalatest-embedded-kafka")),
   parallelExecution in Test := false,
   logBuffered in Test := false,
@@ -23,9 +20,7 @@ lazy val commonSettings = Seq(
 )
 
 lazy val commonLibrarySettings = libraryDependencies ++= Seq(
-  "io.confluent" % "kafka-avro-serializer" % confluentVersion,
-  "io.confluent" % "kafka-schema-registry" % confluentVersion,
-  "io.confluent" % "kafka-schema-registry" % confluentVersion classifier "tests",
+  "org.apache.avro" % "avro" % "1.8.1",
   "org.scalatest" %% "scalatest" % "3.0.5",
   "org.apache.kafka" %% "kafka" % kafkaVersion,
   "com.typesafe.akka" %% "akka-actor" % akkaVersion % Test,
@@ -66,7 +61,7 @@ lazy val root = (project in file("."))
   .settings(releaseSettings: _*)
   .disablePlugins(BintrayPlugin)
   .settings(publishTo := Some(Resolver.defaultLocal))
-  .aggregate(embeddedKafka, kafkaStreams)
+  .aggregate(embeddedKafka, kafkaStreams, schemaRegistry)
 
 lazy val embeddedKafka = (project in file("embedded-kafka"))
   .settings(name := "scalatest-embedded-kafka")
@@ -86,3 +81,18 @@ lazy val kafkaStreams = (project in file("kafka-streams"))
     "org.apache.kafka" % "kafka-streams" % kafkaVersion
   ))
   .dependsOn(embeddedKafka)
+
+lazy val schemaRegistry = (project in file("schema-registry"))
+  .settings(name := "scalatest-embedded-schema-registry")
+  .settings(publishSettings: _*)
+  .settings(commonSettings: _*)
+  .settings(commonLibrarySettings)
+  .settings(releaseSettings: _*)
+  .settings(resolvers ++= Seq("confluent" at "https://packages.confluent.io/maven/"))
+  .settings(libraryDependencies ++= Seq(
+    "org.apache.kafka" % "kafka-streams" % kafkaVersion,
+    "io.confluent" % "kafka-avro-serializer" % confluentVersion,
+    "io.confluent" % "kafka-schema-registry" % confluentVersion,
+    "io.confluent" % "kafka-schema-registry" % confluentVersion classifier "tests",
+  ))
+  .dependsOn(embeddedKafka % "compile->compile;test->test", kafkaStreams % "compile->compile;test->test")
