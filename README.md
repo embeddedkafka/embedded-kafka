@@ -22,7 +22,7 @@ scalatest-embedded-kafka is available on Bintray and Maven Central, compiled for
 
 Versions match the version of Kafka they're built against.
 
-*If you're using Kafka 1.1.0, please use version `1.1.0-kafka-1.1`*
+*If you're using Kafka 1.1.0, please use version `1.1.0-kafka1.1-nosr`*
  
 ### How to use 
 
