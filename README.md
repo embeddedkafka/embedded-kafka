@@ -26,7 +26,7 @@ Versions match the version of Kafka they're built against.
  
 ### How to use 
 
-* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka" % "1.1.0-kafka1.1" % "test"`
+* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka" % "1.1.0-kafka1.1-nosr" % "test"`
 * Have your `Spec` extend the `EmbeddedKafka` trait.
 * Enclose the code that needs a running instance of Kafka within the `withRunningKafka` closure.
 
@@ -192,37 +192,6 @@ consumer.consumeLazily[(String, String)]("from-this-topic").take(3).toList shoul
 )
 ```
 
-## Confuent Schema Registry support
-
-If you need to serialize and deserialize messages using Avro, a [Confluent Schema Registry](https://docs.confluent.io/current/schema-registry/docs/index.html) instance can be provided to test your code.
-
-### How to use
-
-* Provide an implicit `EmbeddedKafkaConfig` specifying a port for Schema Registry to use (a value of 0 means random available port will be selected).
-
-```scala
-class MySpec extends WordSpec with EmbeddedKafka {
-
-  "runs with embedded kafka and Schema Registry" should {
-
-    "work" in {
-      implicit val config = EmbeddedKafkaConfig(schemaRegistryPort = Some(12345))
-
-      withRunningKafka {
-        // ... code goes here
-      }
-    }
-  }
-}
-```
-
-* A Schema Registry server will be started and automatically shutdown at the end of the test.
-* Have a look at the [example test](kafka-streams/src/test/scala/net/manub/embeddedkafka/streams/ExampleKafkaStreamsSchemaRegistrySpec.scala).
-
-### Utility methods
-
-The `net.manub.embeddedkafka.avro.schemaregistry` package object provides useful implicit converters for testing with Avro and Schema Registry.
-
 ## scalatest-embedded-kafka-streams
 
 A library that builds on top of `scalatest-embedded-kafka` to offer easy testing of [Kafka Streams](https://cwiki.apache.org/confluence/display/KAFKA/Kafka+Streams) with ScalaTest.
@@ -231,7 +200,7 @@ It takes care of instantiating and starting your streams as well as closing them
 
 ### How to use
 
-* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka-streams" % "1.1.0-kafka1.1" % "test"`
+* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka-streams" % "1.1.0-kafka1.1-nosr" % "test"`
 * Have a look at the [example test](kafka-streams/src/test/scala/net/manub/embeddedkafka/streams/ExampleKafkaStreamsSpec.scala)
 * For most of the cases have your `Spec` extend the `EmbeddedKafkaStreamsAllInOne` trait. This offers both streams management and easy creation of consumers for asserting resulting messages in output/sink topics.
 * If you only want to use the streams management without the test consumers just have the `Spec` extend the `EmbeddedKafkaStreams` trait.
@@ -270,3 +239,44 @@ class MySpec extends WordSpec with Matchers with EmbeddedKafkaStreamsAllInOne {
   }
 }
 ```
+
+## scalatest-embedded-schema-registry
+
+If you need to serialize and deserialize messages using Avro, a [Confluent Schema Registry](https://docs.confluent.io/current/schema-registry/docs/index.html) instance can be provided to test your code.
+
+### How to use
+
+* In your `build.sbt` file add the following resolver: `resolvers += "confluent" at "https://packages.confluent.io/maven/"`
+* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-schema-registry" % "1.1.0-kafka1.1-nosr" % "test"`
+* Have your `Spec` extend the `EmbeddedKafkaWithSchemaRegistry` trait.
+* Enclose the code that needs a running instance of Kafka within the `withRunningKafka` closure.
+* Provide an implicit `EmbeddedKafkaConfigWithSchemaRegistryImpl`.
+
+```scala
+class MySpec extends WordSpec with EmbeddedKafkaWithSchemaRegistry {
+
+  "runs with embedded kafka and Schema Registry" should {
+
+    "work" in {
+      implicit val config = EmbeddedKafkaConfigWithSchemaRegistryImpl()
+
+      withRunningKafka {
+        // ... code goes here
+      }
+    }
+  }
+}
+```
+
+* A Schema Registry server will be started and automatically shutdown at the end of the test.
+
+### Utility methods
+
+The `net.manub.embeddedkafka.avro.schemaregistry` package object provides useful implicit converters for testing with Avro and Schema Registry.
+
+## Using streams
+
+* For most of the cases have your `Spec` extend the `EmbeddedKafkaStreamsWithSchemaRegistryAllInOne` trait. This offers both streams management and easy creation of consumers for asserting resulting messages in output/sink topics.
+* If you only want to use the streams management without the test consumers just have the `Spec` extend the `EmbeddedKafkaStreamsWithSchemaRegistry` trait.
+* Build your own `Topology` and use `runStreams` to test it.
+* Have a look at the [example test](schema-registry/src/test/scala/net/manub/embeddedkafka/schemaregistry/streams/ExampleKafkaStreamsSchemaRegistrySpec.scala).
