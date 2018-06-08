@@ -2,7 +2,6 @@ package net.manub.embeddedkafka.streams
 
 import java.nio.file.Files
 
-import net.manub.embeddedkafka.avro
 import net.manub.embeddedkafka.EmbeddedKafkaConfig
 import org.apache.kafka.clients.consumer.{ConsumerConfig, OffsetResetStrategy}
 import org.apache.kafka.streams.StreamsConfig

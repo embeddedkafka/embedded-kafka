@@ -29,7 +29,7 @@ object ConsumerExtensions {
         retryConf: ConsumerRetryConfig = ConsumerRetryConfig()
     ): Stream[T] = {
       val attempts = 1 to retryConf.maximumAttempts
-      attempts.toStream.flatMap { attempt =>
+      attempts.toStream.flatMap { _ =>
         val batch: Seq[T] = getNextBatch(retryConf.poll, topics)
         batch
       }

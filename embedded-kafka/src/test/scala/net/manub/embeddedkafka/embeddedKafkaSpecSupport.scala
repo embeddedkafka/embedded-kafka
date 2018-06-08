@@ -41,41 +41,41 @@ abstract class EmbeddedKafkaSpecSupport
   def kafkaIsAvailable(kafkaPort: Int = 6001): Unit = {
     system.actorOf(
       TcpClient.props(new InetSocketAddress("localhost", kafkaPort), testActor))
-    expectMsg(1 second, ConnectionSuccessful)
+    expectMsg(1 second, Connection.Success)
   }
 
   def schemaRegistryIsAvailable(schemaRegistryPort: Int = 6002): Unit = {
     system.actorOf(
       TcpClient.props(new InetSocketAddress("localhost", schemaRegistryPort),
                       testActor))
-    expectMsg(1 second, ConnectionSuccessful)
+    expectMsg(1 second, Connection.Success)
   }
 
   def zookeeperIsAvailable(zookeeperPort: Int = 6000): Unit = {
     system.actorOf(
       TcpClient.props(new InetSocketAddress("localhost", zookeeperPort),
                       testActor))
-    expectMsg(1 second, ConnectionSuccessful)
+    expectMsg(1 second, Connection.Success)
   }
 
   def kafkaIsNotAvailable(kafkaPort: Int = 6001): Unit = {
     system.actorOf(
       TcpClient.props(new InetSocketAddress("localhost", kafkaPort), testActor))
-    expectMsg(1 second, ConnectionFailed)
+    expectMsg(1 second, Connection.Failure)
   }
 
   def schemaRegistryIsNotAvailable(schemaRegistryPort: Int = 6002): Unit = {
     system.actorOf(
       TcpClient.props(new InetSocketAddress("localhost", schemaRegistryPort),
                       testActor))
-    expectMsg(1 second, ConnectionFailed)
+    expectMsg(1 second, Connection.Failure)
   }
 
   def zookeeperIsNotAvailable(zookeeperPort: Int = 6000): Unit = {
     system.actorOf(
       TcpClient.props(new InetSocketAddress("localhost", zookeeperPort),
                       testActor))
-    expectMsg(1 second, ConnectionFailed)
+    expectMsg(1 second, Connection.Failure)
   }
 }
 
@@ -84,8 +84,10 @@ object TcpClient {
     Props(new TcpClient(remote, replies))
 }
 
-case object ConnectionSuccessful
-case object ConnectionFailed
+object Connection {
+  object Success
+  object Failure
+}
 
 class TcpClient(remote: InetSocketAddress, listener: ActorRef) extends Actor {
 
@@ -95,11 +97,11 @@ class TcpClient(remote: InetSocketAddress, listener: ActorRef) extends Actor {
 
   def receive: Receive = {
     case Connected(_, _) =>
-      listener ! ConnectionSuccessful
+      listener ! Connection.Success
       context stop self
 
     case _ =>
-      listener ! ConnectionFailed
+      listener ! Connection.Failure
       context stop self
   }
 }

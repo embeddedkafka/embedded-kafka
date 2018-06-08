@@ -1,8 +1,6 @@
 package net.manub.embeddedkafka
 
 import java.net.InetSocketAddress
-import java.util.Properties
-import java.util.concurrent.Executors
 
 import kafka.server.{KafkaConfig, KafkaServer}
 import org.apache.kafka.clients.admin.{AdminClient, AdminClientConfig, NewTopic}
@@ -31,12 +29,7 @@ import org.scalatest.Suite
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
-import scala.concurrent.{
-  ExecutionContext,
-  ExecutionContextExecutorService,
-  TimeoutException
-}
-import scala.language.{higherKinds, postfixOps}
+import scala.concurrent.TimeoutException
 import scala.reflect.io.Directory
 import scala.util.Try
 
@@ -120,7 +113,7 @@ object EmbeddedKafka extends EmbeddedKafkaSupport[EmbeddedKafkaConfig] {
     */
   def stop(server: EmbeddedServer): Unit = {
     server.stop(true)
-    servers = servers.filter(x => x != server)
+    servers = servers.filter(_ != server)
   }
 
   /**

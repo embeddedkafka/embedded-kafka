@@ -1,6 +1,6 @@
 package net.manub.embeddedkafka.schemaregistry
 
-import net.manub.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaSpecSupport}
+import net.manub.embeddedkafka.EmbeddedKafkaSpecSupport
 
 class EmbeddedKafkaWithSchemaRegistryObjectSpec
     extends EmbeddedKafkaSpecSupport {

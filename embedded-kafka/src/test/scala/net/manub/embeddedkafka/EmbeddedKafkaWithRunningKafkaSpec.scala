@@ -2,8 +2,6 @@ package net.manub.embeddedkafka
 
 import org.scalatest.exceptions.TestFailedException
 
-import scala.language.postfixOps
-
 class EmbeddedKafkaWithRunningKafkaSpec
     extends EmbeddedKafkaSpecSupport
     with EmbeddedKafka {

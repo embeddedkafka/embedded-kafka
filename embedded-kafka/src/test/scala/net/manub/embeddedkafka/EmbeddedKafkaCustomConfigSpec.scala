@@ -5,6 +5,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 
 import scala.language.postfixOps
+import scala.util.Random
 
 class EmbeddedKafkaCustomConfigSpec
     extends EmbeddedKafkaSpecSupport
@@ -40,5 +41,5 @@ class EmbeddedKafkaCustomConfigSpec
   }
 
   def generateMessageOfLength(length: Int): String =
-    Stream.continually(util.Random.nextPrintableChar) take length mkString
+    Stream.continually(Random.nextPrintableChar) take length mkString
 }
