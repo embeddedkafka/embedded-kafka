@@ -20,9 +20,9 @@ scalatest-embedded-kafka is available on Bintray and Maven Central, compiled for
 * Scala 2.11 is supported for all versions
 * Scala 2.12 is supported from `0.11.0`. 
 
-Versions match the version of Kafka they're built against.
+Starting from 1.0.0, versions match the version of Kafka they're built against.
 
-*If you're using Kafka 1.1.0, please use version `1.1.0-kafka1.1-nosr`*
+*If you're using Kafka 1.1.0, please use version `1.1.0-kafka1.1-nosr` - this version doesn't pull in the Confluent Schema Registry by default*
  
 ### How to use 
 
