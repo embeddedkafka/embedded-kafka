@@ -61,9 +61,25 @@ object EmbeddedKafka extends EmbeddedKafkaSupport[EmbeddedKafkaConfig] {
     val factory =
       EmbeddedZ(startZooKeeper(config.zooKeeperPort, zkLogsDir), zkLogsDir)
 
-    val kafkaServer = startKafka(config, kafkaLogsDir)
+    val zkPort = zookeeperPort(factory)
+
+    val configWithUsedZookeeperPort = EmbeddedKafkaConfig(
+      config.kafkaPort,
+      zkPort,
+      config.customBrokerProperties,
+      config.customProducerProperties,
+      config.customConsumerProperties
+    )
+    val kafkaServer = startKafka(configWithUsedZookeeperPort, kafkaLogsDir)
+
+    val actualConfig = EmbeddedKafkaConfigImpl(kafkaPort(kafkaServer),
+                                               zkPort,
+                                               config.customBrokerProperties,
+                                               config.customProducerProperties,
+                                               config.customConsumerProperties)
+
     val broker =
-      EmbeddedK(Option(factory), kafkaServer, kafkaLogsDir)
+      EmbeddedK(Option(factory), kafkaServer, kafkaLogsDir, actualConfig)
 
     servers :+= broker
     broker
@@ -93,7 +109,8 @@ object EmbeddedKafka extends EmbeddedKafkaSupport[EmbeddedKafkaConfig] {
     */
   def startKafka(kafkaLogsDir: Directory)(
       implicit config: EmbeddedKafkaConfig): EmbeddedK = {
-    val broker = EmbeddedK(startKafka(config, kafkaLogsDir), kafkaLogsDir)
+    val broker =
+      EmbeddedK(startKafka(config, kafkaLogsDir), kafkaLogsDir, config)
     servers :+= broker
     broker
   }
@@ -168,6 +185,13 @@ object EmbeddedKafka extends EmbeddedKafkaSupport[EmbeddedKafkaConfig] {
       ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> false.toString
     ) ++ config.customConsumerProperties
 
+  private[embeddedkafka] def kafkaPort(kafkaServer: KafkaServer): Int =
+    kafkaServer.boundPort(kafkaServer.config.listeners.head.listenerName)
+
+  private[embeddedkafka] def zookeeperPort(zk: EmbeddedZ): Int =
+    zookeeperPort(zk.factory)
+  private[embeddedkafka] def zookeeperPort(fac: ServerCnxnFactory): Int =
+    fac.getLocalPort
 }
 
 private[embeddedkafka] trait EmbeddedKafkaSupport[C <: EmbeddedKafkaConfig] {
@@ -221,10 +245,8 @@ private[embeddedkafka] trait EmbeddedKafkaSupport[C <: EmbeddedKafkaConfig] {
                      zkPort,
                      config.customBrokerProperties,
                      kafkaLogsDir)
-        val kafkaPort =
-          broker.boundPort(broker.config.listeners.head.listenerName)
         val actualConfig =
-          EmbeddedKafkaConfigImpl(kafkaPort,
+          EmbeddedKafkaConfigImpl(EmbeddedKafka.kafkaPort(broker),
                                   zkPort,
                                   config.customBrokerProperties,
                                   config.customProducerProperties,

@@ -51,7 +51,8 @@ private[embeddedkafka] trait EmbeddedServerWithKafka extends EmbeddedServer {
   */
 case class EmbeddedK(factory: Option[EmbeddedZ],
                      broker: KafkaServer,
-                     logsDirs: Directory)(implicit config: EmbeddedKafkaConfig)
+                     logsDirs: Directory,
+                     config: EmbeddedKafkaConfig)
     extends EmbeddedServerWithKafka {
 
   /**
@@ -72,7 +73,8 @@ case class EmbeddedK(factory: Option[EmbeddedZ],
 }
 
 object EmbeddedK {
-  def apply(broker: KafkaServer, logsDirs: Directory)(
-      implicit config: EmbeddedKafkaConfig): EmbeddedK =
-    EmbeddedK(factory = None, broker, logsDirs)
+  def apply(broker: KafkaServer,
+            logsDirs: Directory,
+            config: EmbeddedKafkaConfig): EmbeddedK =
+    EmbeddedK(factory = None, broker, logsDirs, config)
 }

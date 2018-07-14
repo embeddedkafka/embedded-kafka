@@ -5,6 +5,8 @@ import org.apache.kafka.common.serialization.{
   StringSerializer
 }
 import net.manub.embeddedkafka.EmbeddedKafka._
+import org.apache.kafka.common.network.ListenerName
+import org.apache.kafka.common.security.auth.SecurityProtocol
 
 import scala.collection.JavaConverters._
 import scala.reflect.io.Directory
@@ -59,6 +61,28 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
         zookeeperIsAvailable(8001)
 
         EmbeddedKafka.stop()
+      }
+
+      "start and stop Kafka and Zookeeper successfully on arbitrary available ports" in {
+        val someConfig =
+          EmbeddedKafkaConfig(kafkaPort = 0, zooKeeperPort = 0)
+        val kafka = EmbeddedKafka.start()(someConfig)
+
+        kafka.factory shouldBe defined
+
+        val usedZookeeperPort = EmbeddedKafka.zookeeperPort(kafka.factory.get)
+        val usedKafkaPort = EmbeddedKafka.kafkaPort(kafka.broker)
+
+        kafkaIsAvailable(usedKafkaPort)
+        zookeeperIsAvailable(usedZookeeperPort)
+
+        kafka.config.kafkaPort should be(usedKafkaPort)
+        kafka.config.zooKeeperPort should be(usedZookeeperPort)
+
+        EmbeddedKafka.stop()
+
+        kafkaIsNotAvailable(usedKafkaPort)
+        zookeeperIsNotAvailable(usedZookeeperPort)
       }
 
       "start and stop multiple Kafka instances on specified ports" in {
