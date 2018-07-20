@@ -24,7 +24,6 @@ import org.apache.kafka.common.serialization.{
 }
 import org.apache.kafka.common.{KafkaException, TopicPartition}
 import org.apache.zookeeper.server.{ServerCnxnFactory, ZooKeeperServer}
-import org.scalatest.Suite
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
@@ -34,7 +33,6 @@ import scala.reflect.io.Directory
 import scala.util.Try
 
 trait EmbeddedKafka extends EmbeddedKafkaSupport[EmbeddedKafkaConfig] {
-  this: Suite =>
 
   override def baseConsumerConfig(
       implicit config: EmbeddedKafkaConfig): Map[String, Object] =

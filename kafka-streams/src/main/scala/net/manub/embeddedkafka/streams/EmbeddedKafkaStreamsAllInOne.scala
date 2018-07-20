@@ -3,7 +3,6 @@ package net.manub.embeddedkafka.streams
 import net.manub.embeddedkafka.{Consumers, EmbeddedKafkaConfig}
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.streams.Topology
-import org.scalatest.Suite
 
 /** Convenience trait for testing Kafka Streams with ScalaTest.
   * It exposes `EmbeddedKafkaStreams.runStreams` as well as `Consumers` api
@@ -13,7 +12,6 @@ import org.scalatest.Suite
   * @see [[EmbeddedKafkaStreams]]
   */
 trait EmbeddedKafkaStreamsAllInOne extends EmbeddedKafkaStreams with Consumers {
-  this: Suite =>
 
   /** Run Kafka Streams while offering a String-based consumer for easy testing of stream output.
     *

@@ -8,7 +8,6 @@ import net.manub.embeddedkafka.schemaregistry.{
 }
 import net.manub.embeddedkafka.streams.TestStreamsConfig
 import org.apache.kafka.streams.{KafkaStreams, Topology}
-import org.scalatest.Suite
 
 // TODO: need to find a better way of not duplicating this code from the kafka-streams module
 
@@ -19,7 +18,6 @@ import org.scalatest.Suite
 trait EmbeddedKafkaStreamsWithSchemaRegistry
     extends EmbeddedKafkaWithSchemaRegistry
     with TestStreamsConfig {
-  this: Suite =>
 
   /** Execute Kafka streams and pass a block of code that can
     * operate while the streams are active.

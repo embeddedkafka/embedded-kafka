@@ -2,14 +2,12 @@ package net.manub.embeddedkafka.streams
 
 import net.manub.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig, UUIDs}
 import org.apache.kafka.streams.{KafkaStreams, Topology}
-import org.scalatest.Suite
 
 /** Helper trait for testing Kafka Streams.
   * It creates an embedded Kafka Instance for each test case.
   * Use `runStreams` to execute your streams.
   */
 trait EmbeddedKafkaStreams extends EmbeddedKafka with TestStreamsConfig {
-  this: Suite =>
 
   /** Execute Kafka streams and pass a block of code that can
     * operate while the streams are active.

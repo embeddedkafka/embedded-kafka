@@ -4,7 +4,6 @@ import net.manub.embeddedkafka.Consumers
 import net.manub.embeddedkafka.schemaregistry.EmbeddedKafkaConfigWithSchemaRegistry
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.streams.Topology
-import org.scalatest.Suite
 
 // TODO: need to find a better way of not duplicating this code from the kafka-streams module
 
@@ -18,7 +17,6 @@ import org.scalatest.Suite
 trait EmbeddedKafkaStreamsWithSchemaRegistryAllInOne
     extends EmbeddedKafkaStreamsWithSchemaRegistry
     with Consumers {
-  this: Suite =>
 
   /** Run Kafka Streams while offering a String-based consumer for easy testing of stream output.
     *
