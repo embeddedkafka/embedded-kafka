@@ -1,7 +1,7 @@
 # scalatest-embedded-kafka
 A library that provides an in-memory Kafka instance to run your tests against.
 
-*As of version 1.1.1 the library is not dependent anymore on ScalaTest and won't transitively ScalaTest into your build*
+*As of version 1.1.1 the library is not dependent anymore on ScalaTest and won't transitively bring ScalaTest into your build.*
 
 Inspired by https://github.com/chbatey/kafka-unit
 
