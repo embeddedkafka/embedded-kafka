@@ -1,5 +1,7 @@
 # scalatest-embedded-kafka
-A library that provides an in-memory Kafka broker to run your ScalaTest specs against. 
+A library that provides an in-memory Kafka instance to run your tests against.
+
+*As of version 1.1.1 the library is not dependent anymore on ScalaTest and won't transitively ScalaTest into your build*
 
 Inspired by https://github.com/chbatey/kafka-unit
 
@@ -14,21 +16,21 @@ Inspired by https://github.com/chbatey/kafka-unit
 
 ### Version compatibility matrix
 
-scalatest-embedded-kafka is available on Bintray and Maven Central, compiled for both Scala 2.11 and 2.12.
+scalatest-embedded-kafka is available on Bintray and Maven Central, compiled for both Scala 2.11 and 2.12. Scala 2.10 is supported until `0.10.0`. Scala 2.12 is supported from `0.11.0` onwards, following Apache Kafka release cycle.
 
-* Scala 2.10 is supported until `0.10.0`
-* Scala 2.11 is supported for all versions
-* Scala 2.12 is supported from `0.11.0`. 
+Currently there's no support for Scala 2.13-Mx as Kafka artifacts are not published for these versions. 
 
-Starting from 1.0.0, versions match the version of Kafka they're built against.
+Starting from 1.0.0, versions match the version of Kafka they're built against. However in the past there were some mismatches - the easiest way is to check through the git history of the `build.sbt` file
 
 *If you're using Kafka 1.1.0, please use version `1.1.0-kafka1.1-nosr` - this version doesn't pull in the Confluent Schema Registry by default*
  
 ### How to use 
 
-* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka" % "1.1.0-kafka1.1-nosr" % "test"`
-* Have your `Spec` extend the `EmbeddedKafka` trait.
+* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka" % "1.1.1" % "test"`
+* Have your class extend the `EmbeddedKafka` trait.
 * Enclose the code that needs a running instance of Kafka within the `withRunningKafka` closure.
+
+An example, using ScalaTest:
 
 ```scala
 class MySpec extends WordSpec with EmbeddedKafka {
@@ -49,7 +51,8 @@ class MySpec extends WordSpec with EmbeddedKafka {
 
 ### Use without the `withRunningKafka` method
 
-A `EmbeddedKafka` companion object is provided for usage without the `EmbeddedKafka` trait. Zookeeper and Kafka can be started and stopped in a programmatic way.
+A `EmbeddedKafka` companion object is provided for usage without extending the `EmbeddedKafka` trait. Zookeeper and Kafka can be started and stopped in a programmatic way. This is the recommended usage if you have more than one test in your file and you don't want to start and stop Kafka and Zookeeper on every test.
+
 
 ```scala
 class MySpec extends WordSpec {
@@ -194,13 +197,13 @@ consumer.consumeLazily[(String, String)]("from-this-topic").take(3).toList shoul
 
 ## scalatest-embedded-kafka-streams
 
-A library that builds on top of `scalatest-embedded-kafka` to offer easy testing of [Kafka Streams](https://cwiki.apache.org/confluence/display/KAFKA/Kafka+Streams) with ScalaTest.
+A library that builds on top of `scalatest-embedded-kafka` to offer easy testing of [Kafka Streams](https://cwiki.apache.org/confluence/display/KAFKA/Kafka+Streams).
 
 It takes care of instantiating and starting your streams as well as closing them after running your test-case code.
 
 ### How to use
 
-* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka-streams" % "1.1.0-kafka1.1-nosr" % "test"`
+* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka-streams" % "1.1.1" % "test"`
 * Have a look at the [example test](kafka-streams/src/test/scala/net/manub/embeddedkafka/streams/ExampleKafkaStreamsSpec.scala)
 * For most of the cases have your `Spec` extend the `EmbeddedKafkaStreamsAllInOne` trait. This offers both streams management and easy creation of consumers for asserting resulting messages in output/sink topics.
 * If you only want to use the streams management without the test consumers just have the `Spec` extend the `EmbeddedKafkaStreams` trait.
@@ -247,8 +250,8 @@ If you need to serialize and deserialize messages using Avro, a [Confluent Schem
 ### How to use
 
 * In your `build.sbt` file add the following resolver: `resolvers += "confluent" at "https://packages.confluent.io/maven/"`
-* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-schema-registry" % "1.1.0-kafka1.1-nosr" % "test"`
-* Have your `Spec` extend the `EmbeddedKafkaWithSchemaRegistry` trait.
+* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-schema-registry" % "1.1.1" % "test"`
+* Have your test extend the `EmbeddedKafkaWithSchemaRegistry` trait.
 * Enclose the code that needs a running instance of Kafka within the `withRunningKafka` closure.
 * Provide an implicit `EmbeddedKafkaConfigWithSchemaRegistryImpl`.
 
@@ -274,7 +277,7 @@ class MySpec extends WordSpec with EmbeddedKafkaWithSchemaRegistry {
 
 The `net.manub.embeddedkafka.avro.schemaregistry` package object provides useful implicit converters for testing with Avro and Schema Registry.
 
-## Using streams
+### Using streams
 
 * For most of the cases have your `Spec` extend the `EmbeddedKafkaStreamsWithSchemaRegistryAllInOne` trait. This offers both streams management and easy creation of consumers for asserting resulting messages in output/sink topics.
 * If you only want to use the streams management without the test consumers just have the `Spec` extend the `EmbeddedKafkaStreamsWithSchemaRegistry` trait.
