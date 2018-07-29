@@ -79,7 +79,8 @@ object EmbeddedKafka extends EmbeddedKafkaSupport[EmbeddedKafkaConfig] {
     val broker =
       EmbeddedK(Option(factory), kafkaServer, kafkaLogsDir, actualConfig)
 
-    servers :+= broker
+    servers ++= Seq(broker, factory)
+
     broker
   }
 

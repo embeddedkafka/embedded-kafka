@@ -29,7 +29,7 @@ case class EmbeddedZ(factory: ServerCnxnFactory, logsDirs: Directory)(
     *
     * @param clearLogs  pass `true` to recursively delete the log directory.
     */
-  override def stop(clearLogs: Boolean) = {
+  override def stop(clearLogs: Boolean): Unit = {
     factory.shutdown()
     if (clearLogs) logsDirs.deleteRecursively()
   }
