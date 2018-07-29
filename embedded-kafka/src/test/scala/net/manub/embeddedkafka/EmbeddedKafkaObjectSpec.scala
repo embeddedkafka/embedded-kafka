@@ -30,7 +30,7 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
       }
 
       "start and stop Kafka and Zookeeper on different specified ports using an implicit configuration" in {
-        implicit val config =
+        implicit val config: EmbeddedKafkaConfig =
           EmbeddedKafkaConfig(kafkaPort = 12345, zooKeeperPort = 54321)
         EmbeddedKafka.start()
 
