@@ -48,7 +48,7 @@ object ConsumerExtensions {
         import scala.collection.JavaConverters._
         consumer.subscribe(topics.asJava)
         topics.foreach(consumer.partitionsFor)
-        val records = consumer.poll(poll)
+        val records = consumer.poll(java.time.Duration.ofMillis(poll))
         // use toList to force eager evaluation. toSeq is lazy
         records.iterator().asScala.toList.map(decoder(_))
       }.recover {

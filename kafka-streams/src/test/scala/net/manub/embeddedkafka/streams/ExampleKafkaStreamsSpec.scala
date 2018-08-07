@@ -4,8 +4,8 @@ import net.manub.embeddedkafka.Codecs._
 import net.manub.embeddedkafka.ConsumerExtensions._
 import net.manub.embeddedkafka.EmbeddedKafkaConfig
 import org.apache.kafka.common.serialization.{Serde, Serdes}
-import org.apache.kafka.streams.{Consumed, StreamsBuilder}
-import org.apache.kafka.streams.kstream.{KStream, Produced}
+import org.apache.kafka.streams.StreamsBuilder
+import org.apache.kafka.streams.kstream.{Consumed, KStream, Produced}
 import org.scalatest.{Matchers, WordSpec}
 
 class ExampleKafkaStreamsSpec

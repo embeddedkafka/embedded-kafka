@@ -30,11 +30,13 @@ class ConsumerExtensionsSpec
           .empty[TopicPartition, java.util.List[ConsumerRecord[String, String]]]
           .asJava)
 
-      when(consumer.poll(retryConf.poll)).thenReturn(consumerRecords)
+      when(consumer.poll(java.time.Duration.ofMillis(retryConf.poll)))
+        .thenReturn(consumerRecords)
 
       consumer.consumeLazily[String]("topic")
 
-      verify(consumer, times(retryConf.maximumAttempts)).poll(retryConf.poll)
+      verify(consumer, times(retryConf.maximumAttempts))
+        .poll(java.time.Duration.ofMillis(retryConf.poll))
     }
 
     "not retry to get messages with the configured maximum number of attempts when poll succeeds" in {
@@ -48,11 +50,12 @@ class ConsumerExtensionsSpec
           new TopicPartition("topic", 1) -> List(consumerRecord).asJava).asJava
       )
 
-      when(consumer.poll(retryConf.poll)).thenReturn(consumerRecords)
+      when(consumer.poll(java.time.Duration.ofMillis(retryConf.poll)))
+        .thenReturn(consumerRecords)
 
       consumer.consumeLazily[String]("topic")
 
-      verify(consumer).poll(retryConf.poll)
+      verify(consumer).poll(java.time.Duration.ofMillis(retryConf.poll))
     }
 
     "poll to get messages with the configured poll timeout" in {
@@ -65,11 +68,12 @@ class ConsumerExtensionsSpec
           .empty[TopicPartition, java.util.List[ConsumerRecord[String, String]]]
           .asJava)
 
-      when(consumer.poll(retryConf.poll)).thenReturn(consumerRecords)
+      when(consumer.poll(java.time.Duration.ofMillis(retryConf.poll)))
+        .thenReturn(consumerRecords)
 
       consumer.consumeLazily[String]("topic")
 
-      verify(consumer).poll(retryConf.poll)
+      verify(consumer).poll(java.time.Duration.ofMillis(retryConf.poll))
     }
   }
 

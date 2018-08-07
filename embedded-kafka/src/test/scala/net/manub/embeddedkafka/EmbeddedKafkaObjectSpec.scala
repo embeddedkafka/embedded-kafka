@@ -110,7 +110,8 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
           kafkaConsumer(someOtherConfig, deserializer, deserializer)
         anotherConsumer.subscribe(List(topic).asJava)
 
-        val moreRecords = anotherConsumer.poll(consumerPollTimeout)
+        val moreRecords =
+          anotherConsumer.poll(java.time.Duration.ofMillis(consumerPollTimeout))
         moreRecords.count shouldBe 1
 
         val someOtherRecord = moreRecords.iterator().next

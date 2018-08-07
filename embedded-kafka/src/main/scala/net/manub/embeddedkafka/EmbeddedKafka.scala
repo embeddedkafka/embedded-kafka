@@ -588,7 +588,7 @@ private[embeddedkafka] trait EmbeddedKafkaSupport[C <: EmbeddedKafkaConfig] {
       topics.foreach(consumer.partitionsFor)
 
       while (messagesRead < number && System.nanoTime < timeoutNanoTime) {
-        val records = consumer.poll(1000)
+        val records = consumer.poll(java.time.Duration.ofMillis(1000))
         val recordIter = records.iterator()
         if (resetTimeoutOnEachMessage && recordIter.hasNext) {
           timeoutNanoTime = System.nanoTime + timeout.toNanos

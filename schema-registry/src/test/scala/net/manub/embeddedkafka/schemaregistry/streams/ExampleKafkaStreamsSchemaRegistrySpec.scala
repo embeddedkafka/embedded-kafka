@@ -9,8 +9,8 @@ import net.manub.embeddedkafka.schemaregistry.{
   _
 }
 import org.apache.kafka.common.serialization._
-import org.apache.kafka.streams.kstream.{KStream, Produced}
-import org.apache.kafka.streams.{Consumed, StreamsBuilder}
+import org.apache.kafka.streams.StreamsBuilder
+import org.apache.kafka.streams.kstream.{Consumed, KStream, Produced}
 import org.scalatest.{Matchers, WordSpec}
 
 class ExampleKafkaStreamsSchemaRegistrySpec

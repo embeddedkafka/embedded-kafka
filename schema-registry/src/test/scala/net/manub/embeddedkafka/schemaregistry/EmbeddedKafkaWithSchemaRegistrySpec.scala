@@ -1,5 +1,7 @@
 package net.manub.embeddedkafka.schemaregistry
 
+import java.time.Duration
+
 import net.manub.embeddedkafka.Codecs._
 import net.manub.embeddedkafka.{EmbeddedKafkaSpecSupport, TestAvroClass}
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -34,7 +36,7 @@ class EmbeddedKafkaWithSchemaRegistrySpec
       val consumer = kafkaConsumer[String, TestAvroClass]
       consumer.subscribe(List(topic).asJava)
 
-      val records = consumer.poll(consumerPollTimeout)
+      val records = consumer.poll(Duration.ofMillis(consumerPollTimeout))
 
       records.iterator().hasNext shouldBe true
       val record = records.iterator().next()
@@ -54,7 +56,7 @@ class EmbeddedKafkaWithSchemaRegistrySpec
       val consumer = kafkaConsumer[String, TestAvroClass]
       consumer.subscribe(List(topic).asJava)
 
-      val records = consumer.poll(consumerPollTimeout)
+      val records = consumer.poll(Duration.ofMillis(consumerPollTimeout))
 
       records.iterator().hasNext shouldBe true
       val record = records.iterator().next()
@@ -79,7 +81,8 @@ class EmbeddedKafkaWithSchemaRegistrySpec
       val consumer = kafkaConsumer[String, TestAvroClass]
       consumer.subscribe(List(topic).asJava)
 
-      val records = consumer.poll(consumerPollTimeout).iterator()
+      val records =
+        consumer.poll(Duration.ofMillis(consumerPollTimeout)).iterator()
 
       records.hasNext shouldBe true
 

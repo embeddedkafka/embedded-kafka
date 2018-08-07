@@ -51,7 +51,8 @@ class EmbeddedKafkaMethodsSpec
       val consumer = kafkaConsumer
       consumer.subscribe(List(topic).asJava)
 
-      val records = consumer.poll(consumerPollTimeout)
+      val records =
+        consumer.poll(java.time.Duration.ofMillis(consumerPollTimeout))
 
       records.iterator().hasNext shouldBe true
       val record = records.iterator().next()
@@ -77,7 +78,8 @@ class EmbeddedKafkaMethodsSpec
       val consumer = kafkaConsumer
       consumer.subscribe(List(topic).asJava)
 
-      val records = consumer.poll(consumerPollTimeout)
+      val records =
+        consumer.poll(java.time.Duration.ofMillis(consumerPollTimeout))
 
       records.iterator().hasNext shouldBe true
       val record = records.iterator().next()
@@ -102,7 +104,8 @@ class EmbeddedKafkaMethodsSpec
       val consumer = kafkaConsumer
       consumer.subscribe(List(topic).asJava)
 
-      val records = consumer.poll(consumerPollTimeout)
+      val records =
+        consumer.poll(java.time.Duration.ofMillis(consumerPollTimeout))
 
       records.iterator().hasNext shouldBe true
       val record = records.iterator().next()
@@ -129,7 +132,9 @@ class EmbeddedKafkaMethodsSpec
       val consumer = kafkaConsumer
       consumer.subscribe(List(topic).asJava)
 
-      val records = consumer.poll(consumerPollTimeout).iterator()
+      val records = consumer
+        .poll(java.time.Duration.ofMillis(consumerPollTimeout))
+        .iterator()
 
       records.hasNext shouldBe true
 
