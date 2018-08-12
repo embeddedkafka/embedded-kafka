@@ -26,7 +26,7 @@ Starting from 1.0.0, versions match the version of Kafka they're built against. 
  
 ### How to use 
 
-* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka" % "1.1.1" % "test"`
+* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka" % "2.0.0" % "test"`
 * Have your class extend the `EmbeddedKafka` trait.
 * Enclose the code that needs a running instance of Kafka within the `withRunningKafka` closure.
 
@@ -203,7 +203,7 @@ It takes care of instantiating and starting your streams as well as closing them
 
 ### How to use
 
-* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka-streams" % "1.1.1" % "test"`
+* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka-streams" % "2.0.0" % "test"`
 * Have a look at the [example test](kafka-streams/src/test/scala/net/manub/embeddedkafka/streams/ExampleKafkaStreamsSpec.scala)
 * For most of the cases have your `Spec` extend the `EmbeddedKafkaStreamsAllInOne` trait. This offers both streams management and easy creation of consumers for asserting resulting messages in output/sink topics.
 * If you only want to use the streams management without the test consumers just have the `Spec` extend the `EmbeddedKafkaStreams` trait.
@@ -250,7 +250,7 @@ If you need to serialize and deserialize messages using Avro, a [Confluent Schem
 ### How to use
 
 * In your `build.sbt` file add the following resolver: `resolvers += "confluent" at "https://packages.confluent.io/maven/"`
-* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-schema-registry" % "1.1.1" % "test"`
+* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-schema-registry" % "2.0.0" % "test"`
 * Have your test extend the `EmbeddedKafkaWithSchemaRegistry` trait.
 * Enclose the code that needs a running instance of Kafka within the `withRunningKafka` closure.
 * Provide an implicit `EmbeddedKafkaConfigWithSchemaRegistryImpl`.
