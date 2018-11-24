@@ -4,7 +4,7 @@ parallelExecution in ThisBuild := false
 
 val kafkaVersion = "2.0.0"
 val confluentVersion = "5.0.1"
-val akkaVersion = "2.5.14"
+val akkaVersion = "2.5.18"
 
 lazy val commonSettings = Seq(
   organization := "net.manub",
