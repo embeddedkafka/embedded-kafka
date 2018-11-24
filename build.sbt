@@ -7,10 +7,10 @@ val confluentVersion = "5.0.1"
 val akkaVersion = "2.5.18"
 
 lazy val commonSettings = Seq(
-  organization := "net.manub",
+  organization := "io.github.embeddedkafka",
   scalaVersion := "2.12.7",
   crossScalaVersions := Seq("2.12.7", "2.11.12"),
-  homepage := Some(url("https://github.com/manub/scalatest-embedded-kafka")),
+  homepage := Some(url("https://github.com/embeddedkafka/embedded-kafka")),
   parallelExecution in Test := false,
   logBuffered in Test := false,
   fork in Test := true,
@@ -62,7 +62,7 @@ val workaround = {
 }
 
 lazy val root = (project in file("."))
-  .settings(name := "scalatest-embedded-kafka-root")
+  .settings(name := "embeddedkafka-root")
   .settings(commonSettings: _*)
   .settings(publishArtifact := false)
   .settings(publish := {})
@@ -72,7 +72,7 @@ lazy val root = (project in file("."))
   .aggregate(embeddedKafka, kafkaStreams, schemaRegistry)
 
 lazy val embeddedKafka = (project in file("embedded-kafka"))
-  .settings(name := "scalatest-embedded-kafka")
+  .settings(name := "embeddedkafka")
   .settings(publishSettings: _*)
   .settings(commonSettings: _*)
   .settings(commonLibrarySettings)
@@ -81,7 +81,7 @@ lazy val embeddedKafka = (project in file("embedded-kafka"))
   .settings(releaseSettings: _*)
 
 lazy val kafkaStreams = (project in file("kafka-streams"))
-  .settings(name := "scalatest-embedded-kafka-streams")
+  .settings(name := "embeddedkafka-streams")
   .settings(publishSettings: _*)
   .settings(commonSettings: _*)
   .settings(commonLibrarySettings)
@@ -91,7 +91,7 @@ lazy val kafkaStreams = (project in file("kafka-streams"))
   .dependsOn(embeddedKafka)
 
 lazy val schemaRegistry = (project in file("schema-registry"))
-  .settings(name := "scalatest-embedded-schema-registry")
+  .settings(name := "embeddedkafka-schema-registry")
   .settings(publishSettings: _*)
   .settings(commonSettings: _*)
   .settings(commonLibrarySettings)

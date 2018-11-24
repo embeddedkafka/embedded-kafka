@@ -1,4 +1,4 @@
-# scalatest-embedded-kafka
+# embedded-kafka
 A library that provides an in-memory Kafka instance to run your tests against.
 
 *As of version 1.1.1 the library is not dependent anymore on ScalaTest and won't transitively bring ScalaTest into your build.*
@@ -18,15 +18,15 @@ Inspired by https://github.com/chbatey/kafka-unit
 
 scalatest-embedded-kafka is available on Bintray and Maven Central, compiled for both Scala 2.11 and 2.12. Scala 2.10 is supported until `0.10.0`. Scala 2.12 is supported from `0.11.0` onwards, following Apache Kafka release cycle.
 
-Currently there's no support for Scala 2.13-Mx as Kafka artifacts are not published for these versions. 
+Currently there's no support for Scala 2.13-Mx as Kafka artifacts are not published for these versions.
 
 Starting from 1.0.0, versions match the version of Kafka they're built against. However in the past there were some mismatches - the easiest way is to check through the git history of the `build.sbt` file
 
 *If you're using Kafka 1.1.0, please use version `1.1.0-kafka1.1-nosr` - this version doesn't pull in the Confluent Schema Registry by default*
- 
-### How to use 
 
-* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka" % "2.0.0" % "test"`
+### How to use
+
+* In your `build.sbt` file add the following dependency: `"io.github.embeddedkafka" %% "embeddedkafka" % "2.0.1" % "test"`
 * Have your class extend the `EmbeddedKafka` trait.
 * Enclose the code that needs a running instance of Kafka within the `withRunningKafka` closure.
 
@@ -56,21 +56,21 @@ A `EmbeddedKafka` companion object is provided for usage without extending the `
 
 ```scala
 class MySpec extends WordSpec {
-  
+
   "runs with embedded kafka" should {
 
     "work" in {
       EmbeddedKafka.start()
-    
+
       // ... code goes here
-    
+
       EmbeddedKafka.stop()
     }
   }
 }
 ```
-        
-Please note that in order to avoid Kafka instances not shutting down properly, it's recommended to call `EmbeddedKafka.stop()` in a `after` block or in a similar teardown logic. 
+
+Please note that in order to avoid Kafka instances not shutting down properly, it's recommended to call `EmbeddedKafka.stop()` in a `after` block or in a similar teardown logic.
 
 ### Configuration
 
@@ -124,7 +124,7 @@ class MySpec extends WordSpec with EmbeddedKafka {
     "work" in {
       val customBrokerConfig = Map("replica.fetch.max.bytes" -> "2000000",
         "message.max.bytes" -> "2000000")
-        
+
       val customProducerConfig = Map("max.request.size" -> "2000000")
       val customConsumerConfig = Map("max.partition.fetch.bytes" -> "2000000")
 
@@ -140,15 +140,15 @@ class MySpec extends WordSpec with EmbeddedKafka {
   }
 }
 ```
-        
+
 This works for `withRunningKafka`, `withRunningKafkaOnFoundPort`, and `EmbeddedKafka.start()`
 
-Also, it is now possible to provide custom properties to the broker while starting Kafka. `EmbeddedKafkaConfig` has a 
+Also, it is now possible to provide custom properties to the broker while starting Kafka. `EmbeddedKafkaConfig` has a
 `customBrokerProperties` field which can be used to provide extra properties contained in a `Map[String, String]`.
 Those properties will be added to the broker configuration, be careful some properties are set by the library itself and
 in case of conflict the `customBrokerProperties` values will take precedence. Please look at the source code to see what these properties
 are.
-        
+
 ### Utility methods
 
 The `EmbeddedKafka` trait provides also some utility methods to interact with the embedded kafka, in order to set preconditions or verifications in your specs:
@@ -183,27 +183,27 @@ With `ConsumerExtensions` you can turn a consumer to a Scala lazy Stream of `T` 
 * Just import the extensions.
 * Bring an implicit `ConsumerRecord[_, _] => T` transform function into scope (some common functions are provided in `Codecs`).
 * On any `KafkaConsumer` instance you can now do:
- 
+
 ```scala
 import net.manub.embeddedkafka.ConsumerExtensions._
 import net.manub.embeddedkafka.Codecs.stringKeyValueCrDecoder
 ...
 consumer.consumeLazily[(String, String)]("from-this-topic").take(3).toList should be (Seq(
-  "1" -> "one", 
-  "2" -> "two", 
+  "1" -> "one",
+  "2" -> "two",
   "3" -> "three"
 )
 ```
 
 ## scalatest-embedded-kafka-streams
 
-A library that builds on top of `scalatest-embedded-kafka` to offer easy testing of [Kafka Streams](https://cwiki.apache.org/confluence/display/KAFKA/Kafka+Streams).
+A library that builds on top of `embeddedkafka` to offer easy testing of [Kafka Streams](https://cwiki.apache.org/confluence/display/KAFKA/Kafka+Streams).
 
 It takes care of instantiating and starting your streams as well as closing them after running your test-case code.
 
 ### How to use
 
-* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-kafka-streams" % "2.0.0" % "test"`
+* In your `build.sbt` file add the following dependency: `"io.github.embeddedkafka" %% "embeddedkafka-streams" % "2.0.1" % "test"`
 * Have a look at the [example test](kafka-streams/src/test/scala/net/manub/embeddedkafka/streams/ExampleKafkaStreamsSpec.scala)
 * For most of the cases have your `Spec` extend the `EmbeddedKafkaStreamsAllInOne` trait. This offers both streams management and easy creation of consumers for asserting resulting messages in output/sink topics.
 * If you only want to use the streams management without the test consumers just have the `Spec` extend the `EmbeddedKafkaStreams` trait.
@@ -250,7 +250,7 @@ If you need to serialize and deserialize messages using Avro, a [Confluent Schem
 ### How to use
 
 * In your `build.sbt` file add the following resolver: `resolvers += "confluent" at "https://packages.confluent.io/maven/"`
-* In your `build.sbt` file add the following dependency: `"net.manub" %% "scalatest-embedded-schema-registry" % "2.0.0" % "test"`
+* In your `build.sbt` file add the following dependency: `"io.github.embeddedkafka" %% "embeddedkafka-confluent" % "2.0.1" % "test"`
 * Have your test extend the `EmbeddedKafkaWithSchemaRegistry` trait.
 * Enclose the code that needs a running instance of Kafka within the `withRunningKafka` closure.
 * Provide an implicit `EmbeddedKafkaConfigWithSchemaRegistryImpl`.
