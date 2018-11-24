@@ -54,13 +54,6 @@ lazy val releaseSettings = Seq(
   releaseCrossBuild := true
 )
 
-// https://github.com/sbt/sbt/issues/3618
-// [error] (kafkaStreams / update) sbt.librarymanagement.ResolveException: download failed: javax.ws.rs#javax.ws.rs-api;2.1!javax.ws.rs-api.${packaging.type}
-val workaround = {
-  sys.props += "packaging.type" -> "jar"
-  ()
-}
-
 lazy val root = (project in file("."))
   .settings(name := "embeddedkafka-root")
   .settings(commonSettings: _*)
@@ -86,8 +79,10 @@ lazy val kafkaStreams = (project in file("kafka-streams"))
   .settings(commonSettings: _*)
   .settings(commonLibrarySettings)
   .settings(releaseSettings: _*)
-  .settings(libraryDependencies +=
-    "org.apache.kafka" % "kafka-streams" % kafkaVersion)
+  .settings(libraryDependencies ++= Seq(
+    "org.apache.kafka" % "kafka-streams" % kafkaVersion,
+    "javax.ws.rs" % "javax.ws.rs-api" % "2.1.1"
+  ))
   .dependsOn(embeddedKafka)
 
 lazy val schemaRegistry = (project in file("schema-registry"))
