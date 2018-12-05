@@ -1,230 +1,120 @@
 package net.manub.embeddedkafka.schemaregistry
 
-import java.util.Properties
-
-import io.confluent.kafka.schemaregistry.RestApp
-import io.confluent.kafka.schemaregistry.avro.AvroCompatibilityLevel
-import io.confluent.kafka.serializers.{
-  AbstractKafkaAvroSerDeConfig,
-  KafkaAvroDeserializerConfig
+import net.manub.embeddedkafka.ops.{EmbeddedKafkaOps, RunningEmbeddedKafkaOps}
+import net.manub.embeddedkafka.schemaregistry.ops.{
+  RunningSchemaRegistryOps,
+  SchemaRegistryOps
 }
-import kafka.server.KafkaServer
-import net.manub.embeddedkafka.EmbeddedKafka.servers
 import net.manub.embeddedkafka.{
   EmbeddedKafka,
-  EmbeddedKafkaConfig,
   EmbeddedKafkaSupport,
-  EmbeddedServer
+  EmbeddedServer,
+  EmbeddedZ
 }
-import org.apache.kafka.clients.consumer.{ConsumerConfig, OffsetResetStrategy}
-import org.apache.kafka.clients.producer.ProducerConfig
+
+import scala.reflect.io.Directory
 
 trait EmbeddedKafkaWithSchemaRegistry
-    extends EmbeddedKafkaWithSchemaRegistrySupport {
+    extends EmbeddedKafkaSupport[EmbeddedKafkaConfigWithSchemaRegistry]
+    with EmbeddedKafkaOps[EmbeddedKafkaConfigWithSchemaRegistry,
+                          EmbeddedKWithSR]
+    with SchemaRegistryOps {
 
-  override def baseProducerConfig(
+  override private[embeddedkafka] def baseConsumerConfig(
       implicit config: EmbeddedKafkaConfigWithSchemaRegistry)
-    : Map[String, Object] = EmbeddedKafkaWithSchemaRegistry.baseProducerConfig
+    : Map[String, Object] =
+    defaultConsumerConfig ++ consumerConfigForSchemaRegistry ++ config.customConsumerProperties
 
-  override def baseConsumerConfig(
+  override private[embeddedkafka] def baseProducerConfig(
       implicit config: EmbeddedKafkaConfigWithSchemaRegistry)
-    : Map[String, Object] = EmbeddedKafkaWithSchemaRegistry.baseConsumerConfig
-}
+    : Map[String, Object] =
+    defaultProducerConf ++ configForSchemaRegistry ++ config.customProducerProperties
 
-sealed trait EmbeddedKafkaWithSchemaRegistrySupport
-    extends EmbeddedKafkaSupport[EmbeddedKafkaConfigWithSchemaRegistry] {
-
-  /**
-    * Starts a ZooKeeper instance, a Kafka broker and a Schema Registry app, then executes the body passed as a parameter.
-    *
-    * @param body   the function to execute
-    * @param config an implicit [[EmbeddedKafkaConfig]]
-    */
-  def withRunningKafka[T](body: => T)(
-      implicit config: EmbeddedKafkaConfigWithSchemaRegistry): T = {
-    withRunningZooKeeper(config.zooKeeperPort) { zkPort =>
-      withTempDir("kafka") { kafkaLogsDir =>
-        val broker =
-          startKafka(config.kafkaPort,
-                     zkPort,
-                     config.customBrokerProperties,
-                     kafkaLogsDir)
-        val app =
-          startSchemaRegistry(config.schemaRegistryPort, zkPort)
-
-        try {
-          body
-        } finally {
-          app.stop()
-          broker.shutdown()
-          broker.awaitShutdown()
-        }
-      }
-    }
-  }
-
-  /**
-    * Starts a ZooKeeper instance, a Kafka broker and a Schema Registry app, then executes the body passed as a parameter.
-    * The actual ZooKeeper, Kafka, and Schema Registry ports will be detected and inserted into a copied version of
-    * the EmbeddedKafkaConfig that gets passed to body. This is useful if you set any port to 0, which will listen on an arbitrary available port.
-    *
-    * @param config the user-defined [[EmbeddedKafkaConfig]]
-    * @param body   the function to execute, given an [[EmbeddedKafkaConfig]] with the actual
-    *               ports Kafka, ZooKeeper, and Schema Registry are running on
-    */
-  def withRunningKafkaOnFoundPort[T](
-      config: EmbeddedKafkaConfigWithSchemaRegistry)(
+  override private[embeddedkafka] def withRunningServers[T](
+      config: EmbeddedKafkaConfigWithSchemaRegistry,
+      actualZkPort: Int,
+      kafkaLogsDir: Directory)(
       body: EmbeddedKafkaConfigWithSchemaRegistry => T): T = {
-    withRunningZooKeeper(config.zooKeeperPort) { zkPort =>
-      withTempDir("kafka") { kafkaLogsDir =>
-        val broker: KafkaServer =
-          startKafka(config.kafkaPort,
-                     zkPort,
-                     config.customBrokerProperties,
-                     kafkaLogsDir)
-        val kafkaPort =
-          broker.boundPort(broker.config.listeners.head.listenerName)
-        val app =
-          startSchemaRegistry(config.schemaRegistryPort, zkPort)
-        val schemaRegistryPort = app.restServer.getURI.getPort
+    val broker =
+      startKafka(config.kafkaPort,
+                 actualZkPort,
+                 config.customBrokerProperties,
+                 kafkaLogsDir)
+    val restApp = startSchemaRegistry(
+      config.schemaRegistryPort,
+      actualZkPort
+    )
+    val actualSchemaRegistryPort = restApp.restServer.getURI.getPort
 
-        val actualConfig =
-          EmbeddedKafkaConfigWithSchemaRegistryImpl(
-            kafkaPort,
-            zkPort,
-            schemaRegistryPort,
-            config.customBrokerProperties,
-            config.customProducerProperties,
-            config.customConsumerProperties)
-        try {
-          body(actualConfig)
-        } finally {
-          app.stop()
-          broker.shutdown()
-          broker.awaitShutdown()
-        }
-      }
+    val configWithUsedPorts = EmbeddedKafkaConfigWithSchemaRegistry(
+      EmbeddedKafka.kafkaPort(broker),
+      actualZkPort,
+      actualSchemaRegistryPort,
+      config.customBrokerProperties,
+      config.customProducerProperties,
+      config.customConsumerProperties
+    )
+
+    try {
+      body(configWithUsedPorts)
+    } finally {
+      restApp.stop()
+      broker.shutdown()
+      broker.awaitShutdown()
     }
-  }
-
-  // Make sure to start Schema Registry after Kafka and ZooKeeper
-  protected def startSchemaRegistry(
-      schemaRegistryPort: Int,
-      zooKeeperPort: Int,
-      avroCompatibilityLevel: AvroCompatibilityLevel =
-        AvroCompatibilityLevel.NONE,
-      properties: Properties = new Properties): RestApp = {
-    val server = new RestApp(schemaRegistryPort,
-                             s"localhost:$zooKeeperPort",
-                             "_schemas",
-                             avroCompatibilityLevel.name,
-                             properties)
-    server.start()
-    server
   }
 
 }
 
 object EmbeddedKafkaWithSchemaRegistry
-    extends EmbeddedKafkaWithSchemaRegistrySupport {
+    extends EmbeddedKafkaWithSchemaRegistry
+    with RunningEmbeddedKafkaOps[EmbeddedKafkaConfigWithSchemaRegistry,
+                                 EmbeddedKWithSR]
+    with RunningSchemaRegistryOps {
 
-  override def baseProducerConfig(
-      implicit config: EmbeddedKafkaConfigWithSchemaRegistry)
-    : Map[String, Object] =
-    Map[String, Object](
-      ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
-      ProducerConfig.MAX_BLOCK_MS_CONFIG -> 10000.toString,
-      ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> 1000.toString
-    ) ++ configForSchemaRegistry ++ config.customProducerProperties
-
-  override def baseConsumerConfig(
-      implicit config: EmbeddedKafkaConfigWithSchemaRegistry)
-    : Map[String, Object] =
-    Map[String, Object](
-      ConsumerConfig.GROUP_ID_CONFIG -> "embedded-kafka-spec",
-      ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
-      ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> OffsetResetStrategy.EARLIEST.toString.toLowerCase,
-      ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> false.toString
-    ) ++ consumerConfigForSchemaRegistry ++ config.customConsumerProperties
-
-  /**
-    * Starts a ZooKeeper instance and a Kafka broker in memory, using temporary directories for storing logs.
-    * Also starts a Schema Registry app.
-    * The log directories will be cleaned after calling the [[stop()]] method or on JVM exit, whichever happens earlier.
-    *
-    * @param config an implicit [[EmbeddedKafkaConfig]]
-    */
-  def start()(implicit config: EmbeddedKafkaConfigWithSchemaRegistry)
+  override def start()(implicit config: EmbeddedKafkaConfigWithSchemaRegistry)
     : EmbeddedKWithSR = {
+    val zkLogsDir = Directory.makeTemp("zookeeper-logs")
+    val kafkaLogsDir = Directory.makeTemp("kafka-logs")
 
-    val embeddedK = EmbeddedKafka.start()
+    val factory =
+      EmbeddedZ(startZooKeeper(config.zooKeeperPort, zkLogsDir), zkLogsDir)
 
-    val restApp =
-      EmbeddedSR(
-        startSchemaRegistry(config.schemaRegistryPort, config.zooKeeperPort))
+    val configWithUsedZooKeeperPort = EmbeddedKafkaConfigWithSchemaRegistryImpl(
+      config.kafkaPort,
+      zookeeperPort(factory),
+      config.schemaRegistryPort,
+      config.customBrokerProperties,
+      config.customProducerProperties,
+      config.customConsumerProperties
+    )
 
-    EmbeddedKWithSR(
-      factory = embeddedK.factory,
-      broker = embeddedK.broker,
+    val kafkaBroker = startKafka(configWithUsedZooKeeperPort, kafkaLogsDir)
+
+    val restApp = EmbeddedSR(
+      startSchemaRegistry(
+        configWithUsedZooKeeperPort.schemaRegistryPort,
+        configWithUsedZooKeeperPort.zooKeeperPort
+      ))
+
+    val server = EmbeddedKWithSR(
+      factory = Option(factory),
+      broker = kafkaBroker,
       app = restApp,
-      logsDirs = embeddedK.logsDirs
+      logsDirs = kafkaLogsDir
     )
+
+    runningServers.add(server)
+    server
   }
 
-  /**
-    * Stops all in memory ZooKeeper instances, Kafka brokers, Schema Registry apps, and deletes the log directories.
-    */
-  def stop(): Unit = {
-    servers.foreach(_.stop(true))
-    servers = Seq.empty
-  }
+  override def isRunning: Boolean =
+    runningServers.list
+      .toFilteredSeq[EmbeddedKWithSR](isEmbeddedKWithSR)
+      .exists(_.factory.isDefined)
 
-  /**
-    * Stops a specific [[EmbeddedServer]] instance, and deletes the log directory.
-    *
-    * @param server the [[EmbeddedServer]] to be stopped.
-    */
-  def stop(server: EmbeddedServer): Unit = {
-    server.stop(true)
-    servers = servers.filter(x => x != server)
-  }
-
-  /**
-    * Stops all in memory Schema Registry instances.
-    */
-  def stopSchemaRegistry(): Unit = {
-    val apps = servers.toFilteredSeq[EmbeddedSR](isEmbeddedSR)
-
-    apps.foreach(_.stop())
-
-    servers = servers.filter(!apps.contains(_))
-  }
-
-  /**
-    * Returns a map of configuration to grant Schema Registry support.
-    *
-    * @param config an implicit [[EmbeddedKafkaConfig]].
-    * @return
-    */
-  def configForSchemaRegistry(
-      implicit config: EmbeddedKafkaConfigWithSchemaRegistry)
-    : Map[String, Object] =
-    Map(
-      AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG -> s"http://localhost:${config.schemaRegistryPort}")
-
-  /**
-    * Returns a map of Kafka Consumer configuration to grant Schema Registry support.
-    *
-    * @param config an implicit [[EmbeddedKafkaConfig]].
-    * @return
-    */
-  def consumerConfigForSchemaRegistry(
-      implicit config: EmbeddedKafkaConfigWithSchemaRegistry)
-    : Map[String, Object] =
-    configForSchemaRegistry ++ Map(
-      KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG -> true.toString
-    )
-  private def isEmbeddedSR(server: EmbeddedServer): Boolean =
-    server.isInstanceOf[EmbeddedSR]
+  private[embeddedkafka] def isEmbeddedKWithSR(
+      server: EmbeddedServer): Boolean =
+    server.isInstanceOf[EmbeddedKWithSR]
 
 }
