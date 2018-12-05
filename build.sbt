@@ -37,8 +37,8 @@ lazy val publishSettings = Seq(
   },
   pomExtra :=
     <scm>
-      <url>https://github.com/manub/scalatest-embedded-kafka</url>
-      <connection>scm:git:git@github.com:manub/scalatest-embedded-kafka.git</connection>
+      <url>https://github.com/embeddedkafka/embedded-kafka</url>
+      <connection>scm:git:git@github.com:embeddedkafka/embedded-kafka.git</connection>
     </scm>
       <developers>
         <developer>
@@ -55,7 +55,7 @@ lazy val releaseSettings = Seq(
 )
 
 lazy val root = (project in file("."))
-  .settings(name := "embeddedkafka-root")
+  .settings(name := "embedded-kafka-root")
   .settings(commonSettings: _*)
   .settings(publishArtifact := false)
   .settings(publish := {})
@@ -65,7 +65,7 @@ lazy val root = (project in file("."))
   .aggregate(embeddedKafka, kafkaStreams, schemaRegistry)
 
 lazy val embeddedKafka = (project in file("embedded-kafka"))
-  .settings(name := "embeddedkafka")
+  .settings(name := "embedded-kafka")
   .settings(publishSettings: _*)
   .settings(commonSettings: _*)
   .settings(commonLibrarySettings)
@@ -74,7 +74,7 @@ lazy val embeddedKafka = (project in file("embedded-kafka"))
   .settings(releaseSettings: _*)
 
 lazy val kafkaStreams = (project in file("kafka-streams"))
-  .settings(name := "embeddedkafka-streams")
+  .settings(name := "embedded-kafka-streams")
   .settings(publishSettings: _*)
   .settings(commonSettings: _*)
   .settings(commonLibrarySettings)
@@ -86,7 +86,7 @@ lazy val kafkaStreams = (project in file("kafka-streams"))
   .dependsOn(embeddedKafka)
 
 lazy val schemaRegistry = (project in file("schema-registry"))
-  .settings(name := "embeddedkafka-schema-registry")
+  .settings(name := "embedded-kafka-schema-registry")
   .settings(publishSettings: _*)
   .settings(commonSettings: _*)
   .settings(commonLibrarySettings)
