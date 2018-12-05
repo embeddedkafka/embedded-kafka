@@ -668,6 +668,7 @@ private[embeddedkafka] trait EmbeddedKafkaSupport[C <: EmbeddedKafkaConfig] {
 
     val brokerProperties = Map[String, Object](
       KafkaConfig.ZkConnectProp -> zkAddress,
+      KafkaConfig.ZkConnectionTimeoutMsProp -> 10000.toString,
       KafkaConfig.BrokerIdProp -> 0.toString,
       KafkaConfig.ListenersProp -> listener,
       KafkaConfig.AdvertisedListenersProp -> listener,
