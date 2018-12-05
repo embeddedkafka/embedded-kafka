@@ -5,7 +5,7 @@ A library that provides an in-memory Kafka instance to run your tests against.
 
 Inspired by https://github.com/chbatey/kafka-unit
 
-[![Build Status](https://travis-ci.org/manub/scalatest-embedded-kafka.svg?branch=master)](https://travis-ci.org/manub/scalatest-embedded-kafka)
+[![Build Status](https://travis-ci.org/embeddedkafka/embedded-kafka.svg?branch=master)](https://travis-ci.org/embeddedkafka/embedded-kafka)
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c7b26292335d4331b49a81317884dd17?branch=master)](https://www.codacy.com/app/emanuele-blanco/scalatest-embedded-kafka)
 
@@ -16,7 +16,7 @@ Inspired by https://github.com/chbatey/kafka-unit
 
 ### Version compatibility matrix
 
-scalatest-embedded-kafka is available on Bintray and Maven Central, compiled for both Scala 2.11 and 2.12. Scala 2.10 is supported until `0.10.0`. Scala 2.12 is supported from `0.11.0` onwards, following Apache Kafka release cycle.
+embedded-kafka is available on Bintray and Maven Central, compiled for both Scala 2.11 and 2.12. Scala 2.10 is supported until `0.10.0`. Scala 2.12 is supported from `0.11.0` onwards, following Apache Kafka release cycle.
 
 Currently there's no support for Scala 2.13-Mx as Kafka artifacts are not published for these versions.
 
@@ -26,7 +26,7 @@ Starting from 1.0.0, versions match the version of Kafka they're built against. 
 
 ### How to use
 
-* In your `build.sbt` file add the following dependency: `"io.github.embeddedkafka" %% "embeddedkafka" % "2.0.1" % "test"`
+* In your `build.sbt` file add the following dependency: `"io.github.embeddedkafka" %% "embedded-kafka" % "2.0.1" % "test"`
 * Have your class extend the `EmbeddedKafka` trait.
 * Enclose the code that needs a running instance of Kafka within the `withRunningKafka` closure.
 
@@ -195,18 +195,18 @@ consumer.consumeLazily[(String, String)]("from-this-topic").take(3).toList shoul
 )
 ```
 
-## scalatest-embedded-kafka-streams
+## embedded-kafka-streams
 
-A library that builds on top of `embeddedkafka` to offer easy testing of [Kafka Streams](https://cwiki.apache.org/confluence/display/KAFKA/Kafka+Streams).
+A library that builds on top of `embedded-kafka` to offer easy testing of [Kafka Streams](https://cwiki.apache.org/confluence/display/KAFKA/Kafka+Streams).
 
 It takes care of instantiating and starting your streams as well as closing them after running your test-case code.
 
 ### How to use
 
-* In your `build.sbt` file add the following dependency: `"io.github.embeddedkafka" %% "embeddedkafka-streams" % "2.0.1" % "test"`
+* In your `build.sbt` file add the following dependency: `"io.github.embeddedkafka" %% "embedded-kafka-streams" % "2.0.1" % "test"`
 * Have a look at the [example test](kafka-streams/src/test/scala/net/manub/embeddedkafka/streams/ExampleKafkaStreamsSpec.scala)
-* For most of the cases have your `Spec` extend the `EmbeddedKafkaStreamsAllInOne` trait. This offers both streams management and easy creation of consumers for asserting resulting messages in output/sink topics.
-* If you only want to use the streams management without the test consumers just have the `Spec` extend the `EmbeddedKafkaStreams` trait.
+* For most of the cases have your class extend the `EmbeddedKafkaStreamsAllInOne` trait. This offers both streams management and easy creation of consumers for asserting resulting messages in output/sink topics.
+* If you only want to use the streams management without the test consumers just have the class extend the `EmbeddedKafkaStreams` trait.
 * Use the `runStreamsWithStringConsumer` to:
     * Create any topics that need to exist for the streams to operate (usually sources and sinks).
     * Pass the Topology that will be used to instantiate and start the Kafka Streams. This will be done while using the `withRunningKafka` closure internally so that your stream runs with an embedded Kafka and Zookeeper.
@@ -243,15 +243,15 @@ class MySpec extends WordSpec with Matchers with EmbeddedKafkaStreamsAllInOne {
 }
 ```
 
-## scalatest-embedded-schema-registry
+## embedded-kafka-schema-registry
 
 If you need to serialize and deserialize messages using Avro, a [Confluent Schema Registry](https://docs.confluent.io/current/schema-registry/docs/index.html) instance can be provided to test your code.
 
 ### How to use
 
 * In your `build.sbt` file add the following resolver: `resolvers += "confluent" at "https://packages.confluent.io/maven/"`
-* In your `build.sbt` file add the following dependency: `"io.github.embeddedkafka" %% "embeddedkafka-confluent" % "2.0.1" % "test"`
-* Have your test extend the `EmbeddedKafkaWithSchemaRegistry` trait.
+* In your `build.sbt` file add the following dependency: `"io.github.embeddedkafka" %% "embedded-kafka-schema-registry" % "2.0.1" % "test"`
+* Have your class extend the `EmbeddedKafkaWithSchemaRegistry` trait.
 * Enclose the code that needs a running instance of Kafka within the `withRunningKafka` closure.
 * Provide an implicit `EmbeddedKafkaConfigWithSchemaRegistryImpl`.
 
@@ -279,7 +279,7 @@ The `net.manub.embeddedkafka.avro.schemaregistry` package object provides useful
 
 ### Using streams
 
-* For most of the cases have your `Spec` extend the `EmbeddedKafkaStreamsWithSchemaRegistryAllInOne` trait. This offers both streams management and easy creation of consumers for asserting resulting messages in output/sink topics.
-* If you only want to use the streams management without the test consumers just have the `Spec` extend the `EmbeddedKafkaStreamsWithSchemaRegistry` trait.
+* For most of the cases have your class extend the `EmbeddedKafkaStreamsWithSchemaRegistryAllInOne` trait. This offers both streams management and easy creation of consumers for asserting resulting messages in output/sink topics.
+* If you only want to use the streams management without the test consumers just have the class extend the `EmbeddedKafkaStreamsWithSchemaRegistry` trait.
 * Build your own `Topology` and use `runStreams` to test it.
 * Have a look at the [example test](schema-registry/src/test/scala/net/manub/embeddedkafka/schemaregistry/streams/ExampleKafkaStreamsSchemaRegistrySpec.scala).
