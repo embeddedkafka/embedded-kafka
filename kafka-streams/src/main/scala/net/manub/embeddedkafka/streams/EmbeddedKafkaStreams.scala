@@ -1,13 +1,35 @@
 package net.manub.embeddedkafka.streams
 
-import net.manub.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig, UUIDs}
+import java.util.Properties
+
+import net.manub.embeddedkafka.ops.AdminOps
+import net.manub.embeddedkafka.{
+  EmbeddedKafka,
+  EmbeddedKafkaConfig,
+  EmbeddedKafkaSupport,
+  UUIDs
+}
 import org.apache.kafka.streams.{KafkaStreams, Topology}
 
-/** Helper trait for testing Kafka Streams.
-  * It creates an embedded Kafka Instance for each test case.
-  * Use `runStreams` to execute your streams.
+/** Helper trait for running Kafka Streams.
+  * Use [[EmbeddedKafkaStreamsSupport.runStreams]] to execute your streams.
+  *
+  * @see [[EmbeddedKafkaStreamsSupport]]
   */
-trait EmbeddedKafkaStreams extends EmbeddedKafka with TestStreamsConfig {
+trait EmbeddedKafkaStreams
+    extends EmbeddedKafkaStreamsSupport[EmbeddedKafkaConfig]
+    with EmbeddedKafka {
+
+  override protected[embeddedkafka] val streamsConfig =
+    new EmbeddedStreamsConfigImpl
+
+}
+
+private[embeddedkafka] trait EmbeddedKafkaStreamsSupport[
+    C <: EmbeddedKafkaConfig] {
+  this: EmbeddedKafkaSupport[C] with AdminOps[C] =>
+
+  protected[embeddedkafka] def streamsConfig: EmbeddedStreamsConfig[C]
 
   /** Execute Kafka streams and pass a block of code that can
     * operate while the streams are active.
@@ -25,12 +47,13 @@ trait EmbeddedKafkaStreams extends EmbeddedKafka with TestStreamsConfig {
   def runStreams[T](topicsToCreate: Seq[String],
                     topology: Topology,
                     extraConfig: Map[String, AnyRef] = Map.empty)(block: => T)(
-      implicit config: EmbeddedKafkaConfig): T =
+      implicit config: C): T =
     withRunningKafka {
       topicsToCreate.foreach(topic => createCustomTopic(topic))
       val streamId = UUIDs.newUuid().toString
-      val streams =
-        new KafkaStreams(topology, streamConfig(streamId, extraConfig))
+      val streams = new KafkaStreams(
+        topology,
+        map2Properties(streamsConfig.config(streamId, extraConfig)))
       streams.start()
       try {
         block
@@ -38,4 +61,13 @@ trait EmbeddedKafkaStreams extends EmbeddedKafka with TestStreamsConfig {
         streams.close()
       }
     }(config)
+
+  private def map2Properties(map: Map[String, AnyRef]): Properties = {
+    import scala.collection.JavaConverters._
+
+    val props = new Properties
+    props.putAll(map.asJava)
+    props
+  }
+
 }

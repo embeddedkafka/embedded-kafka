@@ -1,9 +1,7 @@
 package net.manub.embeddedkafka.schemaregistry
 
-import net.manub.embeddedkafka.EmbeddedKafkaSpecSupport
-
 class EmbeddedKafkaWithSchemaRegistryTraitSpec
-    extends EmbeddedKafkaSpecSupport
+    extends EmbeddedKafkaWithSchemaRegistrySpecSupport
     with EmbeddedKafkaWithSchemaRegistry {
 
   "the withRunningKafka method" should {

@@ -1,9 +1,7 @@
 package net.manub.embeddedkafka.schemaregistry
 
-import net.manub.embeddedkafka.EmbeddedKafkaSpecSupport
-
 class EmbeddedKafkaWithSchemaRegistryObjectSpec
-    extends EmbeddedKafkaSpecSupport {
+    extends EmbeddedKafkaWithSchemaRegistrySpecSupport {
 
   "EmbeddedKafkaWithSchemaRegistry" should {
     "start and stop a specific Kafka along with Schema Registry" in {

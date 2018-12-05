@@ -4,10 +4,7 @@ import net.manub.embeddedkafka.Codecs._
 import net.manub.embeddedkafka.ConsumerExtensions._
 import net.manub.embeddedkafka.TestAvroClass
 import net.manub.embeddedkafka.schemaregistry.avro.Codecs._
-import net.manub.embeddedkafka.schemaregistry.{
-  EmbeddedKafkaConfigWithSchemaRegistry,
-  _
-}
+import net.manub.embeddedkafka.schemaregistry._
 import org.apache.kafka.common.serialization._
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.kstream.{Consumed, KStream, Produced}

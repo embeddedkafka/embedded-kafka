@@ -3,13 +3,13 @@ package net.manub.embeddedkafka.schemaregistry
 import java.time.Duration
 
 import net.manub.embeddedkafka.Codecs._
-import net.manub.embeddedkafka.{EmbeddedKafkaSpecSupport, TestAvroClass}
+import net.manub.embeddedkafka.TestAvroClass
 import org.apache.kafka.clients.producer.ProducerRecord
 
 import scala.collection.JavaConverters._
 
 class EmbeddedKafkaWithSchemaRegistrySpec
-    extends EmbeddedKafkaSpecSupport
+    extends EmbeddedKafkaWithSchemaRegistrySpecSupport
     with EmbeddedKafkaWithSchemaRegistry {
 
   implicit lazy val embeddedKafkaConfig: EmbeddedKafkaConfigWithSchemaRegistry =
