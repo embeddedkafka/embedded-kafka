@@ -13,15 +13,13 @@ object RunningServersOps {
     private[this] var servers: Seq[EmbeddedServer] = Seq.empty
 
     /**
-      * Returns the list of running [[EmbeddedServer]]s.
-      * @return
+      * @return the list of running [[EmbeddedServer]]s
       */
     def list: List[EmbeddedServer] = servers.toList
 
     /**
       * Adds a running [[EmbeddedServer]] to the list.
       * @param s an [[EmbeddedServer]]
-      * @return
       */
     def add(s: EmbeddedServer): this.type = {
       servers :+= s
@@ -34,7 +32,6 @@ object RunningServersOps {
       *
       * @param removalPredicate the predicate for removing [[EmbeddedServer]]s
       * @param clearLogs        whether or not to clear server logs, if any.
-      * @return
       */
     def stopAndRemove(removalPredicate: EmbeddedServer => Boolean,
                       clearLogs: Boolean = true): this.type = {

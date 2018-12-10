@@ -25,13 +25,11 @@ private[embeddedkafka] trait EmbeddedStreamsConfig[C <: EmbeddedKafkaConfig] {
   )
 
   /**
-    * Returns a map of config parameters for running Kafka Streams.
-    *
     * @param streamName  the name of the stream. It will be used as the Application ID
     * @param extraConfig any additional configuration. If the keys are already defined
     *                    in the default they will be overwritten with this
     * @param kafkaConfig the Kafka test configuration
-    * @return
+    * @return a map of config parameters for running Kafka Streams
     */
   def config(streamName: String, extraConfig: Map[String, AnyRef])(
       implicit kafkaConfig: C): Map[String, AnyRef] =

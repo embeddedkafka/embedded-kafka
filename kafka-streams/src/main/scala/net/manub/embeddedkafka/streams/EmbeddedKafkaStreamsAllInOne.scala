@@ -29,7 +29,6 @@ private[embeddedkafka] trait EmbeddedKafkaStreamsAllInOneSupport[
     * @param topology       the streams topology that will be instantiated
     * @param block          the block of code that will be executed by passing the simple
     *                       String-based consumer.
-    * @return
     */
   def runStreamsWithStringConsumer(topicsToCreate: Seq[String],
                                    topology: Topology)(
