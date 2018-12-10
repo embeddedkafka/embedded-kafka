@@ -22,10 +22,8 @@ import net.manub.embeddedkafka.schemaregistry.{
 trait SchemaRegistryOps {
 
   /**
-    * Returns a map of configuration to grant Schema Registry support.
-    *
     * @param config an implicit [[EmbeddedKafkaConfigWithSchemaRegistry]].
-    * @return
+    * @return a map of configuration to grant Schema Registry support
     */
   protected[embeddedkafka] def configForSchemaRegistry(
       implicit config: EmbeddedKafkaConfigWithSchemaRegistry)
@@ -34,10 +32,8 @@ trait SchemaRegistryOps {
       AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG -> s"http://localhost:${config.schemaRegistryPort}")
 
   /**
-    * Returns a map of Kafka Consumer configuration to grant Schema Registry support.
-    *
     * @param config an implicit [[EmbeddedKafkaConfigWithSchemaRegistry]].
-    * @return
+    * @return a map of Kafka Consumer configuration to grant Schema Registry support
     */
   protected[embeddedkafka] def consumerConfigForSchemaRegistry(
       implicit config: EmbeddedKafkaConfigWithSchemaRegistry)
@@ -53,7 +49,6 @@ trait SchemaRegistryOps {
     * @param zooKeeperPort          the port ZooKeeper is running on
     * @param avroCompatibilityLevel the default [[AvroCompatibilityLevel]] of schemas
     * @param properties             additional [[Properties]]
-    * @return
     */
   def startSchemaRegistry(schemaRegistryPort: Int,
                           zooKeeperPort: Int,

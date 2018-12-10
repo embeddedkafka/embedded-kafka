@@ -83,8 +83,6 @@ private[embeddedkafka] trait EmbeddedKafkaSupport[C <: EmbeddedKafkaConfig] {
     * @param actualZkPort the actual ZooKeeper port
     * @param kafkaLogsDir the path for the Kafka logs
     * @param body         the function to execute
-    * @tparam T
-    * @return
     */
   private[embeddedkafka] def withRunningServers[T](
       config: C,
