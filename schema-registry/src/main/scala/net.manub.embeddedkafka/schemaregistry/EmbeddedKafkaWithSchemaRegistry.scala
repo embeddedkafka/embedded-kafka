@@ -110,8 +110,12 @@ object EmbeddedKafkaWithSchemaRegistry
 
   override def isRunning: Boolean =
     runningServers.list
-      .toFilteredSeq[EmbeddedKWithSR](isEmbeddedKWithSR)
-      .exists(_.factory.isDefined)
+      .toFilteredSeq[EmbeddedKWithSR](
+        s =>
+          // Need to consider both independently-started Schema Registry and
+          // all-in-one Kafka with SR
+          isEmbeddedKWithSR(s) || isEmbeddedSR(s))
+      .nonEmpty
 
   private[embeddedkafka] def isEmbeddedKWithSR(
       server: EmbeddedServer): Boolean =
