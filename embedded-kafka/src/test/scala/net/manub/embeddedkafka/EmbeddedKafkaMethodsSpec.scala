@@ -20,6 +20,7 @@ import org.apache.kafka.common.utils.Time
 import org.scalatest.BeforeAndAfterAll
 
 import scala.collection.JavaConverters._
+import scala.concurrent.duration._
 import org.scalatest.OptionValues._
 
 class EmbeddedKafkaMethodsSpec
@@ -27,7 +28,7 @@ class EmbeddedKafkaMethodsSpec
     with EmbeddedKafka
     with BeforeAndAfterAll {
 
-  val consumerPollTimeout = 5000
+  val consumerPollTimeout: FiniteDuration = 5.seconds
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -52,7 +53,7 @@ class EmbeddedKafkaMethodsSpec
       consumer.subscribe(List(topic).asJava)
 
       val records =
-        consumer.poll(java.time.Duration.ofMillis(consumerPollTimeout))
+        consumer.poll(duration2JavaDuration(consumerPollTimeout))
 
       records.iterator().hasNext shouldBe true
       val record = records.iterator().next()
@@ -79,7 +80,7 @@ class EmbeddedKafkaMethodsSpec
       consumer.subscribe(List(topic).asJava)
 
       val records =
-        consumer.poll(java.time.Duration.ofMillis(consumerPollTimeout))
+        consumer.poll(duration2JavaDuration(consumerPollTimeout))
 
       records.iterator().hasNext shouldBe true
       val record = records.iterator().next()
@@ -105,7 +106,7 @@ class EmbeddedKafkaMethodsSpec
       consumer.subscribe(List(topic).asJava)
 
       val records =
-        consumer.poll(java.time.Duration.ofMillis(consumerPollTimeout))
+        consumer.poll(duration2JavaDuration(consumerPollTimeout))
 
       records.iterator().hasNext shouldBe true
       val record = records.iterator().next()
@@ -133,7 +134,7 @@ class EmbeddedKafkaMethodsSpec
       consumer.subscribe(List(topic).asJava)
 
       val records = consumer
-        .poll(java.time.Duration.ofMillis(consumerPollTimeout))
+        .poll(duration2JavaDuration(consumerPollTimeout))
         .iterator()
 
       records.hasNext shouldBe true

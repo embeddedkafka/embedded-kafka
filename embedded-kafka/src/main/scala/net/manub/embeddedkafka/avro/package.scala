@@ -1,6 +1,5 @@
 package net.manub.embeddedkafka
 
-import kafka.utils.VerifiableProperties
 import org.apache.avro.Schema
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.{Deserializer, Serializer}

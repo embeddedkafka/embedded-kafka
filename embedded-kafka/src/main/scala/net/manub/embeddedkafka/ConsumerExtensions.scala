@@ -3,12 +3,14 @@ package net.manub.embeddedkafka
 import org.apache.kafka.clients.consumer.{ConsumerRecord, KafkaConsumer}
 import org.apache.kafka.common.KafkaException
 
+import scala.concurrent.duration._
 import scala.util.Try
 
 /** Method extensions for Kafka's [[KafkaConsumer]] API allowing easy testing. */
 object ConsumerExtensions {
 
-  case class ConsumerRetryConfig(maximumAttempts: Int = 3, poll: Long = 2000)
+  case class ConsumerRetryConfig(maximumAttempts: Int = 3,
+                                 poll: FiniteDuration = 2.seconds)
 
   implicit class ConsumerOps[K, V](val consumer: KafkaConsumer[K, V]) {
 
@@ -37,18 +39,18 @@ object ConsumerExtensions {
 
     /** Get the next batch of messages from Kafka.
       *
+      * @param poll            the amount of time to wait in the buffer for any messages to be available
       * @param topics          the topic to consume
-      * @param poll            the amount of time, in milliseconds, to wait in the buffer for any messages to be available
       * @param decoder         the function to use for decoding all [[ConsumerRecord]]
       * @return the next batch of messages
       */
-    private def getNextBatch[T](poll: Long, topics: Seq[String])(
+    private def getNextBatch[T](poll: FiniteDuration, topics: Seq[String])(
         implicit decoder: ConsumerRecord[K, V] => T): Seq[T] =
       Try {
         import scala.collection.JavaConverters._
         consumer.subscribe(topics.asJava)
         topics.foreach(consumer.partitionsFor)
-        val records = consumer.poll(java.time.Duration.ofMillis(poll))
+        val records = consumer.poll(duration2JavaDuration(poll))
         // use toList to force eager evaluation. toSeq is lazy
         records.iterator().asScala.toList.map(decoder(_))
       }.recover {
