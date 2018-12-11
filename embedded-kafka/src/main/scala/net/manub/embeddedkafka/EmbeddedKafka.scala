@@ -69,7 +69,7 @@ object EmbeddedKafka
   override def isRunning: Boolean =
     runningServers.list
       .toFilteredSeq[EmbeddedK](isEmbeddedK)
-      .exists(_.factory.isDefined)
+      .nonEmpty
 
 }
 

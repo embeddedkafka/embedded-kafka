@@ -5,8 +5,6 @@ import org.apache.kafka.common.serialization.{
   StringSerializer
 }
 import net.manub.embeddedkafka.EmbeddedKafka._
-import org.apache.kafka.common.network.ListenerName
-import org.apache.kafka.common.security.auth.SecurityProtocol
 
 import scala.collection.JavaConverters._
 import scala.reflect.io.Directory
@@ -129,17 +127,13 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
         EmbeddedKafka.isRunning shouldBe false
       }
 
-      "return false when only Kafka is running" in {
-        val unmanagedZookeeper = EmbeddedKafka.startZooKeeper(
-          6000,
-          Directory.makeTemp("zookeeper-test-logs"))
-
+      "return true when both Kafka and Zookeeper are running, if started separately" in {
+        EmbeddedKafka.startZooKeeper(Directory.makeTemp("zookeeper-test-logs"))
         EmbeddedKafka.startKafka(Directory.makeTemp("kafka-test-logs"))
-        EmbeddedKafka.isRunning shouldBe false
+
+        EmbeddedKafka.isRunning shouldBe true
         EmbeddedKafka.stop()
         EmbeddedKafka.isRunning shouldBe false
-
-        unmanagedZookeeper.shutdown()
       }
 
       "return false when only Zookeeper is running" in {

@@ -44,6 +44,18 @@ object RunningServersOps {
       this
     }
 
+    /**
+      * Stops all [[EmbeddedServer]]s and clears their logs.
+      */
+    def stopAndRemoveAll(): this.type = {
+      // Make sure servers are stopped in the opposite order in which they were
+      // started (and thus added)
+      servers.reverse
+        .foreach(_.stop(true))
+      servers = Seq.empty
+      this
+    }
+
   }
 
 }
@@ -64,7 +76,7 @@ trait RunningServersOps {
   /**
     * Stops all in memory servers and deletes the log directories.
     */
-  def stop(): Unit = runningServers.stopAndRemove(_ => true)
+  def stop(): Unit = runningServers.stopAndRemoveAll()
 
   /**
     * Stops a specific [[EmbeddedServer]] instance, and deletes the log directory.
