@@ -17,7 +17,6 @@ import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.language.postfixOps
 
 abstract class EmbeddedKafkaSpecSupport
     extends TestKit(ActorSystem("embedded-kafka-spec"))
@@ -41,27 +40,27 @@ abstract class EmbeddedKafkaSpecSupport
   def kafkaIsAvailable(kafkaPort: Int = 6001): Unit = {
     system.actorOf(
       TcpClient.props(new InetSocketAddress("localhost", kafkaPort), testActor))
-    expectMsg(1 second, Connection.Success)
+    expectMsg(1.second, Connection.Success)
   }
 
   def zookeeperIsAvailable(zookeeperPort: Int = 6000): Unit = {
     system.actorOf(
       TcpClient.props(new InetSocketAddress("localhost", zookeeperPort),
                       testActor))
-    expectMsg(1 second, Connection.Success)
+    expectMsg(1.second, Connection.Success)
   }
 
   def kafkaIsNotAvailable(kafkaPort: Int = 6001): Unit = {
     system.actorOf(
       TcpClient.props(new InetSocketAddress("localhost", kafkaPort), testActor))
-    expectMsg(1 second, Connection.Failure)
+    expectMsg(1.second, Connection.Failure)
   }
 
   def zookeeperIsNotAvailable(zookeeperPort: Int = 6000): Unit = {
     system.actorOf(
       TcpClient.props(new InetSocketAddress("localhost", zookeeperPort),
                       testActor))
-    expectMsg(1 second, Connection.Failure)
+    expectMsg(1.second, Connection.Failure)
   }
 }
 

@@ -7,11 +7,12 @@ import org.apache.kafka.common.serialization.{
 import net.manub.embeddedkafka.EmbeddedKafka._
 
 import scala.collection.JavaConverters._
+import scala.concurrent.duration._
 import scala.reflect.io.Directory
 
 class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
 
-  val consumerPollTimeout = 5000
+  val consumerPollTimeout: FiniteDuration = 5.seconds
 
   "the EmbeddedKafka object" when {
     "invoking the start and stop methods" should {
@@ -109,7 +110,7 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
         anotherConsumer.subscribe(List(topic).asJava)
 
         val moreRecords =
-          anotherConsumer.poll(java.time.Duration.ofMillis(consumerPollTimeout))
+          anotherConsumer.poll(duration2JavaDuration(consumerPollTimeout))
         moreRecords.count shouldBe 1
 
         val someOtherRecord = moreRecords.iterator().next

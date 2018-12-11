@@ -2,7 +2,6 @@ package net.manub.embeddedkafka.avro
 
 import java.io.ByteArrayOutputStream
 
-import kafka.utils.VerifiableProperties
 import org.apache.avro.Schema
 import org.apache.avro.io._
 import org.apache.avro.specific.{

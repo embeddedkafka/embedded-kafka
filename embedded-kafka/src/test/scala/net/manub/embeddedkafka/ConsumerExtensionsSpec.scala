@@ -11,6 +11,7 @@ import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.mockito.MockitoSugar
 
 import scala.collection.JavaConverters._
+import scala.concurrent.duration._
 
 class ConsumerExtensionsSpec
     extends EmbeddedKafkaSpecSupport
@@ -22,7 +23,7 @@ class ConsumerExtensionsSpec
 
     "retry to get messages with the configured maximum number of attempts when poll fails" in {
 
-      implicit val retryConf = ConsumerRetryConfig(2, 1)
+      implicit val retryConf = ConsumerRetryConfig(2, 1.millis)
 
       val consumer = mock[KafkaConsumer[String, String]]
       val consumerRecords =
@@ -30,18 +31,18 @@ class ConsumerExtensionsSpec
           .empty[TopicPartition, java.util.List[ConsumerRecord[String, String]]]
           .asJava)
 
-      when(consumer.poll(java.time.Duration.ofMillis(retryConf.poll)))
+      when(consumer.poll(duration2JavaDuration(retryConf.poll)))
         .thenReturn(consumerRecords)
 
       consumer.consumeLazily[String]("topic")
 
       verify(consumer, times(retryConf.maximumAttempts))
-        .poll(java.time.Duration.ofMillis(retryConf.poll))
+        .poll(duration2JavaDuration(retryConf.poll))
     }
 
     "not retry to get messages with the configured maximum number of attempts when poll succeeds" in {
 
-      implicit val retryConf = ConsumerRetryConfig(2, 1)
+      implicit val retryConf = ConsumerRetryConfig(2, 1.millis)
 
       val consumer = mock[KafkaConsumer[String, String]]
       val consumerRecord = mock[ConsumerRecord[String, String]]
@@ -50,17 +51,17 @@ class ConsumerExtensionsSpec
           new TopicPartition("topic", 1) -> List(consumerRecord).asJava).asJava
       )
 
-      when(consumer.poll(java.time.Duration.ofMillis(retryConf.poll)))
+      when(consumer.poll(duration2JavaDuration(retryConf.poll)))
         .thenReturn(consumerRecords)
 
       consumer.consumeLazily[String]("topic")
 
-      verify(consumer).poll(java.time.Duration.ofMillis(retryConf.poll))
+      verify(consumer).poll(duration2JavaDuration(retryConf.poll))
     }
 
     "poll to get messages with the configured poll timeout" in {
 
-      implicit val retryConf = ConsumerRetryConfig(1, 10)
+      implicit val retryConf = ConsumerRetryConfig(1, 10.millis)
 
       val consumer = mock[KafkaConsumer[String, String]]
       val consumerRecords =
@@ -68,12 +69,12 @@ class ConsumerExtensionsSpec
           .empty[TopicPartition, java.util.List[ConsumerRecord[String, String]]]
           .asJava)
 
-      when(consumer.poll(java.time.Duration.ofMillis(retryConf.poll)))
+      when(consumer.poll(duration2JavaDuration(retryConf.poll)))
         .thenReturn(consumerRecords)
 
       consumer.consumeLazily[String]("topic")
 
-      verify(consumer).poll(java.time.Duration.ofMillis(retryConf.poll))
+      verify(consumer).poll(duration2JavaDuration(retryConf.poll))
     }
   }
 
