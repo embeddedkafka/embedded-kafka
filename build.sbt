@@ -3,7 +3,6 @@ import sbtrelease.Version
 parallelExecution in ThisBuild := false
 
 val kafkaVersion = "2.0.1"
-val confluentVersion = "5.0.1"
 val akkaVersion = "2.5.18"
 
 lazy val commonSettings = Seq(
@@ -62,7 +61,7 @@ lazy val root = (project in file("."))
   .settings(releaseSettings: _*)
   .disablePlugins(BintrayPlugin)
   .settings(publishTo := Some(Resolver.defaultLocal))
-  .aggregate(embeddedKafka, kafkaStreams, schemaRegistry)
+  .aggregate(embeddedKafka, kafkaStreams)
 
 lazy val embeddedKafka = (project in file("embedded-kafka"))
   .settings(name := "embedded-kafka")
@@ -84,20 +83,3 @@ lazy val kafkaStreams = (project in file("kafka-streams"))
     "javax.ws.rs" % "javax.ws.rs-api" % "2.1.1"
   ))
   .dependsOn(embeddedKafka)
-
-lazy val schemaRegistry = (project in file("schema-registry"))
-  .settings(name := "embedded-kafka-schema-registry")
-  .settings(publishSettings: _*)
-  .settings(commonSettings: _*)
-  .settings(commonLibrarySettings)
-  .settings(releaseSettings: _*)
-  .settings(resolvers ++= Seq(
-    "confluent" at "https://packages.confluent.io/maven/"))
-  .settings(libraryDependencies ++= Seq(
-    "org.apache.kafka" % "kafka-streams" % kafkaVersion,
-    "io.confluent" % "kafka-avro-serializer" % confluentVersion,
-    "io.confluent" % "kafka-schema-registry" % confluentVersion,
-    "io.confluent" % "kafka-schema-registry" % confluentVersion classifier "tests",
-  ))
-  .dependsOn(embeddedKafka % "compile->compile;test->test",
-             kafkaStreams % "compile->compile;test->test")
