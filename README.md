@@ -1,8 +1,6 @@
 # embedded-kafka
 A library that provides an in-memory Kafka instance to run your tests against.
 
-*As of version 1.1.1 the library is not dependent anymore on ScalaTest and won't transitively bring ScalaTest into your build.*
-
 Inspired by https://github.com/chbatey/kafka-unit
 
 [![Build Status](https://travis-ci.org/embeddedkafka/embedded-kafka.svg?branch=master)](https://travis-ci.org/embeddedkafka/embedded-kafka)
@@ -16,13 +14,11 @@ Inspired by https://github.com/chbatey/kafka-unit
 
 ### Version compatibility matrix
 
-embedded-kafka is available on Bintray and Maven Central, compiled for both Scala 2.11 and 2.12. Scala 2.10 is supported until `0.10.0`. Scala 2.12 is supported from `0.11.0` onwards, following Apache Kafka release cycle.
+embedded-kafka is available on Bintray and Maven Central, compiled for both Scala 2.11 and 2.12.
 
 Currently there's no support for Scala 2.13-Mx as Kafka artifacts are not published for these versions.
 
-Starting from 1.0.0, versions match the version of Kafka they're built against. However in the past there were some mismatches - the easiest way is to check through the git history of the `build.sbt` file
-
-*If you're using Kafka 1.1.0, please use version `1.1.0-kafka1.1-nosr` - this version doesn't pull in the Confluent Schema Registry by default*
+Versions match the version of Kafka they're built against.
 
 ### How to use
 
@@ -242,44 +238,3 @@ class MySpec extends WordSpec with Matchers with EmbeddedKafkaStreamsAllInOne {
   }
 }
 ```
-
-## embedded-kafka-schema-registry
-
-If you need to serialize and deserialize messages using Avro, a [Confluent Schema Registry](https://docs.confluent.io/current/schema-registry/docs/index.html) instance can be provided to test your code.
-
-### How to use
-
-* In your `build.sbt` file add the following resolver: `resolvers += "confluent" at "https://packages.confluent.io/maven/"`
-* In your `build.sbt` file add the following dependency: `"io.github.embeddedkafka" %% "embedded-kafka-schema-registry" % "2.0.1" % "test"`
-* Have your class extend the `EmbeddedKafkaWithSchemaRegistry` trait.
-* Enclose the code that needs a running instance of Kafka within the `withRunningKafka` closure.
-* Provide an implicit `EmbeddedKafkaConfigWithSchemaRegistryImpl`.
-
-```scala
-class MySpec extends WordSpec with EmbeddedKafkaWithSchemaRegistry {
-
-  "runs with embedded kafka and Schema Registry" should {
-
-    "work" in {
-      implicit val config = EmbeddedKafkaConfigWithSchemaRegistryImpl()
-
-      withRunningKafka {
-        // ... code goes here
-      }
-    }
-  }
-}
-```
-
-* A Schema Registry server will be started and automatically shutdown at the end of the test.
-
-### Utility methods
-
-The `net.manub.embeddedkafka.avro.schemaregistry` package object provides useful implicit converters for testing with Avro and Schema Registry.
-
-### Using streams
-
-* For most of the cases have your class extend the `EmbeddedKafkaStreamsWithSchemaRegistryAllInOne` trait. This offers both streams management and easy creation of consumers for asserting resulting messages in output/sink topics.
-* If you only want to use the streams management without the test consumers just have the class extend the `EmbeddedKafkaStreamsWithSchemaRegistry` trait.
-* Build your own `Topology` and use `runStreams` to test it.
-* Have a look at the [example test](schema-registry/src/test/scala/net/manub/embeddedkafka/schemaregistry/streams/ExampleKafkaStreamsSchemaRegistrySpec.scala).
