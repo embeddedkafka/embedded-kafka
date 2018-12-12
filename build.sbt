@@ -29,23 +29,15 @@ lazy val commonLibrarySettings = libraryDependencies ++= Seq(
 
 lazy val publishSettings = Seq(
   licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
-  publishMavenStyle := true,
   publishArtifact in Test := false,
-  pomIncludeRepository := { _ =>
-    false
-  },
-  pomExtra :=
-    <scm>
-      <url>https://github.com/embeddedkafka/embedded-kafka</url>
-      <connection>scm:git:git@github.com:embeddedkafka/embedded-kafka.git</connection>
-    </scm>
-      <developers>
-        <developer>
-          <id>manub</id>
-          <name>Emanuele Blanco</name>
-          <url>http://twitter.com/manub</url>
-        </developer>
-      </developers>
+  developers := List(
+    Developer(
+      "manub",
+      "Emanuele Blanco",
+      "emanuele.blanco@gmail.com",
+      url("http://twitter.com/manub")
+    )
+  )
 )
 
 lazy val releaseSettings = Seq(
@@ -56,11 +48,8 @@ lazy val releaseSettings = Seq(
 lazy val root = (project in file("."))
   .settings(name := "embedded-kafka-root")
   .settings(commonSettings: _*)
-  .settings(publishArtifact := false)
-  .settings(publish := {})
   .settings(releaseSettings: _*)
-  .disablePlugins(BintrayPlugin)
-  .settings(publishTo := Some(Resolver.defaultLocal))
+  .settings(skip in publish := true)
   .aggregate(embeddedKafka, kafkaStreams)
 
 lazy val embeddedKafka = (project in file("embedded-kafka"))
