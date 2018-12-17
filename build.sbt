@@ -48,6 +48,7 @@ lazy val releaseSettings = Seq(
 lazy val root = (project in file("."))
   .settings(name := "embedded-kafka-root")
   .settings(commonSettings: _*)
+  .settings(publishArtifact := false)
   .settings(releaseSettings: _*)
   .settings(skip in publish := true)
   .aggregate(embeddedKafka, kafkaStreams)
