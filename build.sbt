@@ -30,6 +30,8 @@ lazy val commonLibrarySettings = libraryDependencies ++= Seq(
 lazy val publishSettings = Seq(
   licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
   publishArtifact in Test := false,
+  // https://github.com/sbt/sbt/issues/3570#issuecomment-432814188
+  updateOptions := updateOptions.value.withGigahorse(false),
   developers := List(
     Developer(
       "manub",
