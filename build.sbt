@@ -7,8 +7,8 @@ val akkaVersion = "2.5.19"
 
 lazy val commonSettings = Seq(
   organization := "io.github.embeddedkafka",
-  scalaVersion := "2.12.7",
-  crossScalaVersions := Seq("2.12.7", "2.11.12"),
+  scalaVersion := "2.12.8",
+  crossScalaVersions := Seq("2.12.8", "2.11.12"),
   homepage := Some(url("https://github.com/embeddedkafka/embedded-kafka")),
   parallelExecution in Test := false,
   logBuffered in Test := false,
