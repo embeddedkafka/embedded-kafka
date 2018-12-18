@@ -27,10 +27,10 @@ stages:
   - name: release
     if: (branch = master AND type = push) OR (tag IS present)
 
+script: travis_retry sbt ++$TRAVIS_SCALA_VERSION test
+
 jobs:
   include:
-    # stage="test" if no stage is specified
-    - script: travis_retry sbt ++$TRAVIS_SCALA_VERSION test
     # run release only if previous stages passed
     - stage: release
-      script: sbt ci-release
+      script: sbt ci-release || sbt sonatypeReleaseAll
