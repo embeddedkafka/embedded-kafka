@@ -42,7 +42,17 @@ lazy val publishSettings = Seq(
   )
 )
 
+import ReleaseTransformations._
+
 lazy val releaseSettings = Seq(
+  releaseProcess := Seq[ReleaseStep](
+    setReleaseVersion,
+    commitReleaseVersion,
+    tagRelease,
+    setNextVersion,
+    commitNextVersion,
+    pushChanges
+  ),
   releaseVersionBump := Version.Bump.Minor,
   releaseCrossBuild := true
 )
