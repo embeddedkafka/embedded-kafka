@@ -1,6 +1,10 @@
 package net.manub.embeddedkafka.ops
 
-import net.manub.embeddedkafka.{EmbeddedKafkaConfig, KafkaUnavailableException}
+import net.manub.embeddedkafka.{
+  EmbeddedKafkaConfig,
+  KafkaUnavailableException,
+  duration2JavaDuration
+}
 import org.apache.kafka.clients.consumer.{
   ConsumerConfig,
   KafkaConsumer,
@@ -220,19 +224,16 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
       topics.foreach(consumer.partitionsFor)
 
       while (messagesRead < number && System.nanoTime < timeoutNanoTime) {
-        val records = consumer.poll(
-          java.time.Duration.ofNanos(consumerPollingTimeout.toNanos))
-        val recordIter = records.iterator()
+        val recordIter =
+          consumer.poll(duration2JavaDuration(consumerPollingTimeout)).iterator
         if (resetTimeoutOnEachMessage && recordIter.hasNext) {
           timeoutNanoTime = System.nanoTime + timeout.toNanos
         }
         while (recordIter.hasNext && messagesRead < number) {
-          val record = recordIter.next()
-          val topic = record.topic()
-          val message = (record.key(), record.value())
-          messagesBuffers(topic) += message
-          val tp = new TopicPartition(topic, record.partition())
-          val om = new OffsetAndMetadata(record.offset() + 1)
+          val record = recordIter.next
+          messagesBuffers(record.topic) += (record.key -> record.value)
+          val tp = new TopicPartition(record.topic, record.partition)
+          val om = new OffsetAndMetadata(record.offset + 1)
           consumer.commitSync(Map(tp -> om).asJava)
           messagesRead += 1
         }
@@ -241,7 +242,7 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
         throw new TimeoutException(
           s"Unable to retrieve $number message(s) from Kafka in $timeout")
       }
-      messagesBuffers.map { case (topic, msgs) => topic -> msgs.toList }
+      messagesBuffers.mapValues(_.toList)
     }
 
     consumer.close()
