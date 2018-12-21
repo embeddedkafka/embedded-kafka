@@ -25,7 +25,7 @@ class EmbeddedKafkaCustomConfigSpec
         Map(
           ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG -> s"$ThreeMegabytes")
 
-      implicit val customKafkaConfig =
+      implicit val customKafkaConfig: EmbeddedKafkaConfig =
         EmbeddedKafkaConfig(customBrokerProperties = customBrokerConfig,
                             customProducerProperties = customProducerConfig,
                             customConsumerProperties = customConsumerConfig)
