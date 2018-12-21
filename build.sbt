@@ -46,6 +46,10 @@ import ReleaseTransformations._
 
 lazy val releaseSettings = Seq(
   releaseProcess := Seq[ReleaseStep](
+    checkSnapshotDependencies,
+    inquireVersions,
+    runClean,
+    runTest,
     setReleaseVersion,
     commitReleaseVersion,
     tagRelease,
