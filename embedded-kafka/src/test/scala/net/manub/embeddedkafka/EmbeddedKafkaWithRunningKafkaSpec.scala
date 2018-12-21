@@ -42,7 +42,8 @@ class EmbeddedKafkaWithRunningKafkaSpec
     }
 
     "start a Kafka broker on a specified port" in {
-      implicit val config: EmbeddedKafkaConfig = EmbeddedKafkaConfig(kafkaPort = 12345)
+      implicit val config: EmbeddedKafkaConfig =
+        EmbeddedKafkaConfig(kafkaPort = 12345)
 
       withRunningKafka {
         kafkaIsAvailable(12345)
@@ -50,7 +51,8 @@ class EmbeddedKafkaWithRunningKafkaSpec
     }
 
     "start a Zookeeper server on a specified port" in {
-      implicit val config: EmbeddedKafkaConfig = EmbeddedKafkaConfig(zooKeeperPort = 12345)
+      implicit val config: EmbeddedKafkaConfig =
+        EmbeddedKafkaConfig(zooKeeperPort = 12345)
 
       withRunningKafka {
         zookeeperIsAvailable(12345)

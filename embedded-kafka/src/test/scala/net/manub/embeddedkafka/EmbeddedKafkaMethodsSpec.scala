@@ -4,10 +4,19 @@ import java.util.concurrent.TimeoutException
 
 import kafka.server.KafkaConfig
 import kafka.zk.KafkaZkClient
-import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
+import org.apache.kafka.clients.producer.{
+  KafkaProducer,
+  ProducerConfig,
+  ProducerRecord
+}
 import org.apache.kafka.common.config.TopicConfig
 import org.apache.kafka.common.header.internals.RecordHeaders
-import org.apache.kafka.common.serialization.{ByteArraySerializer, Deserializer, StringDeserializer, StringSerializer}
+import org.apache.kafka.common.serialization.{
+  ByteArraySerializer,
+  Deserializer,
+  StringDeserializer,
+  StringSerializer
+}
 import org.apache.kafka.common.utils.Time
 import org.scalatest.BeforeAndAfterAll
 

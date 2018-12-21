@@ -23,7 +23,8 @@ class ConsumerExtensionsSpec
 
     "retry to get messages with the configured maximum number of attempts when poll fails" in {
 
-      implicit val retryConf: ConsumerRetryConfig = ConsumerRetryConfig(2, 1.millis)
+      implicit val retryConf: ConsumerRetryConfig =
+        ConsumerRetryConfig(2, 1.millis)
 
       val consumer = mock[KafkaConsumer[String, String]]
       val consumerRecords =
@@ -42,7 +43,8 @@ class ConsumerExtensionsSpec
 
     "not retry to get messages with the configured maximum number of attempts when poll succeeds" in {
 
-      implicit val retryConf: ConsumerRetryConfig = ConsumerRetryConfig(2, 1.millis)
+      implicit val retryConf: ConsumerRetryConfig =
+        ConsumerRetryConfig(2, 1.millis)
 
       val consumer = mock[KafkaConsumer[String, String]]
       val consumerRecord = mock[ConsumerRecord[String, String]]
@@ -61,7 +63,8 @@ class ConsumerExtensionsSpec
 
     "poll to get messages with the configured poll timeout" in {
 
-      implicit val retryConf: ConsumerRetryConfig = ConsumerRetryConfig(1, 10.millis)
+      implicit val retryConf: ConsumerRetryConfig =
+        ConsumerRetryConfig(1, 10.millis)
 
       val consumer = mock[KafkaConsumer[String, String]]
       val consumerRecords =
