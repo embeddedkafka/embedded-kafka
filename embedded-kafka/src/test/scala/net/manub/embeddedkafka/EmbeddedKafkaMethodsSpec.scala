@@ -336,9 +336,10 @@ class EmbeddedKafkaMethodsSpec
       whenReady(
         producer
           .send(new ProducerRecord[String, String](topic, key, message))) { _ =>
-        val res = consumeFirstKeyedMessageFrom[Array[Byte], Array[Byte]](topic)
-        res._1 shouldBe key.getBytes
-        res._2 shouldBe message.getBytes
+        val (k, v) =
+          consumeFirstKeyedMessageFrom[Array[Byte], Array[Byte]](topic)
+        k shouldBe key.getBytes
+        v shouldBe message.getBytes
       }
 
       producer.close()
@@ -495,9 +496,8 @@ class EmbeddedKafkaMethodsSpec
           ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[
             StringSerializer].getName
         ).asJava)
-      for ((topic, messages) <- topicMessagesMap; message <- messages) {
-        producer.send(
-          new ProducerRecord[String, String](topic, message._1, message._2))
+      for ((topic, messages) <- topicMessagesMap; (k, v) <- messages) {
+        producer.send(new ProducerRecord[String, String](topic, k, v))
       }
 
       producer.flush()

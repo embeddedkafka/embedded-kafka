@@ -168,7 +168,7 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
       config,
       new StringDeserializer(),
       valueDeserializer)
-      .mapValues(_.map(_._2))
+      .mapValues(_.map { case (_, m) => m })
   }
 
   /**
