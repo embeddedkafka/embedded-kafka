@@ -4,18 +4,10 @@ import java.util.concurrent.TimeoutException
 
 import kafka.server.KafkaConfig
 import kafka.zk.KafkaZkClient
-import org.apache.kafka.clients.producer.{
-  KafkaProducer,
-  ProducerConfig,
-  ProducerRecord
-}
+import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
 import org.apache.kafka.common.config.TopicConfig
 import org.apache.kafka.common.header.internals.RecordHeaders
-import org.apache.kafka.common.serialization.{
-  ByteArraySerializer,
-  StringDeserializer,
-  StringSerializer
-}
+import org.apache.kafka.common.serialization.{ByteArraySerializer, Deserializer, StringDeserializer, StringSerializer}
 import org.apache.kafka.common.utils.Time
 import org.scalatest.BeforeAndAfterAll
 
@@ -42,8 +34,8 @@ class EmbeddedKafkaMethodsSpec
 
   "the publishToKafka method" should {
     "publish synchronously a String message to Kafka" in {
-      implicit val serializer = new StringSerializer()
-      implicit val deserializer = new StringDeserializer()
+      implicit val serializer: StringSerializer = new StringSerializer()
+      implicit val deserializer: StringDeserializer = new StringDeserializer()
       val message = "hello world!"
       val topic = "publish_test_topic"
 
@@ -64,8 +56,8 @@ class EmbeddedKafkaMethodsSpec
     }
 
     "publish synchronously a String message with a header to Kafka" in {
-      implicit val serializer = new StringSerializer()
-      implicit val deserializer = new StringDeserializer()
+      implicit val serializer: StringSerializer = new StringSerializer()
+      implicit val deserializer: StringDeserializer = new StringDeserializer()
       val message = "hello world!"
       val topic = "publish_test_topic_with_header"
       val headerValue = "my_header_value"
@@ -94,8 +86,8 @@ class EmbeddedKafkaMethodsSpec
     }
 
     "publish synchronously a String message with String key to Kafka" in {
-      implicit val serializer = new StringSerializer()
-      implicit val deserializer = new StringDeserializer()
+      implicit val serializer: StringSerializer = new StringSerializer()
+      implicit val deserializer: StringDeserializer = new StringDeserializer()
       val key = "key"
       val message = "hello world!"
       val topic = "publish_test_topic_string_key"
@@ -118,8 +110,8 @@ class EmbeddedKafkaMethodsSpec
     }
 
     "publish synchronously a batch of String messages with String keys to Kafka" in {
-      implicit val serializer = new StringSerializer()
-      implicit val deserializer = new StringDeserializer()
+      implicit val serializer: StringSerializer = new StringSerializer()
+      implicit val deserializer: StringDeserializer = new StringDeserializer()
       val key1 = "key1"
       val message1 = "hello world!"
       val key2 = "key2"
@@ -154,7 +146,7 @@ class EmbeddedKafkaMethodsSpec
 
   "the createCustomTopic method" should {
     "create a topic with a custom configuration" in {
-      implicit val config = EmbeddedKafkaConfig(
+      implicit val config: EmbeddedKafkaConfig = EmbeddedKafkaConfig(
         customBrokerProperties = Map(
           KafkaConfig.LogCleanerDedupeBufferSizeProp -> 2000000.toString
         ))
@@ -180,7 +172,7 @@ class EmbeddedKafkaMethodsSpec
     }
 
     "create a topic with custom number of partitions" in {
-      implicit val config = EmbeddedKafkaConfig()
+      implicit val config: EmbeddedKafkaConfig = EmbeddedKafkaConfig()
       val topic = "test_custom_topic_with_custom_partitions"
 
       createCustomTopic(
@@ -296,7 +288,7 @@ class EmbeddedKafkaMethodsSpec
 
       val message = TestAvroClass("name")
       val topic = "consume_test_topic"
-      implicit val testAvroClassDecoder =
+      implicit val testAvroClassDecoder: Deserializer[TestAvroClass] =
         specificAvroDeserializer[TestAvroClass](TestAvroClass.SCHEMA$)
 
       val producer = new KafkaProducer[String, TestAvroClass](
@@ -352,7 +344,7 @@ class EmbeddedKafkaMethodsSpec
       val key = TestAvroClass("key")
       val message = TestAvroClass("message")
       val topic = "consume_test_topic"
-      implicit val testAvroClassDecoder =
+      implicit val testAvroClassDecoder: Deserializer[TestAvroClass] =
         specificAvroDeserializer[TestAvroClass](TestAvroClass.SCHEMA$)
 
       val producer = new KafkaProducer[TestAvroClass, TestAvroClass](
@@ -377,8 +369,8 @@ class EmbeddedKafkaMethodsSpec
       val key = "key"
       val message = TestAvroClass("message")
       val topic = "consume_test_topic"
-      implicit val stringDecoder = new StringDeserializer
-      implicit val testAvroClassDecoder =
+      implicit val stringDecoder: StringDeserializer = new StringDeserializer
+      implicit val testAvroClassDecoder: Deserializer[TestAvroClass] =
         specificAvroDeserializer[TestAvroClass](TestAvroClass.SCHEMA$)
 
       val producer = new KafkaProducer[String, TestAvroClass](
@@ -471,7 +463,7 @@ class EmbeddedKafkaMethodsSpec
 
       producer.flush()
 
-      implicit val deserializer = new StringDeserializer
+      implicit val deserializer: StringDeserializer = new StringDeserializer
       val consumedMessages =
         consumeNumberMessagesFromTopics(topicMessagesMap.keySet,
                                         topicMessagesMap.values.map(_.size).sum)
@@ -502,7 +494,7 @@ class EmbeddedKafkaMethodsSpec
 
       producer.flush()
 
-      implicit val deserializer = new StringDeserializer
+      implicit val deserializer: StringDeserializer = new StringDeserializer
       val consumedMessages =
         consumeNumberKeyedMessagesFromTopics(
           topicMessagesMap.keySet,

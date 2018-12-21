@@ -15,7 +15,7 @@ class ExampleKafkaStreamsSpec
 
   import net.manub.embeddedkafka.Codecs.stringKeyValueCrDecoder
 
-  implicit val config =
+  implicit val config: EmbeddedKafkaConfig =
     EmbeddedKafkaConfig(kafkaPort = 7000, zooKeeperPort = 7001)
 
   val (inTopic, outTopic) = ("in", "out")

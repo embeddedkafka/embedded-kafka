@@ -12,7 +12,7 @@ class EmbeddedKafkaUnavailableSpec
   "the publishToKafka method" should {
     "throw a KafkaUnavailableException when Kafka is unavailable when trying to publish" in {
       a[KafkaUnavailableException] shouldBe thrownBy {
-        implicit val serializer = new StringSerializer()
+        implicit val serializer: StringSerializer = new StringSerializer()
         publishToKafka("non_existing_topic", "a message")
       }
     }
