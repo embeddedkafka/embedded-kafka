@@ -208,34 +208,3 @@ It takes care of instantiating and starting your streams as well as closing them
   * Pass the Topology that will be used to instantiate and start the Kafka Streams. This will be done while using the `withRunningKafka` closure internally so that your stream runs with an embedded Kafka and Zookeeper.
   * Pass the `{code block}` that needs a running instance of your streams. This is where your actual test code will sit. You can publish messages to your source topics and consume messages from your sink topics that the Kafka Streams should have generated. This method also offers a pre-instantiated consumer that can read String keys and values.
 * For more flexibility, use `runStreams` and `withConsumer`. This allows you to create your own consumers of custom types as seen in the [example test](kafka-streams/src/test/scala/net/manub/embeddedkafka/streams/ExampleKafkaStreamsSpec.scala).
-
-```scala
-import net.manub.embeddedkafka.Codecs._
-import net.manub.embeddedkafka.ConsumerExtensions._
-import net.manub.embeddedkafka.streams.EmbeddedKafkaStreamsAllInOne
-import org.apache.kafka.streams.StreamsBuilder
-import org.scalatest.{Matchers, WordSpec}
-
-class MySpec extends WordSpec with Matchers with EmbeddedKafkaStreamsAllInOne {
-  "my kafka stream" should {
-    "be easy to test" in {
-      val inputTopic = "input-topic"
-      val outputTopic = "output-topic"
-      // your code for building the stream goes here e.g.
-      val streamBuilder = new StreamsBuilder
-      streamBuilder.stream(inputTopic).to(outputTopic)
-      // tell the stream test
-      // 1. what topics need to be created before the stream starts
-      // 2. the stream topology to be used for initializing and starting the stream
-      runStreamsWithStringConsumer(
-        topicsToCreate = Seq(inputTopic, outputTopic),
-        topology = streamBuilder.build()
-      ){ consumer =>
-        // your test code goes here
-        publishToKafka(inputTopic, key = "hello", message = "world")
-        consumer.consumeLazily[String](outputTopic).head should be ("hello" -> "world")
-      }
-    }
-  }
-}
-```
