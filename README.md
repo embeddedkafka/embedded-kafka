@@ -7,15 +7,17 @@
 
 A library that provides an in-memory Kafka instance to run your tests against.
 
-Inspired by https://github.com/chbatey/kafka-unit
+Inspired by [kafka-unit](https://github.com/chbatey/kafka-unit).
 
-### Version compatibility matrix
+## Version compatibility matrix
 
 embedded-kafka is available on Maven Central, compiled for both Scala 2.11 and 2.12.
 
 Currently there's no support for Scala 2.13-Mx as Kafka artifacts are not published for these versions.
 
 Versions match the version of Kafka they're built against.
+
+## embedded-kafka
 
 ### How to use
 
@@ -45,7 +47,6 @@ class MySpec extends WordSpec with EmbeddedKafka {
 ### Use without the `withRunningKafka` method
 
 A `EmbeddedKafka` companion object is provided for usage without extending the `EmbeddedKafka` trait. Zookeeper and Kafka can be started and stopped in a programmatic way. This is the recommended usage if you have more than one test in your file and you don't want to start and stop Kafka and Zookeeper on every test.
-
 
 ```scala
 class MySpec extends WordSpec {
@@ -166,6 +167,7 @@ For more information about how to use the utility methods, you can either look a
 ### Custom consumers
 
 Use the `Consumers` trait that easily creates consumers of arbitrary key-value types and manages their lifecycle (via a loaner pattern).
+
 * For basic String consumption use `Consumers.withStringConsumer { your code here }`.
 * For arbitrary key and value types, expose implicit `Deserializer`s for each type and use `Consumers.withConsumer { your code here }`.
 * If you just want to create a consumer and manage its lifecycle yourself then try `Consumers.newConsumer()`.
@@ -173,6 +175,7 @@ Use the `Consumers` trait that easily creates consumers of arbitrary key-value t
 ### Easy message consumption
 
 With `ConsumerExtensions` you can turn a consumer to a Scala lazy Stream of `T` and treat it as a collection for easy assertion.
+
 * Just import the extensions.
 * Bring an implicit `ConsumerRecord[_, _] => T` transform function into scope (some common functions are provided in `Codecs`).
 * On any `KafkaConsumer` instance you can now do:
@@ -201,12 +204,13 @@ It takes care of instantiating and starting your streams as well as closing them
 * For most of the cases have your class extend the `EmbeddedKafkaStreamsAllInOne` trait. This offers both streams management and easy creation of consumers for asserting resulting messages in output/sink topics.
 * If you only want to use the streams management without the test consumers just have the class extend the `EmbeddedKafkaStreams` trait.
 * Use the `runStreamsWithStringConsumer` to:
-    * Create any topics that need to exist for the streams to operate (usually sources and sinks).
-    * Pass the Topology that will be used to instantiate and start the Kafka Streams. This will be done while using the `withRunningKafka` closure internally so that your stream runs with an embedded Kafka and Zookeeper.
-    * Pass the `{code block}` that needs a running instance of your streams. This is where your actual test code will sit. You can publish messages to your source topics and consume messages from your sink topics that the Kafka Streams should have generated. This method also offers a pre-instantiated consumer that can read String keys and values.
+  * Create any topics that need to exist for the streams to operate (usually sources and sinks).
+  * Pass the Topology that will be used to instantiate and start the Kafka Streams. This will be done while using the `withRunningKafka` closure internally so that your stream runs with an embedded Kafka and Zookeeper.
+  * Pass the `{code block}` that needs a running instance of your streams. This is where your actual test code will sit. You can publish messages to your source topics and consume messages from your sink topics that the Kafka Streams should have generated. This method also offers a pre-instantiated consumer that can read String keys and values.
 * For more flexibility, use `runStreams` and `withConsumer`. This allows you to create your own consumers of custom types as seen in the [example test](kafka-streams/src/test/scala/net/manub/embeddedkafka/streams/ExampleKafkaStreamsSpec.scala).
 
 ```scala
+import net.manub.embeddedkafka.Codecs._
 import net.manub.embeddedkafka.ConsumerExtensions._
 import net.manub.embeddedkafka.streams.EmbeddedKafkaStreamsAllInOne
 import org.apache.kafka.streams.StreamsBuilder
