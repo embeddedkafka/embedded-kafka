@@ -1,16 +1,13 @@
 # embedded-kafka
+
+[![Build Status](https://travis-ci.org/embeddedkafka/embedded-kafka.svg?branch=master)](https://travis-ci.org/embeddedkafka/embedded-kafka)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d8264e794fc041448f57c2afb3c0c028?branch=master)](https://www.codacy.com/app/francescopellegrini/embedded-kafka)
+[![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/manub/scalatest-embedded-kafka)
+[![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
+
 A library that provides an in-memory Kafka instance to run your tests against.
 
 Inspired by https://github.com/chbatey/kafka-unit
-
-[![Build Status](https://travis-ci.org/embeddedkafka/embedded-kafka.svg?branch=master)](https://travis-ci.org/embeddedkafka/embedded-kafka)
-
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c7b26292335d4331b49a81317884dd17?branch=master)](https://www.codacy.com/app/emanuele-blanco/scalatest-embedded-kafka)
-
-[![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/manub/scalatest-embedded-kafka)
-
-[![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
-
 
 ### Version compatibility matrix
 
