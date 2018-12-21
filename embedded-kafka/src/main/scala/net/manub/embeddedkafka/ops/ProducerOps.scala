@@ -13,7 +13,7 @@ import org.apache.kafka.clients.producer.{
 import org.apache.kafka.common.serialization.{Serializer, StringSerializer}
 
 import scala.concurrent.duration._
-import scala.util.Try
+import scala.util.{Failure, Try}
 import scala.collection.JavaConverters._
 
 /**
@@ -130,11 +130,12 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
     // Assure all messages sent before returning, and fail on first send error
     val records = futures.map(f =>
       Try(f.get(producerPublishTimeout.length, producerPublishTimeout.unit)))
-    records
-      .find(_.isFailure)
-      .foreach(record => throw new KafkaUnavailableException(record.failed.get))
 
     producer.close()
+
+    records.collectFirst {
+      case Failure(ex) => throw new KafkaUnavailableException(ex)
+    }
   }
 
   private def publishToKafka[K, T](kafkaProducer: KafkaProducer[K, T],
@@ -146,8 +147,10 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
 
     kafkaProducer.close()
 
-    if (sendResult.isFailure)
-      throw new KafkaUnavailableException(sendResult.failed.get)
+    sendResult match {
+      case Failure(ex) => throw new KafkaUnavailableException(ex)
+      case _           => // OK
+    }
   }
 
   def kafkaProducer[K, T](topic: String, key: K, message: T)(
