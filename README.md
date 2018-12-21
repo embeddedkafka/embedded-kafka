@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/embeddedkafka/embedded-kafka.svg?branch=master)](https://travis-ci.org/embeddedkafka/embedded-kafka)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d8264e794fc041448f57c2afb3c0c028?branch=master)](https://www.codacy.com/app/francescopellegrini/embedded-kafka)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.embeddedkafka/embedded-kafka_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.embeddedkafka/embedded-kafka_2.12)
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/manub/scalatest-embedded-kafka)
 [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
 
