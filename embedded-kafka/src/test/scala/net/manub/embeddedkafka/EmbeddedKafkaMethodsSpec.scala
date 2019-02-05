@@ -205,6 +205,37 @@ class EmbeddedKafkaMethodsSpec
     }
   }
 
+  "the deleteTopics method" should {
+    "either delete of mark for deletion a list of topics" in {
+      implicit val config: EmbeddedKafkaConfig = EmbeddedKafkaConfig(
+        customBrokerProperties = Map(
+          KafkaConfig.LogCleanerDedupeBufferSizeProp -> 2000000.toString
+        ))
+      val topics = List("test_topic_deletion_1", "test_topic_deletion_2")
+
+      topics.foreach(createCustomTopic(_))
+
+      deleteTopics(topics)
+
+      val zkClient = KafkaZkClient.apply(
+        s"localhost:${config.zooKeeperPort}",
+        isSecure = false,
+        zkSessionTimeoutMs,
+        zkConnectionTimeoutMs,
+        maxInFlightRequests = 1,
+        Time.SYSTEM
+      )
+
+      try {
+        val noTopicExistsAnymore = topics.forall(t => !zkClient.topicExists(t))
+        val allTopicsAreMarkedForDeletion =
+          topics.forall(t => zkClient.getTopicDeletions.contains(t))
+
+        assert(allTopicsAreMarkedForDeletion || noTopicExistsAnymore)
+      } finally zkClient.close()
+    }
+  }
+
   "the consumeFirstStringMessageFrom method" should {
     val config = EmbeddedKafkaConfig()
 
