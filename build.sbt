@@ -75,7 +75,7 @@ lazy val embeddedKafka = (project in file("embedded-kafka"))
   .settings(commonSettings: _*)
   .settings(commonLibrarySettings)
   .settings(
-    libraryDependencies += "org.mockito" % "mockito-core" % "2.24.5" % Test)
+    libraryDependencies += "org.mockito" % "mockito-core" % "2.25.0" % Test)
   .settings(releaseSettings: _*)
 
 lazy val kafkaStreams = (project in file("kafka-streams"))
