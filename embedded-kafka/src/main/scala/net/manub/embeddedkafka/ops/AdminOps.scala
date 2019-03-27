@@ -1,6 +1,6 @@
 package net.manub.embeddedkafka.ops
 
-import net.manub.embeddedkafka.EmbeddedKafkaConfig
+import net.manub.embeddedkafka.{EmbeddedKafkaConfig, duration2JavaDuration}
 import org.apache.kafka.clients.admin.{
   AdminClient,
   AdminClientConfig,
@@ -86,8 +86,7 @@ trait AdminOps[C <: EmbeddedKafkaConfig] {
       ).asJava)
 
     val res = Try(body(adminClient))
-    adminClient.close(adminClientCloseTimeout.length,
-                      adminClientCloseTimeout.unit)
+    adminClient.close(duration2JavaDuration(adminClientCloseTimeout))
 
     res
   }

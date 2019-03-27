@@ -8,7 +8,7 @@ import org.apache.kafka.clients.consumer.{
 }
 import org.apache.kafka.common.TopicPartition
 import org.mockito.Mockito.{times, verify, when}
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
