@@ -2,7 +2,7 @@ import sbtrelease.Version
 
 parallelExecution in ThisBuild := false
 
-val kafkaVersion = "2.2.0"
+val kafkaVersion = "2.2.1"
 val akkaVersion = "2.5.23"
 
 lazy val commonSettings = Seq(
