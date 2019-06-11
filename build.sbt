@@ -22,7 +22,7 @@ lazy val commonLibrarySettings = libraryDependencies ++= Seq(
   "org.apache.avro" % "avro" % "1.9.0",
   "org.apache.kafka" %% "kafka" % kafkaVersion,
   "org.slf4j" % "slf4j-log4j12" % "1.7.26" % Test,
-  "org.scalatest" %% "scalatest" % "3.0.7" % Test,
+  "org.scalatest" %% "scalatest" % "3.0.8" % Test,
   "com.typesafe.akka" %% "akka-actor" % akkaVersion % Test,
   "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test
 )
