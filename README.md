@@ -22,7 +22,7 @@ Versions match the version of Kafka they're built against.
 
 ### How to use
 
-* In your `build.sbt` file add the following dependency: `"io.github.embeddedkafka" %% "embedded-kafka" % "2.2.1" % "test"`
+* In your `build.sbt` file add the following dependency: `"io.github.embeddedkafka" %% "embedded-kafka" % "2.3.0" % "test"`
 * Have your class extend the `EmbeddedKafka` trait.
 * Enclose the code that needs a running instance of Kafka within the `withRunningKafka` closure.
 
@@ -200,7 +200,7 @@ It takes care of instantiating and starting your streams as well as closing them
 
 ### How to use
 
-* In your `build.sbt` file add the following dependency: `"io.github.embeddedkafka" %% "embedded-kafka-streams" % "2.2.1" % "test"`
+* In your `build.sbt` file add the following dependency: `"io.github.embeddedkafka" %% "embedded-kafka-streams" % "2.3.0" % "test"`
 * Have a look at the [example test](kafka-streams/src/test/scala/net/manub/embeddedkafka/streams/ExampleKafkaStreamsSpec.scala)
 * For most of the cases have your class extend the `EmbeddedKafkaStreamsAllInOne` trait. This offers both streams management and easy creation of consumers for asserting resulting messages in output/sink topics.
 * If you only want to use the streams management without the test consumers just have the class extend the `EmbeddedKafkaStreams` trait.
