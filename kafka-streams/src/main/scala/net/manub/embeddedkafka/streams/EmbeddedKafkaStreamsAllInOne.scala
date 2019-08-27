@@ -16,8 +16,8 @@ trait EmbeddedKafkaStreamsAllInOne
     with EmbeddedKafkaStreams
 
 private[embeddedkafka] trait EmbeddedKafkaStreamsAllInOneSupport[
-    C <: EmbeddedKafkaConfig]
-    extends Consumers {
+    C <: EmbeddedKafkaConfig
+] extends Consumers {
   this: EmbeddedKafkaStreamsSupport[C] =>
 
   /** Run Kafka Streams while offering a String-based consumer.
@@ -30,9 +30,10 @@ private[embeddedkafka] trait EmbeddedKafkaStreamsAllInOneSupport[
     * @param block          the block of code that will be executed by passing the simple
     *                       String-based consumer.
     */
-  def runStreamsWithStringConsumer(topicsToCreate: Seq[String],
-                                   topology: Topology)(
-      block: KafkaConsumer[String, String] => Any)(implicit config: C): Any =
+  def runStreamsWithStringConsumer(
+      topicsToCreate: Seq[String],
+      topology: Topology
+  )(block: KafkaConsumer[String, String] => Any)(implicit config: C): Any =
     runStreams(topicsToCreate, topology)(withStringConsumer[Any](block))(config)
 
 }

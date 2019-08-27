@@ -9,6 +9,7 @@ package object avro {
     new KafkaAvroSerializer[T]
 
   def specificAvroDeserializer[T <: SpecificRecord](
-      schema: Schema): Deserializer[T] =
+      schema: Schema
+  ): Deserializer[T] =
     new KafkaAvroDeserializer[T](schema)
 }

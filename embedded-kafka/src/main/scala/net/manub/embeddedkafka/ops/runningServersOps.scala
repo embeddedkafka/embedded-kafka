@@ -33,8 +33,10 @@ object RunningServersOps {
       * @param removalPredicate the predicate for removing [[EmbeddedServer]]s
       * @param clearLogs        whether or not to clear server logs, if any.
       */
-    def stopAndRemove(removalPredicate: EmbeddedServer => Boolean,
-                      clearLogs: Boolean = true): this.type = {
+    def stopAndRemove(
+        removalPredicate: EmbeddedServer => Boolean,
+        clearLogs: Boolean = true
+    ): this.type = {
       servers = servers.flatMap {
         case s if removalPredicate(s) =>
           s.stop(clearLogs)

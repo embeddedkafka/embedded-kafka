@@ -9,22 +9,27 @@ trait EmbeddedKafka
     with EmbeddedKafkaOps[EmbeddedKafkaConfig, EmbeddedK] {
 
   override private[embeddedkafka] def baseConsumerConfig(
-      implicit config: EmbeddedKafkaConfig): Map[String, Object] =
+      implicit config: EmbeddedKafkaConfig
+  ): Map[String, Object] =
     defaultConsumerConfig ++ config.customConsumerProperties
 
   override private[embeddedkafka] def baseProducerConfig(
-      implicit config: EmbeddedKafkaConfig): Map[String, Object] =
+      implicit config: EmbeddedKafkaConfig
+  ): Map[String, Object] =
     defaultProducerConf ++ config.customProducerProperties
 
   override private[embeddedkafka] def withRunningServers[T](
       config: EmbeddedKafkaConfig,
       actualZkPort: Int,
-      kafkaLogsDir: Directory)(body: EmbeddedKafkaConfig => T): T = {
+      kafkaLogsDir: Directory
+  )(body: EmbeddedKafkaConfig => T): T = {
     val broker =
-      startKafka(config.kafkaPort,
-                 actualZkPort,
-                 config.customBrokerProperties,
-                 kafkaLogsDir)
+      startKafka(
+        config.kafkaPort,
+        actualZkPort,
+        config.customBrokerProperties,
+        kafkaLogsDir
+      )
 
     val configWithUsedPorts = EmbeddedKafkaConfig(
       EmbeddedKafka.kafkaPort(broker),
@@ -49,7 +54,7 @@ object EmbeddedKafka
     with RunningEmbeddedKafkaOps[EmbeddedKafkaConfig, EmbeddedK] {
 
   override def start()(implicit config: EmbeddedKafkaConfig): EmbeddedK = {
-    val zkLogsDir = Directory.makeTemp("zookeeper-logs")
+    val zkLogsDir    = Directory.makeTemp("zookeeper-logs")
     val kafkaLogsDir = Directory.makeTemp("kafka-logs")
 
     val factory =
@@ -87,7 +92,8 @@ private[embeddedkafka] trait EmbeddedKafkaSupport[C <: EmbeddedKafkaConfig] {
   private[embeddedkafka] def withRunningServers[T](
       config: C,
       actualZkPort: Int,
-      kafkaLogsDir: Directory)(body: C => T): T
+      kafkaLogsDir: Directory
+  )(body: C => T): T
 
   /**
     * Starts a ZooKeeper instance and a Kafka broker (and performs additional logic, if any),
@@ -123,8 +129,9 @@ private[embeddedkafka] trait EmbeddedKafkaSupport[C <: EmbeddedKafkaConfig] {
     }
   }
 
-  private[embeddedkafka] def withRunningZooKeeper[T](port: Int)(
-      body: Int => T): T = {
+  private[embeddedkafka] def withRunningZooKeeper[T](
+      port: Int
+  )(body: Int => T): T = {
     withTempDir("zookeeper-logs") { zkLogsDir =>
       val factory = startZooKeeper(port, zkLogsDir)
       try {
@@ -135,8 +142,9 @@ private[embeddedkafka] trait EmbeddedKafkaSupport[C <: EmbeddedKafkaConfig] {
     }
   }
 
-  private[embeddedkafka] def withTempDir[T](prefix: String)(
-      body: Directory => T): T = {
+  private[embeddedkafka] def withTempDir[T](
+      prefix: String
+  )(body: Directory => T): T = {
     val dir = Directory.makeTemp(prefix)
     try {
       body(dir)

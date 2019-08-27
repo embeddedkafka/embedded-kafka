@@ -29,9 +29,11 @@ object EmbeddedKafkaConfig {
       customProducerProperties: Map[String, String] = Map.empty,
       customConsumerProperties: Map[String, String] = Map.empty
   ): EmbeddedKafkaConfig =
-    EmbeddedKafkaConfigImpl(kafkaPort,
-                            zooKeeperPort,
-                            customBrokerProperties,
-                            customProducerProperties,
-                            customConsumerProperties)
+    EmbeddedKafkaConfigImpl(
+      kafkaPort,
+      zooKeeperPort,
+      customBrokerProperties,
+      customProducerProperties,
+      customConsumerProperties
+    )
 }

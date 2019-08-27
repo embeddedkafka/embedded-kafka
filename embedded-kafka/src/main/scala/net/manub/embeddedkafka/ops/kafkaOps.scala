@@ -18,32 +18,33 @@ import scala.concurrent.duration._
   */
 trait KafkaOps {
 
-  protected val brokerId: Short = 0
-  protected val autoCreateTopics: Boolean = true
-  protected val logCleanerDedupeBufferSize: Int = 1048577
+  protected val brokerId: Short                     = 0
+  protected val autoCreateTopics: Boolean           = true
+  protected val logCleanerDedupeBufferSize: Int     = 1048577
   protected val zkConnectionTimeout: FiniteDuration = 10.seconds
 
   private[embeddedkafka] def startKafka(
       kafkaPort: Int,
       zooKeeperPort: Int,
       customBrokerProperties: Map[String, String],
-      kafkaLogDir: Directory) = {
+      kafkaLogDir: Directory
+  ) = {
     val zkAddress = s"localhost:$zooKeeperPort"
-    val listener = s"${SecurityProtocol.PLAINTEXT}://localhost:$kafkaPort"
+    val listener  = s"${SecurityProtocol.PLAINTEXT}://localhost:$kafkaPort"
 
     val brokerProperties = Map[String, Object](
-      KafkaConfig.ZkConnectProp -> zkAddress,
-      KafkaConfig.ZkConnectionTimeoutMsProp -> zkConnectionTimeout.toMillis.toString,
-      KafkaConfig.BrokerIdProp -> brokerId.toString,
-      KafkaConfig.ListenersProp -> listener,
-      KafkaConfig.AdvertisedListenersProp -> listener,
-      KafkaConfig.AutoCreateTopicsEnableProp -> autoCreateTopics.toString,
-      KafkaConfig.LogDirProp -> kafkaLogDir.toAbsolute.path,
-      KafkaConfig.LogFlushIntervalMessagesProp -> 1.toString,
-      KafkaConfig.OffsetsTopicReplicationFactorProp -> 1.toString,
-      KafkaConfig.OffsetsTopicPartitionsProp -> 1.toString,
+      KafkaConfig.ZkConnectProp                          -> zkAddress,
+      KafkaConfig.ZkConnectionTimeoutMsProp              -> zkConnectionTimeout.toMillis.toString,
+      KafkaConfig.BrokerIdProp                           -> brokerId.toString,
+      KafkaConfig.ListenersProp                          -> listener,
+      KafkaConfig.AdvertisedListenersProp                -> listener,
+      KafkaConfig.AutoCreateTopicsEnableProp             -> autoCreateTopics.toString,
+      KafkaConfig.LogDirProp                             -> kafkaLogDir.toAbsolute.path,
+      KafkaConfig.LogFlushIntervalMessagesProp           -> 1.toString,
+      KafkaConfig.OffsetsTopicReplicationFactorProp      -> 1.toString,
+      KafkaConfig.OffsetsTopicPartitionsProp             -> 1.toString,
       KafkaConfig.TransactionsTopicReplicationFactorProp -> 1.toString,
-      KafkaConfig.TransactionsTopicMinISRProp -> 1.toString,
+      KafkaConfig.TransactionsTopicMinISRProp            -> 1.toString,
       // The total memory used for log deduplication across all cleaner threads, keep it small to not exhaust suite memory
       KafkaConfig.LogCleanerDedupeBufferSizeProp -> logCleanerDedupeBufferSize.toString
     ) ++ customBrokerProperties
@@ -53,12 +54,16 @@ trait KafkaOps {
     broker
   }
 
-  def startKafka(config: EmbeddedKafkaConfig,
-                 kafkaLogDir: Directory): KafkaServer =
-    startKafka(config.kafkaPort,
-               config.zooKeeperPort,
-               config.customBrokerProperties,
-               kafkaLogDir)
+  def startKafka(
+      config: EmbeddedKafkaConfig,
+      kafkaLogDir: Directory
+  ): KafkaServer =
+    startKafka(
+      config.kafkaPort,
+      config.zooKeeperPort,
+      config.customBrokerProperties,
+      kafkaLogDir
+    )
 
 }
 
@@ -80,7 +85,8 @@ trait RunningKafkaOps {
     * @return             an [[EmbeddedK]] server
     */
   def startKafka(kafkaLogsDir: Directory, factory: Option[EmbeddedZ] = None)(
-      implicit config: EmbeddedKafkaConfig): EmbeddedK = {
+      implicit config: EmbeddedKafkaConfig
+  ): EmbeddedK = {
     val kafkaServer = startKafka(config, kafkaLogsDir)
 
     val configWithUsedPorts = EmbeddedKafkaConfig(

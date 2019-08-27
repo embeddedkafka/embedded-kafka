@@ -21,8 +21,8 @@ private[embeddedkafka] trait EmbeddedServer {
   * @param config     the [[EmbeddedKafkaConfig]] used to start the factory.
   */
 case class EmbeddedZ(factory: ServerCnxnFactory, logsDirs: Directory)(
-    implicit config: EmbeddedKafkaConfig)
-    extends EmbeddedServer {
+    implicit config: EmbeddedKafkaConfig
+) extends EmbeddedServer {
 
   /**
     * Shuts down the factory and then optionally deletes the log directory.
@@ -49,11 +49,12 @@ private[embeddedkafka] trait EmbeddedServerWithKafka extends EmbeddedServer {
   * @param logsDirs        the [[Directory]] logs are to be written to.
   * @param config          the [[EmbeddedKafkaConfig]] used to start the broker.
   */
-case class EmbeddedK(factory: Option[EmbeddedZ],
-                     broker: KafkaServer,
-                     logsDirs: Directory,
-                     config: EmbeddedKafkaConfig)
-    extends EmbeddedServerWithKafka {
+case class EmbeddedK(
+    factory: Option[EmbeddedZ],
+    broker: KafkaServer,
+    logsDirs: Directory,
+    config: EmbeddedKafkaConfig
+) extends EmbeddedServerWithKafka {
 
   /**
     * Shuts down the broker, the factory it relies upon, if defined, and the app, if defined.
@@ -73,8 +74,10 @@ case class EmbeddedK(factory: Option[EmbeddedZ],
 }
 
 object EmbeddedK {
-  def apply(broker: KafkaServer,
-            logsDirs: Directory,
-            config: EmbeddedKafkaConfig): EmbeddedK =
+  def apply(
+      broker: KafkaServer,
+      logsDirs: Directory,
+      config: EmbeddedKafkaConfig
+  ): EmbeddedK =
     EmbeddedK(factory = None, broker, logsDirs, config)
 }

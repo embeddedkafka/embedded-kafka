@@ -38,11 +38,14 @@ class EmbeddedKafkaWithRunningKafkaOnFoundPortSpec
               allConfigs
                 .map(
                   config =>
-                    EmbeddedKafkaConfigImpl(kafkaPort = 0,
-                                            zooKeeperPort = 0,
-                                            config.customBrokerProperties,
-                                            config.customProducerProperties,
-                                            config.customConsumerProperties))
+                    EmbeddedKafkaConfigImpl(
+                      kafkaPort = 0,
+                      zooKeeperPort = 0,
+                      config.customBrokerProperties,
+                      config.customProducerProperties,
+                      config.customConsumerProperties
+                    )
+                )
                 .distinct should have size 1
               actualConfig2
           }

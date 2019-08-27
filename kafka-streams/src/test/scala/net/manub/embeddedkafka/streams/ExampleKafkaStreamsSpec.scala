@@ -38,7 +38,8 @@ class ExampleKafkaStreamsSpec
           val consumedMessages: Stream[(String, String)] =
             consumer.consumeLazily(outTopic)
           consumedMessages.take(2) should be(
-            Seq("hello" -> "world", "foo" -> "bar"))
+            Seq("hello" -> "world", "foo" -> "bar")
+          )
           val h :: _ = consumedMessages.drop(2).toList
           h should be("baz" -> "yaz")
         }
@@ -57,7 +58,8 @@ class ExampleKafkaStreamsSpec
         publishToKafka(inTopic, "foo", "bar")
         val consumer = newConsumer[String, String]()
         consumer.consumeLazily[(String, String)](outTopic).take(2) should be(
-          Seq("hello" -> "world", "foo" -> "bar"))
+          Seq("hello" -> "world", "foo" -> "bar")
+        )
         consumer.close()
       }
     }
@@ -69,8 +71,10 @@ class ExampleKafkaStreamsSpec
 
       stream.to(outTopic, Produced.`with`(stringSerde, stringSerde))
 
-      runStreamsWithStringConsumer(Seq(inTopic, outTopic),
-                                   streamBuilder.build()) { consumer =>
+      runStreamsWithStringConsumer(
+        Seq(inTopic, outTopic),
+        streamBuilder.build()
+      ) { consumer =>
         publishToKafka(inTopic, "hello", "world")
         val h :: _ = consumer.consumeLazily[(String, String)](outTopic).toList
         h should be("hello" -> "world")

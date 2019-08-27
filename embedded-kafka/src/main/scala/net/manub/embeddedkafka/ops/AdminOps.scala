@@ -20,10 +20,10 @@ import scala.util.Try
   */
 trait AdminOps[C <: EmbeddedKafkaConfig] {
 
-  val zkSessionTimeoutMs = 10000
-  val zkConnectionTimeoutMs = 10000
-  protected val topicCreationTimeout: FiniteDuration = 2.seconds
-  protected val topicDeletionTimeout: FiniteDuration = 2.seconds
+  val zkSessionTimeoutMs                                = 10000
+  val zkConnectionTimeoutMs                             = 10000
+  protected val topicCreationTimeout: FiniteDuration    = 2.seconds
+  protected val topicDeletionTimeout: FiniteDuration    = 2.seconds
   protected val adminClientCloseTimeout: FiniteDuration = 2.seconds
 
   /**
@@ -39,7 +39,8 @@ trait AdminOps[C <: EmbeddedKafkaConfig] {
       topic: String,
       topicConfig: Map[String, String] = Map.empty,
       partitions: Int = 1,
-      replicationFactor: Int = 1)(implicit config: C): Unit = {
+      replicationFactor: Int = 1
+  )(implicit config: C): Unit = {
     val newTopic = new NewTopic(topic, partitions, replicationFactor.toShort)
       .configs(topicConfig.asJava)
 
@@ -75,15 +76,17 @@ trait AdminOps[C <: EmbeddedKafkaConfig] {
     * @param body   the function to execute
     * @param config an implicit [[EmbeddedKafkaConfig]]
     */
-  protected def withAdminClient[T](body: AdminClient => T)(
-      implicit config: C): Try[T] = {
+  protected def withAdminClient[T](
+      body: AdminClient => T
+  )(implicit config: C): Try[T] = {
     val adminClient = AdminClient.create(
       Map[String, Object](
-        AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
-        AdminClientConfig.CLIENT_ID_CONFIG -> "embedded-kafka-admin-client",
-        AdminClientConfig.REQUEST_TIMEOUT_MS_CONFIG -> zkSessionTimeoutMs.toString,
+        AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG       -> s"localhost:${config.kafkaPort}",
+        AdminClientConfig.CLIENT_ID_CONFIG               -> "embedded-kafka-admin-client",
+        AdminClientConfig.REQUEST_TIMEOUT_MS_CONFIG      -> zkSessionTimeoutMs.toString,
         AdminClientConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG -> zkConnectionTimeoutMs.toString
-      ).asJava)
+      ).asJava
+    )
 
     val res = Try(body(adminClient))
     adminClient.close(duration2JavaDuration(adminClientCloseTimeout))

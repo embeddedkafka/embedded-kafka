@@ -41,9 +41,11 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
 
       "start and stop a specific Kafka" in {
         val firstBroker = EmbeddedKafka.start()(
-          EmbeddedKafkaConfig(kafkaPort = 7000, zooKeeperPort = 7001))
+          EmbeddedKafkaConfig(kafkaPort = 7000, zooKeeperPort = 7001)
+        )
         EmbeddedKafka.start()(
-          EmbeddedKafkaConfig(kafkaPort = 8000, zooKeeperPort = 8001))
+          EmbeddedKafkaConfig(kafkaPort = 8000, zooKeeperPort = 8001)
+        )
 
         kafkaIsAvailable(7000)
         zookeeperIsAvailable(7001)
@@ -70,7 +72,7 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
         kafka.factory shouldBe defined
 
         val usedZookeeperPort = EmbeddedKafka.zookeeperPort(kafka.factory.get)
-        val usedKafkaPort = EmbeddedKafka.kafkaPort(kafka.broker)
+        val usedKafkaPort     = EmbeddedKafka.kafkaPort(kafka.broker)
 
         kafkaIsAvailable(usedKafkaPort)
         zookeeperIsAvailable(usedZookeeperPort)
@@ -93,10 +95,10 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
           EmbeddedKafkaConfig(kafkaPort = 23456, zooKeeperPort = 43211)
         val someOtherBroker = EmbeddedKafka.start()(someOtherConfig)
 
-        val topic = "publish_test_topic_1"
+        val topic            = "publish_test_topic_1"
         val someOtherMessage = "another message!"
 
-        val serializer = new StringSerializer
+        val serializer   = new StringSerializer
         val deserializer = new StringDeserializer
 
         publishToKafka(topic, "hello world!")(someConfig, serializer)
