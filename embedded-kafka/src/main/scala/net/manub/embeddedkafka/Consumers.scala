@@ -22,8 +22,8 @@ trait Consumers {
     * @return the result of the executed block
     */
   def withConsumer[K: Deserializer, V: Deserializer, T](
-      block: KafkaConsumer[K, V] => T)(
-      implicit config: EmbeddedKafkaConfig): T = {
+      block: KafkaConsumer[K, V] => T
+  )(implicit config: EmbeddedKafkaConfig): T = {
     val consumer = newConsumer[K, V]()
     try {
       val result = block(consumer)
@@ -39,8 +39,9 @@ trait Consumers {
     * @tparam T the type of the result of the code block
     * @return the code block result
     */
-  def withStringConsumer[T](block: KafkaConsumer[String, String] => T)(
-      implicit config: EmbeddedKafkaConfig): T = {
+  def withStringConsumer[T](
+      block: KafkaConsumer[String, String] => T
+  )(implicit config: EmbeddedKafkaConfig): T = {
     import net.manub.embeddedkafka.Codecs.stringDeserializer
     withConsumer(block)
   }
@@ -52,16 +53,19 @@ trait Consumers {
     * @return the new consumer
     */
   def newConsumer[K: Deserializer, V: Deserializer]()(
-      implicit config: EmbeddedKafkaConfig): KafkaConsumer[K, V] = {
+      implicit config: EmbeddedKafkaConfig
+  ): KafkaConsumer[K, V] = {
     import scala.collection.JavaConverters._
 
     val consumerConfig = Map[String, Object](
-      ConsumerConfig.GROUP_ID_CONFIG -> UUIDs.newUuid().toString,
+      ConsumerConfig.GROUP_ID_CONFIG          -> UUIDs.newUuid().toString,
       ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
       ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> OffsetResetStrategy.EARLIEST.toString.toLowerCase
     )
-    new KafkaConsumer[K, V](consumerConfig.asJava,
-                            implicitly[Deserializer[K]],
-                            implicitly[Deserializer[V]])
+    new KafkaConsumer[K, V](
+      consumerConfig.asJava,
+      implicitly[Deserializer[K]],
+      implicitly[Deserializer[V]]
+    )
   }
 }

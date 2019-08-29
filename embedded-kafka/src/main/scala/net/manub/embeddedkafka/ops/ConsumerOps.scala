@@ -30,34 +30,42 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
   protected val consumerPollingTimeout: FiniteDuration = 1.second
 
   private[embeddedkafka] def baseConsumerConfig(
-      implicit config: C): Map[String, Object]
+      implicit config: C
+  ): Map[String, Object]
 
   private[embeddedkafka] def defaultConsumerConfig(implicit config: C) =
     Map[String, Object](
-      ConsumerConfig.GROUP_ID_CONFIG -> "embedded-kafka-spec",
-      ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
-      ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> OffsetResetStrategy.EARLIEST.toString.toLowerCase,
+      ConsumerConfig.GROUP_ID_CONFIG           -> "embedded-kafka-spec",
+      ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG  -> s"localhost:${config.kafkaPort}",
+      ConsumerConfig.AUTO_OFFSET_RESET_CONFIG  -> OffsetResetStrategy.EARLIEST.toString.toLowerCase,
       ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> false.toString
     )
 
-  def kafkaConsumer[K, T](implicit config: C,
-                          keyDeserializer: Deserializer[K],
-                          deserializer: Deserializer[T]) =
-    new KafkaConsumer[K, T](baseConsumerConfig.asJava,
-                            keyDeserializer,
-                            deserializer)
+  def kafkaConsumer[K, T](
+      implicit config: C,
+      keyDeserializer: Deserializer[K],
+      deserializer: Deserializer[T]
+  ) =
+    new KafkaConsumer[K, T](
+      baseConsumerConfig.asJava,
+      keyDeserializer,
+      deserializer
+    )
 
   def consumeFirstStringMessageFrom(topic: String, autoCommit: Boolean = false)(
-      implicit config: C): String =
+      implicit config: C
+  ): String =
     consumeNumberStringMessagesFrom(topic, 1, autoCommit)(config).head
 
   def consumeNumberStringMessagesFrom(
       topic: String,
       number: Int,
-      autoCommit: Boolean = false)(implicit config: C): List[String] =
+      autoCommit: Boolean = false
+  )(implicit config: C): List[String] =
     consumeNumberMessagesFrom(topic, number, autoCommit)(
       config,
-      new StringDeserializer())
+      new StringDeserializer()
+    )
 
   /**
     * Consumes the first message available in a given topic, deserializing it as type [[V]].
@@ -77,11 +85,14 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
     */
   @throws(classOf[TimeoutException])
   @throws(classOf[KafkaUnavailableException])
-  def consumeFirstMessageFrom[V](topic: String, autoCommit: Boolean = false)(
-      implicit config: C,
-      valueDeserializer: Deserializer[V]): V =
-    consumeNumberMessagesFrom[V](topic, 1, autoCommit)(config,
-                                                       valueDeserializer).head
+  def consumeFirstMessageFrom[V](
+      topic: String,
+      autoCommit: Boolean = false
+  )(implicit config: C, valueDeserializer: Deserializer[V]): V =
+    consumeNumberMessagesFrom[V](topic, 1, autoCommit)(
+      config,
+      valueDeserializer
+    ).head
 
   /**
     * Consumes the first message available in a given topic, deserializing it as type [[(K, V)]].
@@ -102,35 +113,44 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
     */
   @throws(classOf[TimeoutException])
   @throws(classOf[KafkaUnavailableException])
-  def consumeFirstKeyedMessageFrom[K, V](topic: String,
-                                         autoCommit: Boolean = false)(
+  def consumeFirstKeyedMessageFrom[K, V](
+      topic: String,
+      autoCommit: Boolean = false
+  )(
       implicit config: C,
       keyDeserializer: Deserializer[K],
-      valueDeserializer: Deserializer[V]): (K, V) =
+      valueDeserializer: Deserializer[V]
+  ): (K, V) =
     consumeNumberKeyedMessagesFrom[K, V](topic, 1, autoCommit)(
       config,
       keyDeserializer,
-      valueDeserializer).head
+      valueDeserializer
+    ).head
 
-  def consumeNumberMessagesFrom[V](topic: String,
-                                   number: Int,
-                                   autoCommit: Boolean = false)(
-      implicit config: C,
-      valueDeserializer: Deserializer[V]): List[V] =
+  def consumeNumberMessagesFrom[V](
+      topic: String,
+      number: Int,
+      autoCommit: Boolean = false
+  )(implicit config: C, valueDeserializer: Deserializer[V]): List[V] =
     consumeNumberMessagesFromTopics(Set(topic), number, autoCommit)(
       config,
-      valueDeserializer)(topic)
+      valueDeserializer
+    )(topic)
 
-  def consumeNumberKeyedMessagesFrom[K, V](topic: String,
-                                           number: Int,
-                                           autoCommit: Boolean = false)(
+  def consumeNumberKeyedMessagesFrom[K, V](
+      topic: String,
+      number: Int,
+      autoCommit: Boolean = false
+  )(
       implicit config: C,
       keyDeserializer: Deserializer[K],
-      valueDeserializer: Deserializer[V]): List[(K, V)] =
+      valueDeserializer: Deserializer[V]
+  ): List[(K, V)] =
     consumeNumberKeyedMessagesFromTopics(Set(topic), number, autoCommit)(
       config,
       keyDeserializer,
-      valueDeserializer)(topic)
+      valueDeserializer
+    )(topic)
 
   /**
     * Consumes the first n messages available in given topics, deserializes them as type [[V]], and returns
@@ -156,22 +176,23 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
     * @throws TimeoutException          if unable to consume messages within specified timeout
     * @throws KafkaUnavailableException if unable to connect to Kafka
     */
-  def consumeNumberMessagesFromTopics[V](topics: Set[String],
-                                         number: Int,
-                                         autoCommit: Boolean = false,
-                                         timeout: Duration = 5.seconds,
-                                         resetTimeoutOnEachMessage: Boolean =
-                                           true)(
+  def consumeNumberMessagesFromTopics[V](
+      topics: Set[String],
+      number: Int,
+      autoCommit: Boolean = false,
+      timeout: Duration = 5.seconds,
+      resetTimeoutOnEachMessage: Boolean = true
+  )(
       implicit config: C,
-      valueDeserializer: Deserializer[V]): Map[String, List[V]] = {
-    consumeNumberKeyedMessagesFromTopics(topics,
-                                         number,
-                                         autoCommit,
-                                         timeout,
-                                         resetTimeoutOnEachMessage)(
-      config,
-      new StringDeserializer(),
-      valueDeserializer)
+      valueDeserializer: Deserializer[V]
+  ): Map[String, List[V]] = {
+    consumeNumberKeyedMessagesFromTopics(
+      topics,
+      number,
+      autoCommit,
+      timeout,
+      resetTimeoutOnEachMessage
+    )(config, new StringDeserializer(), valueDeserializer)
       .mapValues(_.map { case (_, m) => m })
   }
 
@@ -204,22 +225,26 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
       number: Int,
       autoCommit: Boolean = false,
       timeout: Duration = 5.seconds,
-      resetTimeoutOnEachMessage: Boolean = true)(
+      resetTimeoutOnEachMessage: Boolean = true
+  )(
       implicit config: C,
       keyDeserializer: Deserializer[K],
-      valueDeserializer: Deserializer[V]): Map[String, List[(K, V)]] = {
+      valueDeserializer: Deserializer[V]
+  ): Map[String, List[(K, V)]] = {
     val consumerProperties = baseConsumerConfig ++ Map[String, Object](
       ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> autoCommit.toString
     )
 
     var timeoutNanoTime = System.nanoTime + timeout.toNanos
-    val consumer = new KafkaConsumer[K, V](consumerProperties.asJava,
-                                           keyDeserializer,
-                                           valueDeserializer)
+    val consumer = new KafkaConsumer[K, V](
+      consumerProperties.asJava,
+      keyDeserializer,
+      valueDeserializer
+    )
 
     val messages = Try {
       val messagesBuffers = topics.map(_ -> ListBuffer.empty[(K, V)]).toMap
-      var messagesRead = 0
+      var messagesRead    = 0
       consumer.subscribe(topics.asJava)
       topics.foreach(consumer.partitionsFor)
 
@@ -240,7 +265,8 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
       }
       if (messagesRead < number) {
         throw new TimeoutException(
-          s"Unable to retrieve $number message(s) from Kafka in $timeout")
+          s"Unable to retrieve $number message(s) from Kafka in $timeout"
+        )
       }
       messagesBuffers.mapValues(_.toList)
     }

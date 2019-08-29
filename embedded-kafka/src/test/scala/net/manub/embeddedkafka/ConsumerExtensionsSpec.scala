@@ -28,9 +28,13 @@ class ConsumerExtensionsSpec
 
       val consumer = mock[KafkaConsumer[String, String]]
       val consumerRecords =
-        new ConsumerRecords[String, String](Map
-          .empty[TopicPartition, java.util.List[ConsumerRecord[String, String]]]
-          .asJava)
+        new ConsumerRecords[String, String](
+          Map
+            .empty[TopicPartition, java.util.List[
+              ConsumerRecord[String, String]
+            ]]
+            .asJava
+        )
 
       when(consumer.poll(duration2JavaDuration(retryConf.poll)))
         .thenReturn(consumerRecords)
@@ -46,11 +50,12 @@ class ConsumerExtensionsSpec
       implicit val retryConf: ConsumerRetryConfig =
         ConsumerRetryConfig(2, 1.millis)
 
-      val consumer = mock[KafkaConsumer[String, String]]
+      val consumer       = mock[KafkaConsumer[String, String]]
       val consumerRecord = mock[ConsumerRecord[String, String]]
       val consumerRecords = new ConsumerRecords[String, String](
         Map[TopicPartition, java.util.List[ConsumerRecord[String, String]]](
-          new TopicPartition("topic", 1) -> List(consumerRecord).asJava).asJava
+          new TopicPartition("topic", 1) -> List(consumerRecord).asJava
+        ).asJava
       )
 
       when(consumer.poll(duration2JavaDuration(retryConf.poll)))
@@ -68,9 +73,13 @@ class ConsumerExtensionsSpec
 
       val consumer = mock[KafkaConsumer[String, String]]
       val consumerRecords =
-        new ConsumerRecords[String, String](Map
-          .empty[TopicPartition, java.util.List[ConsumerRecord[String, String]]]
-          .asJava)
+        new ConsumerRecords[String, String](
+          Map
+            .empty[TopicPartition, java.util.List[
+              ConsumerRecord[String, String]
+            ]]
+            .asJava
+        )
 
       when(consumer.poll(duration2JavaDuration(retryConf.poll)))
         .thenReturn(consumerRecords)

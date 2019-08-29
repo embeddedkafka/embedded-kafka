@@ -9,8 +9,9 @@ import net.manub.embeddedkafka.{EmbeddedKafkaConfig, EmbeddedServer}
   * @tparam S an [[EmbeddedServer]]
   */
 private[embeddedkafka] trait EmbeddedKafkaOps[
-    C <: EmbeddedKafkaConfig, S <: EmbeddedServer]
-    extends AdminOps[C]
+    C <: EmbeddedKafkaConfig,
+    S <: EmbeddedServer
+] extends AdminOps[C]
     with ConsumerOps[C]
     with ProducerOps[C]
     with ZooKeeperOps
@@ -26,8 +27,9 @@ private[embeddedkafka] trait EmbeddedKafkaOps[
   * @see [[RunningServersOps]]
   */
 private[embeddedkafka] trait RunningEmbeddedKafkaOps[
-    C <: EmbeddedKafkaConfig, S <: EmbeddedServer]
-    extends EmbeddedKafkaOps[C, S]
+    C <: EmbeddedKafkaConfig,
+    S <: EmbeddedServer
+] extends EmbeddedKafkaOps[C, S]
     with RunningServersOps
     with ServerStarter[C, S]
     with RunningZooKeeperOps

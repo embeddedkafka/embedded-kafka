@@ -27,8 +27,8 @@ class KafkaAvroSerializer[T <: SpecificRecord]() extends Serializer[T] {
   private def toBytes(nullableData: T): Array[Byte] =
     Option(nullableData).fold[Array[Byte]](null) { data =>
       val writer: DatumWriter[T] = new SpecificDatumWriter[T](data.getSchema)
-      val out = new ByteArrayOutputStream()
-      val encoder = EncoderFactory.get.binaryEncoder(out, null)
+      val out                    = new ByteArrayOutputStream()
+      val encoder                = EncoderFactory.get.binaryEncoder(out, null)
 
       writer.write(data, encoder)
       encoder.flush()

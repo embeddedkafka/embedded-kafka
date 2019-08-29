@@ -26,13 +26,14 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
   protected val producerPublishTimeout: FiniteDuration = 10.seconds
 
   private[embeddedkafka] def baseProducerConfig(
-      implicit config: C): Map[String, Object]
+      implicit config: C
+  ): Map[String, Object]
 
   private[embeddedkafka] def defaultProducerConf(implicit config: C) =
     Map[String, Object](
       ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
-      ProducerConfig.MAX_BLOCK_MS_CONFIG -> 10000.toString,
-      ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> 1000.toString
+      ProducerConfig.MAX_BLOCK_MS_CONFIG      -> 10000.toString,
+      ProducerConfig.RETRY_BACKOFF_MS_CONFIG  -> 1000.toString
     )
 
   /**
@@ -45,7 +46,8 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
     * @throws KafkaUnavailableException if unable to connect to Kafka
     */
   def publishStringMessageToKafka(topic: String, message: String)(
-      implicit config: C): Unit =
+      implicit config: C
+  ): Unit =
     publishToKafka(topic, message)(config, new StringSerializer)
 
   /**
@@ -58,13 +60,18 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
     * @throws KafkaUnavailableException if unable to connect to Kafka
     */
   @throws(classOf[KafkaUnavailableException])
-  def publishToKafka[T](topic: String, message: T)(
-      implicit config: C,
-      serializer: Serializer[T]): Unit =
-    publishToKafka(new KafkaProducer(baseProducerConfig.asJava,
-                                     new StringSerializer(),
-                                     serializer),
-                   new ProducerRecord[String, T](topic, message))
+  def publishToKafka[T](
+      topic: String,
+      message: T
+  )(implicit config: C, serializer: Serializer[T]): Unit =
+    publishToKafka(
+      new KafkaProducer(
+        baseProducerConfig.asJava,
+        new StringSerializer(),
+        serializer
+      ),
+      new ProducerRecord[String, T](topic, message)
+    )
 
   /**
     * Publishes synchronously a message to the running Kafka broker.
@@ -75,13 +82,17 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
     * @throws KafkaUnavailableException if unable to connect to Kafka
     */
   @throws(classOf[KafkaUnavailableException])
-  def publishToKafka[T](producerRecord: ProducerRecord[String, T])(
-      implicit config: C,
-      serializer: Serializer[T]): Unit =
-    publishToKafka(new KafkaProducer(baseProducerConfig.asJava,
-                                     new StringSerializer(),
-                                     serializer),
-                   producerRecord)
+  def publishToKafka[T](
+      producerRecord: ProducerRecord[String, T]
+  )(implicit config: C, serializer: Serializer[T]): Unit =
+    publishToKafka(
+      new KafkaProducer(
+        baseProducerConfig.asJava,
+        new StringSerializer(),
+        serializer
+      ),
+      producerRecord
+    )
 
   /**
     * Publishes synchronously a message to the running Kafka broker.
@@ -97,10 +108,12 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
   def publishToKafka[K, T](topic: String, key: K, message: T)(
       implicit config: C,
       keySerializer: Serializer[K],
-      serializer: Serializer[T]): Unit =
+      serializer: Serializer[T]
+  ): Unit =
     publishToKafka(
       new KafkaProducer(baseProducerConfig.asJava, keySerializer, serializer),
-      new ProducerRecord(topic, key, message))
+      new ProducerRecord(topic, key, message)
+    )
 
   /**
     * Publishes synchronously a batch of message to the running Kafka broker.
@@ -116,7 +129,8 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
   def publishToKafka[K, T](topic: String, messages: Seq[(K, T)])(
       implicit config: C,
       keySerializer: Serializer[K],
-      serializer: Serializer[T]): Unit = {
+      serializer: Serializer[T]
+  ): Unit = {
 
     val producer =
       new KafkaProducer(baseProducerConfig.asJava, keySerializer, serializer)
@@ -128,8 +142,10 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
     val futures = messages.map(futureSend)
 
     // Assure all messages sent before returning, and fail on first send error
-    val records = futures.map(f =>
-      Try(f.get(producerPublishTimeout.length, producerPublishTimeout.unit)))
+    val records = futures.map(
+      f =>
+        Try(f.get(producerPublishTimeout.length, producerPublishTimeout.unit))
+    )
 
     producer.close()
 
@@ -138,8 +154,10 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
     }
   }
 
-  private def publishToKafka[K, T](kafkaProducer: KafkaProducer[K, T],
-                                   record: ProducerRecord[K, T]): Unit = {
+  private def publishToKafka[K, T](
+      kafkaProducer: KafkaProducer[K, T],
+      record: ProducerRecord[K, T]
+  ): Unit = {
     val sendFuture = kafkaProducer.send(record)
     val sendResult = Try {
       sendFuture.get(producerPublishTimeout.length, producerPublishTimeout.unit)
@@ -156,10 +174,13 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
   def kafkaProducer[K, T](topic: String, key: K, message: T)(
       implicit config: C,
       keySerializer: Serializer[K],
-      serializer: Serializer[T]) =
-    new KafkaProducer[K, T](baseProducerConfig.asJava,
-                            keySerializer,
-                            serializer)
+      serializer: Serializer[T]
+  ) =
+    new KafkaProducer[K, T](
+      baseProducerConfig.asJava,
+      keySerializer,
+      serializer
+    )
 
   object aKafkaProducer {
     private[this] var producers = Vector.empty[KafkaProducer[_, _]]
@@ -168,21 +189,28 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
       producers.foreach(_.close())
     }
 
-    def thatSerializesValuesWith[V](serializer: Class[_ <: Serializer[V]])(
-        implicit config: C): KafkaProducer[String, V] = {
+    def thatSerializesValuesWith[V](
+        serializer: Class[_ <: Serializer[V]]
+    )(implicit config: C): KafkaProducer[String, V] = {
       val producer = new KafkaProducer[String, V](
         (baseProducerConfig + (ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[
-          StringSerializer].getName,
-        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> serializer.getName)).asJava)
+          StringSerializer
+        ].getName,
+        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> serializer.getName)).asJava
+      )
       producers :+= producer
       producer
     }
 
-    def apply[V](implicit valueSerializer: Serializer[V],
-                 config: C): KafkaProducer[String, V] = {
-      val producer = new KafkaProducer[String, V](baseProducerConfig.asJava,
-                                                  new StringSerializer,
-                                                  valueSerializer)
+    def apply[V](
+        implicit valueSerializer: Serializer[V],
+        config: C
+    ): KafkaProducer[String, V] = {
+      val producer = new KafkaProducer[String, V](
+        baseProducerConfig.asJava,
+        new StringSerializer,
+        valueSerializer
+      )
       producers :+= producer
       producer
     }

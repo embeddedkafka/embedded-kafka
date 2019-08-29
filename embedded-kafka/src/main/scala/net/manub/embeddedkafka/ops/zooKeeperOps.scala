@@ -12,13 +12,17 @@ import scala.reflect.io.Directory
   */
 trait ZooKeeperOps {
 
-  def startZooKeeper(zooKeeperPort: Int,
-                     zkLogsDir: Directory): ServerCnxnFactory = {
+  def startZooKeeper(
+      zooKeeperPort: Int,
+      zkLogsDir: Directory
+  ): ServerCnxnFactory = {
     val tickTime = 2000
 
-    val zkServer = new ZooKeeperServer(zkLogsDir.toFile.jfile,
-                                       zkLogsDir.toFile.jfile,
-                                       tickTime)
+    val zkServer = new ZooKeeperServer(
+      zkLogsDir.toFile.jfile,
+      zkLogsDir.toFile.jfile,
+      tickTime
+    )
 
     val factory = ServerCnxnFactory.createFactory
     factory.configure(new InetSocketAddress("localhost", zooKeeperPort), 1024)
@@ -44,8 +48,9 @@ trait RunningZooKeeperOps {
     * @param config    an implicit [[EmbeddedKafkaConfig]]
     * @return          an [[EmbeddedZ]] server
     */
-  def startZooKeeper(zkLogsDir: Directory)(
-      implicit config: EmbeddedKafkaConfig): EmbeddedZ = {
+  def startZooKeeper(
+      zkLogsDir: Directory
+  )(implicit config: EmbeddedKafkaConfig): EmbeddedZ = {
     val factory =
       EmbeddedZ(startZooKeeper(config.zooKeeperPort, zkLogsDir), zkLogsDir)
     runningServers.add(factory)

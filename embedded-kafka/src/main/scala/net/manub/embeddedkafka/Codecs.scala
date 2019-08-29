@@ -15,20 +15,20 @@ object Codecs {
     new ByteArrayDeserializer()
 
   implicit val stringKeyValueCrDecoder
-    : ConsumerRecord[String, String] => (String, String) =
+      : ConsumerRecord[String, String] => (String, String) =
     cr => (cr.key(), cr.value)
   implicit val stringValueCrDecoder: ConsumerRecord[String, String] => String =
     _.value()
   implicit val stringKeyValueTopicCrDecoder
-    : ConsumerRecord[String, String] => (String, String, String) = cr =>
+      : ConsumerRecord[String, String] => (String, String, String) = cr =>
     (cr.topic(), cr.key(), cr.value())
 
   implicit val keyNullValueCrDecoder
-    : ConsumerRecord[String, Array[Byte]] => (String, Array[Byte]) =
+      : ConsumerRecord[String, Array[Byte]] => (String, Array[Byte]) =
     cr => (cr.key(), cr.value)
   implicit val nullValueCrDecoder
-    : ConsumerRecord[String, Array[Byte]] => Array[Byte] = _.value()
+      : ConsumerRecord[String, Array[Byte]] => Array[Byte] = _.value()
   implicit val keyNullValueTopicCrDecoder
-    : ConsumerRecord[String, Array[Byte]] => (String, String, Array[Byte]) =
+      : ConsumerRecord[String, Array[Byte]] => (String, String, Array[Byte]) =
     cr => (cr.topic(), cr.key(), cr.value())
 }

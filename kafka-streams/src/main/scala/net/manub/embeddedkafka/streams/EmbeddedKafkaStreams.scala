@@ -26,7 +26,8 @@ trait EmbeddedKafkaStreams
 }
 
 private[embeddedkafka] trait EmbeddedKafkaStreamsSupport[
-    C <: EmbeddedKafkaConfig] {
+    C <: EmbeddedKafkaConfig
+] {
   this: EmbeddedKafkaSupport[C] with AdminOps[C] =>
 
   protected[embeddedkafka] def streamsConfig: EmbeddedStreamsConfig[C]
@@ -44,16 +45,18 @@ private[embeddedkafka] trait EmbeddedKafkaStreamsSupport[
     * @param block          the code block that will executed while the streams are active.
     *                       Once the block has been executed the streams will be closed.
     */
-  def runStreams[T](topicsToCreate: Seq[String],
-                    topology: Topology,
-                    extraConfig: Map[String, AnyRef] = Map.empty)(block: => T)(
-      implicit config: C): T =
+  def runStreams[T](
+      topicsToCreate: Seq[String],
+      topology: Topology,
+      extraConfig: Map[String, AnyRef] = Map.empty
+  )(block: => T)(implicit config: C): T =
     withRunningKafka {
       topicsToCreate.foreach(topic => createCustomTopic(topic))
       val streamId = UUIDs.newUuid().toString
       val streams = new KafkaStreams(
         topology,
-        map2Properties(streamsConfig.config(streamId, extraConfig)))
+        map2Properties(streamsConfig.config(streamId, extraConfig))
+      )
       streams.start()
       try {
         block

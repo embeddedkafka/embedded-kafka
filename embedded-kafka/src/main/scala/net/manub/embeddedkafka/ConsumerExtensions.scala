@@ -9,8 +9,10 @@ import scala.util.Try
 /** Method extensions for Kafka's [[KafkaConsumer]] API allowing easy testing. */
 object ConsumerExtensions {
 
-  case class ConsumerRetryConfig(maximumAttempts: Int = 3,
-                                 poll: FiniteDuration = 2.seconds)
+  case class ConsumerRetryConfig(
+      maximumAttempts: Int = 3,
+      poll: FiniteDuration = 2.seconds
+  )
 
   implicit class ConsumerOps[K, V](val consumer: KafkaConsumer[K, V]) {
 
@@ -45,7 +47,8 @@ object ConsumerExtensions {
       * @return the next batch of messages
       */
     private def getNextBatch[T](poll: FiniteDuration, topics: Seq[String])(
-        implicit decoder: ConsumerRecord[K, V] => T): Seq[T] =
+        implicit decoder: ConsumerRecord[K, V] => T
+    ): Seq[T] =
       Try {
         import scala.collection.JavaConverters._
         consumer.subscribe(topics.asJava)
