@@ -144,6 +144,10 @@ Those properties will be added to the broker configuration, be careful some prop
 in case of conflict the `customBrokerProperties` values will take precedence. Please look at the source code to see what these properties
 are.
 
+### Behavior
+
+- Data of Kafka topics are not persisted after stop of the EmbeddedKafka.
+
 ### Utility methods
 
 The `EmbeddedKafka` trait provides also some utility methods to interact with the embedded kafka, in order to set preconditions or verifications in your specs:
