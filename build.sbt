@@ -2,7 +2,7 @@ import sbtrelease.Version
 
 parallelExecution in ThisBuild := false
 
-val kafkaVersion = "2.3.1"
+val kafkaVersion = "2.4.0"
 val akkaVersion = "2.5.27"
 
 lazy val commonSettings = Seq(
@@ -15,7 +15,9 @@ lazy val commonSettings = Seq(
   fork in Test := true,
   javaOptions ++= Seq("-Xms512m", "-Xmx2048m"),
   scalacOptions += "-deprecation",
-  scalafmtOnCompile := true
+  scalafmtOnCompile := true,
+  // for release candidate builds of Apache Kafka
+  resolvers += MavenRepository("Apache Staging", "https://repository.apache.org/content/groups/staging/")
 )
 
 lazy val commonLibrarySettings = libraryDependencies ++= Seq(
@@ -39,7 +41,10 @@ lazy val publishSettings = Seq(
       "emanuele.blanco@gmail.com",
       url("http://twitter.com/manub")
     )
-  )
+  ),
+  //publishMavenStyle := false,
+  bintrayOrganization := Some("seglo"),
+  bintrayRepository := "maven"
 )
 
 import ReleaseTransformations._
@@ -65,7 +70,7 @@ lazy val root = (project in file("."))
   .settings(name := "embedded-kafka-root")
   .settings(commonSettings: _*)
   .settings(publishArtifact := false)
-  .settings(releaseSettings: _*)
+  //.settings(releaseSettings: _*)
   .settings(skip in publish := true)
   .aggregate(embeddedKafka, kafkaStreams)
 
@@ -85,8 +90,9 @@ lazy val kafkaStreams = (project in file("kafka-streams"))
   .settings(publishSettings: _*)
   .settings(commonSettings: _*)
   .settings(commonLibrarySettings)
-  .settings(releaseSettings: _*)
+  //.settings(releaseSettings: _*)
   .settings(libraryDependencies ++= Seq(
     "org.apache.kafka" % "kafka-streams" % kafkaVersion
-  ))
+  ),
+  bintrayPackage := "embedded-kafka-streams")
   .dependsOn(embeddedKafka)
