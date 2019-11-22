@@ -54,7 +54,7 @@ trait Consumers {
   def newConsumer[K: Deserializer, V: Deserializer]()(
       implicit config: EmbeddedKafkaConfig
   ): KafkaConsumer[K, V] = {
-    import scala.collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
 
     val consumerConfig = Map[String, Object](
       ConsumerConfig.GROUP_ID_CONFIG          -> UUIDs.newUuid().toString,

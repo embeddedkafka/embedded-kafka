@@ -64,7 +64,7 @@ private[embeddedkafka] trait EmbeddedKafkaStreamsSupport[
     }(config)
 
   private def map2Properties(map: Map[String, AnyRef]): Properties = {
-    import scala.collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
 
     val props = new Properties
     props.putAll(map.asJava)

@@ -7,8 +7,8 @@ val akkaVersion = "2.5.27"
 
 lazy val commonSettings = Seq(
   organization := "io.github.embeddedkafka",
-  scalaVersion := "2.12.9",
-  crossScalaVersions := Seq("2.12.9", "2.11.12"),
+  scalaVersion := "2.13.1",
+  crossScalaVersions := Seq("2.12.10", "2.11.12", "2.13.1"),
   homepage := Some(url("https://github.com/embeddedkafka/embedded-kafka")),
   parallelExecution in Test := false,
   logBuffered in Test := false,
@@ -17,7 +17,7 @@ lazy val commonSettings = Seq(
   scalacOptions += "-deprecation",
   scalafmtOnCompile := true,
   // for release candidate builds of Apache Kafka
-  resolvers += MavenRepository("Apache Staging", "https://repository.apache.org/content/groups/staging/")
+  resolvers += "Apache Staging" at "https://repository.apache.org/content/groups/staging/"
 )
 
 lazy val commonLibrarySettings = libraryDependencies ++= Seq(
@@ -42,7 +42,7 @@ lazy val publishSettings = Seq(
       url("http://twitter.com/manub")
     )
   ),
-  //publishMavenStyle := false,
+  // TODO: remove sbt-bintray sbt keys
   bintrayOrganization := Some("seglo"),
   bintrayRepository := "maven"
 )
@@ -70,7 +70,7 @@ lazy val root = (project in file("."))
   .settings(name := "embedded-kafka-root")
   .settings(commonSettings: _*)
   .settings(publishArtifact := false)
-  //.settings(releaseSettings: _*)
+  .settings(releaseSettings: _*)
   .settings(skip in publish := true)
   .aggregate(embeddedKafka, kafkaStreams)
 
@@ -90,9 +90,8 @@ lazy val kafkaStreams = (project in file("kafka-streams"))
   .settings(publishSettings: _*)
   .settings(commonSettings: _*)
   .settings(commonLibrarySettings)
-  //.settings(releaseSettings: _*)
+  .settings(releaseSettings: _*)
   .settings(libraryDependencies ++= Seq(
     "org.apache.kafka" % "kafka-streams" % kafkaVersion
-  ),
-  bintrayPackage := "embedded-kafka-streams")
+  ))
   .dependsOn(embeddedKafka)

@@ -48,7 +48,7 @@ object ConsumerExtensions {
         implicit decoder: ConsumerRecord[K, V] => T
     ): Seq[T] =
       Try {
-        import scala.collection.JavaConverters._
+        import scala.jdk.CollectionConverters._
         consumer.subscribe(topics.asJava)
         topics.foreach(consumer.partitionsFor)
         val records = consumer.poll(duration2JavaDuration(poll))

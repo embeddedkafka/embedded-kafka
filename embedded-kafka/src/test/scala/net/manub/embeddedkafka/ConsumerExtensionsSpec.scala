@@ -10,7 +10,7 @@ import org.apache.kafka.common.TopicPartition
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
 
 class ConsumerExtensionsSpec

@@ -10,7 +10,7 @@ import net.manub.embeddedkafka.{
 import org.apache.kafka.common.security.auth.SecurityProtocol
 
 import scala.reflect.io.Directory
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
 
 /**
