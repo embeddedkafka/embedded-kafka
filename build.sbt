@@ -41,10 +41,7 @@ lazy val publishSettings = Seq(
       "emanuele.blanco@gmail.com",
       url("http://twitter.com/manub")
     )
-  ),
-  // TODO: remove sbt-bintray sbt keys
-  bintrayOrganization := Some("seglo"),
-  bintrayRepository := "maven"
+  )
 )
 
 import ReleaseTransformations._
