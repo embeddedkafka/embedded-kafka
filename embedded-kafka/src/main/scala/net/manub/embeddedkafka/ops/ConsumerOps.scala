@@ -192,9 +192,9 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
       autoCommit,
       timeout,
       resetTimeoutOnEachMessage
-    )(config, new StringDeserializer(), valueDeserializer).mapValues { foo =>
-      foo.map { case (_, m) => m }
-    }.toMap
+    )(config, new StringDeserializer(), valueDeserializer)
+      .mapValues(_.map { case (_, m) => m })
+      .toMap
   }
 
   /**
