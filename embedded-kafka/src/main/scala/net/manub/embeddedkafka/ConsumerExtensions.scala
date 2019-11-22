@@ -3,6 +3,7 @@ package net.manub.embeddedkafka
 import org.apache.kafka.clients.consumer.{ConsumerRecord, KafkaConsumer}
 import org.apache.kafka.common.KafkaException
 
+import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
 import scala.util.Try
 
@@ -48,7 +49,6 @@ object ConsumerExtensions {
         implicit decoder: ConsumerRecord[K, V] => T
     ): Seq[T] =
       Try {
-        import scala.jdk.CollectionConverters._
         consumer.subscribe(topics.asJava)
         topics.foreach(consumer.partitionsFor)
         val records = consumer.poll(duration2JavaDuration(poll))
