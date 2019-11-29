@@ -19,7 +19,6 @@ import scala.util.Try
   * @tparam C an [[EmbeddedKafkaConfig]]
   */
 trait AdminOps[C <: EmbeddedKafkaConfig] {
-
   val zkSessionTimeoutMs                                = 10000
   val zkConnectionTimeoutMs                             = 10000
   protected val topicCreationTimeout: FiniteDuration    = 2.seconds
@@ -93,5 +92,4 @@ trait AdminOps[C <: EmbeddedKafkaConfig] {
 
     res
   }
-
 }

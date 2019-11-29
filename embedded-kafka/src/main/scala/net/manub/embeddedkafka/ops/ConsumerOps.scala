@@ -26,7 +26,6 @@ import scala.collection.JavaConverters._
   * @tparam C an [[EmbeddedKafkaConfig]]
   */
 trait ConsumerOps[C <: EmbeddedKafkaConfig] {
-
   protected val consumerPollingTimeout: FiniteDuration = 1.second
 
   private[embeddedkafka] def baseConsumerConfig(
@@ -276,5 +275,4 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
       case ex: KafkaException => throw new KafkaUnavailableException(ex)
     }.get
   }
-
 }

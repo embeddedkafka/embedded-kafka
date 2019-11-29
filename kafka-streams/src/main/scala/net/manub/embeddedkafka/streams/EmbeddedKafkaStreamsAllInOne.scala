@@ -35,5 +35,4 @@ private[embeddedkafka] trait EmbeddedKafkaStreamsAllInOneSupport[
       topology: Topology
   )(block: KafkaConsumer[String, String] => Any)(implicit config: C): Any =
     runStreams(topicsToCreate, topology)(withStringConsumer[Any](block))(config)
-
 }

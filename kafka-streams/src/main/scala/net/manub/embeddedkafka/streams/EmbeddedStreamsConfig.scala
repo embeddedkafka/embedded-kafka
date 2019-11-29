@@ -12,7 +12,6 @@ import org.apache.kafka.streams.StreamsConfig
   * @tparam C an [[EmbeddedKafkaConfig]]
   */
 private[embeddedkafka] trait EmbeddedStreamsConfig[C <: EmbeddedKafkaConfig] {
-
   protected[embeddedkafka] def baseStreamConfig(streamName: String)(
       implicit kafkaConfig: C
   ): Map[String, AnyRef] = Map(
@@ -36,7 +35,6 @@ private[embeddedkafka] trait EmbeddedStreamsConfig[C <: EmbeddedKafkaConfig] {
       implicit kafkaConfig: C
   ): Map[String, AnyRef] =
     baseStreamConfig(streamName) ++ extraConfig
-
 }
 
 final class EmbeddedStreamsConfigImpl

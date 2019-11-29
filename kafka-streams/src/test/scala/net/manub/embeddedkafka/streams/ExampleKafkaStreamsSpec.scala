@@ -6,13 +6,13 @@ import net.manub.embeddedkafka.EmbeddedKafkaConfig
 import org.apache.kafka.common.serialization.{Serde, Serdes}
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.kstream.{Consumed, KStream, Produced}
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
 class ExampleKafkaStreamsSpec
-    extends WordSpec
+    extends AnyWordSpec
     with Matchers
     with EmbeddedKafkaStreamsAllInOne {
-
   import net.manub.embeddedkafka.Codecs.stringKeyValueCrDecoder
 
   implicit val config: EmbeddedKafkaConfig =

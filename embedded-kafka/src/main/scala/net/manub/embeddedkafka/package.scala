@@ -3,7 +3,6 @@ package net.manub
 import scala.concurrent.duration.FiniteDuration
 
 package object embeddedkafka {
-
   implicit class ServerOps(servers: Seq[EmbeddedServer]) {
     def toFilteredSeq[T <: EmbeddedServer](
         filter: EmbeddedServer => Boolean
@@ -13,5 +12,4 @@ package object embeddedkafka {
 
   def duration2JavaDuration(d: FiniteDuration): java.time.Duration =
     java.time.Duration.ofNanos(d.toNanos)
-
 }

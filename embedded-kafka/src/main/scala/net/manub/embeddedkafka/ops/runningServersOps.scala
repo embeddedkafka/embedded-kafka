@@ -3,13 +3,11 @@ package net.manub.embeddedkafka.ops
 import net.manub.embeddedkafka.{EmbeddedKafkaConfig, EmbeddedServer}
 
 object RunningServersOps {
-
   /**
     * Wrapper class providing methods for keeping track
     * of running [[EmbeddedServer]]s.
     */
   class RunningServers {
-
     private[this] var servers: Seq[EmbeddedServer] = Seq.empty
 
     /**
@@ -57,9 +55,7 @@ object RunningServersOps {
       servers = Seq.empty
       this
     }
-
   }
-
 }
 
 /**
@@ -87,7 +83,6 @@ trait RunningServersOps {
     */
   def stop(server: EmbeddedServer): Unit =
     runningServers.stopAndRemove(_ == server)
-
 }
 
 /**
@@ -109,5 +104,4 @@ trait ServerStarter[C <: EmbeddedKafkaConfig, S <: EmbeddedServer] {
     * @param config an implicit [[EmbeddedKafkaConfig]]
     */
   def start()(implicit config: C): S
-
 }

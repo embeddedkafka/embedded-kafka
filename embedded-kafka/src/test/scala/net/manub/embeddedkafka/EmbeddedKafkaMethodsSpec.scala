@@ -28,7 +28,6 @@ class EmbeddedKafkaMethodsSpec
     extends EmbeddedKafkaSpecSupport
     with EmbeddedKafka
     with BeforeAndAfterAll {
-
   val consumerPollTimeout: FiniteDuration = 5.seconds
 
   override def beforeAll(): Unit = {
@@ -338,7 +337,6 @@ class EmbeddedKafkaMethodsSpec
     }
 
     "return a message published to a topic with custom decoder" in {
-
       import avro._
 
       val message = TestAvroClass("name")
@@ -397,7 +395,6 @@ class EmbeddedKafkaMethodsSpec
     }
 
     "return a message published to a topic with custom decoders" in {
-
       import avro._
 
       val key     = TestAvroClass("key")
@@ -422,7 +419,6 @@ class EmbeddedKafkaMethodsSpec
     }
 
     "return a message published to a topic with 2 different decoders" in {
-
       import avro._
 
       val key                                        = "key"

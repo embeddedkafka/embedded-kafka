@@ -16,13 +16,10 @@ import scala.concurrent.duration._
 class ConsumerExtensionsSpec
     extends EmbeddedKafkaSpecSupport
     with MockitoSugar {
-
   import net.manub.embeddedkafka.Codecs.stringValueCrDecoder
 
   "consumeLazily" should {
-
     "retry to get messages with the configured maximum number of attempts when poll fails" in {
-
       implicit val retryConf: ConsumerRetryConfig =
         ConsumerRetryConfig(2, 1.millis)
 
@@ -46,7 +43,6 @@ class ConsumerExtensionsSpec
     }
 
     "not retry to get messages with the configured maximum number of attempts when poll succeeds" in {
-
       implicit val retryConf: ConsumerRetryConfig =
         ConsumerRetryConfig(2, 1.millis)
 
@@ -67,7 +63,6 @@ class ConsumerExtensionsSpec
     }
 
     "poll to get messages with the configured poll timeout" in {
-
       implicit val retryConf: ConsumerRetryConfig =
         ConsumerRetryConfig(1, 10.millis)
 
@@ -89,5 +84,4 @@ class ConsumerExtensionsSpec
       verify(consumer).poll(duration2JavaDuration(retryConf.poll))
     }
   }
-
 }
