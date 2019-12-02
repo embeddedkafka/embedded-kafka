@@ -5,7 +5,6 @@ import org.scalatest.exceptions.TestFailedException
 class EmbeddedKafkaWithRunningKafkaSpec
     extends EmbeddedKafkaSpecSupport
     with EmbeddedKafka {
-
   "the withRunningKafka method" should {
     "start a Kafka broker on port 6001 by default" in {
       withRunningKafka {
@@ -58,6 +57,5 @@ class EmbeddedKafkaWithRunningKafkaSpec
         zookeeperIsAvailable(12345)
       }
     }
-
   }
 }
