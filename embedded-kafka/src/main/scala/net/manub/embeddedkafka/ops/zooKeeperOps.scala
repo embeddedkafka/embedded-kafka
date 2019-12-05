@@ -11,7 +11,6 @@ import scala.reflect.io.Directory
   * Trait for ZooKeeper-related actions.
   */
 trait ZooKeeperOps {
-
   def startZooKeeper(
       zooKeeperPort: Int,
       zkLogsDir: Directory
@@ -29,7 +28,6 @@ trait ZooKeeperOps {
     factory.startup(zkServer)
     factory
   }
-
 }
 
 /**
@@ -70,5 +68,4 @@ trait RunningZooKeeperOps {
     zookeeperPort(zk.factory)
   private def zookeeperPort(fac: ServerCnxnFactory): Int =
     fac.getLocalPort
-
 }

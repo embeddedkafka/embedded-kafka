@@ -8,7 +8,6 @@ class EmbeddedKafkaUnavailableSpec
     extends EmbeddedKafkaSpecSupport
     with EmbeddedKafka
     with BeforeAndAfterAll {
-
   "the publishToKafka method" should {
     "throw a KafkaUnavailableException when Kafka is unavailable when trying to publish" in {
       a[KafkaUnavailableException] shouldBe thrownBy {

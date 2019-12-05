@@ -3,7 +3,6 @@ package net.manub.embeddedkafka
 class EmbeddedKafkaWithRunningKafkaOnFoundPortSpec
     extends EmbeddedKafkaSpecSupport
     with EmbeddedKafka {
-
   "the withRunningKafkaOnFoundPort method" should {
     "start and stop Kafka and Zookeeper successfully on non-zero ports" in {
       val userDefinedConfig =

@@ -19,10 +19,8 @@ import org.apache.kafka.streams.{KafkaStreams, Topology}
 trait EmbeddedKafkaStreams
     extends EmbeddedKafkaStreamsSupport[EmbeddedKafkaConfig]
     with EmbeddedKafka {
-
   override protected[embeddedkafka] val streamsConfig =
     new EmbeddedStreamsConfigImpl
-
 }
 
 private[embeddedkafka] trait EmbeddedKafkaStreamsSupport[
@@ -72,5 +70,4 @@ private[embeddedkafka] trait EmbeddedKafkaStreamsSupport[
     props.putAll(map.asJava)
     props
   }
-
 }

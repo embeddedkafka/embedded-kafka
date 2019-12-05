@@ -7,7 +7,6 @@ import scala.reflect.io.Directory
 trait EmbeddedKafka
     extends EmbeddedKafkaSupport[EmbeddedKafkaConfig]
     with EmbeddedKafkaOps[EmbeddedKafkaConfig, EmbeddedK] {
-
   override private[embeddedkafka] def baseConsumerConfig(
       implicit config: EmbeddedKafkaConfig
   ): Map[String, Object] =
@@ -46,13 +45,11 @@ trait EmbeddedKafka
       broker.awaitShutdown()
     }
   }
-
 }
 
 object EmbeddedKafka
     extends EmbeddedKafka
     with RunningEmbeddedKafkaOps[EmbeddedKafkaConfig, EmbeddedK] {
-
   override def start()(implicit config: EmbeddedKafkaConfig): EmbeddedK = {
     val zkLogsDir    = Directory.makeTemp("zookeeper-logs")
     val kafkaLogsDir = Directory.makeTemp("kafka-logs")
@@ -75,7 +72,6 @@ object EmbeddedKafka
     runningServers.list
       .toFilteredSeq[EmbeddedK](isEmbeddedK)
       .nonEmpty
-
 }
 
 private[embeddedkafka] trait EmbeddedKafkaSupport[C <: EmbeddedKafkaConfig] {
@@ -152,5 +148,4 @@ private[embeddedkafka] trait EmbeddedKafkaSupport[C <: EmbeddedKafkaConfig] {
       dir.deleteRecursively()
     }
   }
-
 }

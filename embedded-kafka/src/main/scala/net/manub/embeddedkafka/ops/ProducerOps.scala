@@ -22,7 +22,6 @@ import scala.collection.JavaConverters._
   * @tparam C an [[EmbeddedKafkaConfig]]
   */
 trait ProducerOps[C <: EmbeddedKafkaConfig] {
-
   protected val producerPublishTimeout: FiniteDuration = 10.seconds
 
   private[embeddedkafka] def baseProducerConfig(
@@ -131,7 +130,6 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
       keySerializer: Serializer[K],
       serializer: Serializer[T]
   ): Unit = {
-
     val producer =
       new KafkaProducer(baseProducerConfig.asJava, keySerializer, serializer)
 
@@ -215,5 +213,4 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
       producer
     }
   }
-
 }

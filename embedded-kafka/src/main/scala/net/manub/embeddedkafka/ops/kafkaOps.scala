@@ -17,7 +17,6 @@ import scala.concurrent.duration._
   * Trait for Kafka-related actions.
   */
 trait KafkaOps {
-
   protected val brokerId: Short                     = 0
   protected val autoCreateTopics: Boolean           = true
   protected val logCleanerDedupeBufferSize: Int     = 1048577
@@ -64,7 +63,6 @@ trait KafkaOps {
       config.customBrokerProperties,
       kafkaLogDir
     )
-
 }
 
 /**
@@ -114,5 +112,4 @@ trait RunningKafkaOps {
 
   private[embeddedkafka] def kafkaPort(kafkaServer: KafkaServer): Int =
     kafkaServer.boundPort(kafkaServer.config.listeners.head.listenerName)
-
 }

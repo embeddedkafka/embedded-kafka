@@ -11,7 +11,6 @@ import scala.concurrent.duration._
 import scala.reflect.io.Directory
 
 class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
-
   val consumerPollTimeout: FiniteDuration = 5.seconds
 
   "the EmbeddedKafka object" when {

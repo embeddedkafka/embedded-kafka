@@ -29,7 +29,7 @@ Versions match the version of Kafka they're built against.
 An example, using ScalaTest:
 
 ```scala
-class MySpec extends WordSpec with EmbeddedKafka {
+class MySpec extends AnyWordSpecLike with Matchers with EmbeddedKafka {
 
   "runs with embedded kafka" should {
 
@@ -50,7 +50,7 @@ class MySpec extends WordSpec with EmbeddedKafka {
 A `EmbeddedKafka` companion object is provided for usage without extending the `EmbeddedKafka` trait. Zookeeper and Kafka can be started and stopped in a programmatic way. This is the recommended usage if you have more than one test in your file and you don't want to start and stop Kafka and Zookeeper on every test.
 
 ```scala
-class MySpec extends WordSpec {
+class MySpec extends AnyWordSpecLike with Matchers {
 
   "runs with embedded kafka" should {
 
@@ -72,7 +72,7 @@ Please note that in order to avoid Kafka instances not shutting down properly, i
 It's possible to change the ports on which Zookeeper and Kafka are started by providing an implicit `EmbeddedKafkaConfig`
 
 ```scala
-class MySpec extends WordSpec with EmbeddedKafka {
+class MySpec extends AnyWordSpecLike with Matchers with EmbeddedKafka {
 
   "runs with embedded kafka on a specific port" should {
 
@@ -93,7 +93,7 @@ reliable, especially when running tests in parallel or on machines where other
 tests or services may be running with port numbers you can't control.
 
 ```scala
-class MySpec extends WordSpec with EmbeddedKafka {
+class MySpec extends AnyWordSpecLike with Matchers with EmbeddedKafka {
 
   "runs with embedded kafka on arbitrary available ports" should {
 
@@ -113,7 +113,7 @@ class MySpec extends WordSpec with EmbeddedKafka {
 The same implicit `EmbeddedKafkaConfig` is used to define custom consumer or producer properties
 
 ```scala
-class MySpec extends WordSpec with EmbeddedKafka {
+class MySpec extends AnyWordSpecLike with Matchers with EmbeddedKafka {
 
   "runs with custom producer and consumer properties" should {
     "work" in {
