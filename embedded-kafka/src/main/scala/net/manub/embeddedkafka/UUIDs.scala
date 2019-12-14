@@ -6,6 +6,7 @@ import java.util.UUID
   * Useful for separating IDs and directories across test cases.
   */
 object UUIDs {
+
   /** Create a new unique ID.
     *
     * @return the unique ID

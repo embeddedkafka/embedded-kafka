@@ -11,6 +11,7 @@ import scala.jdk.CollectionConverters._
 
 /** Utility trait for easily creating Kafka consumers and accessing their consumed messages. */
 trait Consumers {
+
   /** Loaner pattern that allows running a code block with a newly created consumer.
     * The consumer's lifecycle will be automatically handled and closed at the end of the
     * given code block.

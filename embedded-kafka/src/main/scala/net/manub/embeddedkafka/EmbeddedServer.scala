@@ -22,6 +22,7 @@ private[embeddedkafka] trait EmbeddedServer {
 case class EmbeddedZ(factory: ServerCnxnFactory, logsDirs: Directory)(
     implicit config: EmbeddedKafkaConfig
 ) extends EmbeddedServer {
+
   /**
     * Shuts down the factory and then optionally deletes the log directory.
     *
@@ -53,6 +54,7 @@ case class EmbeddedK(
     logsDirs: Directory,
     config: EmbeddedKafkaConfig
 ) extends EmbeddedServerWithKafka {
+
   /**
     * Shuts down the broker, the factory it relies upon, if defined, and the app, if defined.
     * Optionally deletes the log directory.

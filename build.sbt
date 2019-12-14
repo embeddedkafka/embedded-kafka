@@ -17,7 +17,7 @@ lazy val commonSettings = Seq(
   scalacOptions += "-deprecation",
   scalafmtOnCompile := true,
   // for release candidate builds of Apache Kafka
-  resolvers += "Apache Staging" at "https://repository.apache.org/content/groups/staging/"
+  //resolvers += "Apache Staging" at "https://repository.apache.org/content/groups/staging/"
 )
 
 lazy val commonLibrarySettings = libraryDependencies ++= Seq(

@@ -140,9 +140,8 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
     val futures = messages.map(futureSend)
 
     // Assure all messages sent before returning, and fail on first send error
-    val records = futures.map(
-      f =>
-        Try(f.get(producerPublishTimeout.length, producerPublishTimeout.unit))
+    val records = futures.map(f =>
+      Try(f.get(producerPublishTimeout.length, producerPublishTimeout.unit))
     )
 
     producer.close()
