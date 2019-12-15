@@ -3,6 +3,7 @@ package net.manub.embeddedkafka
 import org.apache.kafka.clients.consumer.{ConsumerRecord, KafkaConsumer}
 import org.apache.kafka.common.KafkaException
 
+import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
 import scala.util.Try
 
@@ -14,6 +15,7 @@ object ConsumerExtensions {
   )
 
   implicit class ConsumerOps[K, V](val consumer: KafkaConsumer[K, V]) {
+
     /** Consume messages from one or many topics and return them as a lazily evaluated Scala Stream.
       * Depending on how many messages are taken from the Scala Stream it will try up to retryConf.maximumAttempts times
       * to consume batches from the given topic, until it reaches the number of desired messages or
@@ -48,7 +50,6 @@ object ConsumerExtensions {
         implicit decoder: ConsumerRecord[K, V] => T
     ): Seq[T] =
       Try {
-        import scala.collection.JavaConverters._
         consumer.subscribe(topics.asJava)
         topics.foreach(consumer.partitionsFor)
         val records = consumer.poll(duration2JavaDuration(poll))

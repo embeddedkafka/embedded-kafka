@@ -7,8 +7,11 @@ import org.apache.kafka.clients.consumer.{
 }
 import org.apache.kafka.common.serialization.Deserializer
 
+import scala.jdk.CollectionConverters._
+
 /** Utility trait for easily creating Kafka consumers and accessing their consumed messages. */
 trait Consumers {
+
   /** Loaner pattern that allows running a code block with a newly created consumer.
     * The consumer's lifecycle will be automatically handled and closed at the end of the
     * given code block.
@@ -54,8 +57,6 @@ trait Consumers {
   def newConsumer[K: Deserializer, V: Deserializer]()(
       implicit config: EmbeddedKafkaConfig
   ): KafkaConsumer[K, V] = {
-    import scala.collection.JavaConverters._
-
     val consumerConfig = Map[String, Object](
       ConsumerConfig.GROUP_ID_CONFIG          -> UUIDs.newUuid().toString,
       ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",

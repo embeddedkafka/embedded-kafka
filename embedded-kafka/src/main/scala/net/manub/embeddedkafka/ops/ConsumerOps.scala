@@ -18,7 +18,8 @@ import scala.collection.mutable.ListBuffer
 import scala.concurrent.TimeoutException
 import scala.concurrent.duration._
 import scala.util.Try
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
+import scala.collection.immutable.Map
 
 /**
   * Trait for Consumer-related actions.
@@ -193,6 +194,7 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
       resetTimeoutOnEachMessage
     )(config, new StringDeserializer(), valueDeserializer)
       .mapValues(_.map { case (_, m) => m })
+      .toMap
   }
 
   /**
@@ -267,7 +269,7 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
           s"Unable to retrieve $number message(s) from Kafka in $timeout"
         )
       }
-      messagesBuffers.mapValues(_.toList)
+      messagesBuffers.mapValues(_.toList).toMap
     }
 
     consumer.close()

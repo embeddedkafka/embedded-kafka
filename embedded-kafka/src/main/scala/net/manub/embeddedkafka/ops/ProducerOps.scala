@@ -14,7 +14,7 @@ import org.apache.kafka.common.serialization.{Serializer, StringSerializer}
 
 import scala.concurrent.duration._
 import scala.util.{Failure, Try}
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
   * Trait for Producer-related actions.
@@ -140,9 +140,8 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
     val futures = messages.map(futureSend)
 
     // Assure all messages sent before returning, and fail on first send error
-    val records = futures.map(
-      f =>
-        Try(f.get(producerPublishTimeout.length, producerPublishTimeout.unit))
+    val records = futures.map(f =>
+      Try(f.get(producerPublishTimeout.length, producerPublishTimeout.unit))
     )
 
     producer.close()
@@ -191,10 +190,12 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
         serializer: Class[_ <: Serializer[V]]
     )(implicit config: C): KafkaProducer[String, V] = {
       val producer = new KafkaProducer[String, V](
-        (baseProducerConfig + (ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[
-          StringSerializer
-        ].getName,
-        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> serializer.getName)).asJava
+        (baseProducerConfig ++ Map(
+          ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[
+            StringSerializer
+          ].getName,
+          ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> serializer.getName
+        )).asJava
       )
       producers :+= producer
       producer

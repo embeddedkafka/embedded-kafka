@@ -6,7 +6,7 @@ import org.apache.kafka.common.serialization.{
 }
 import net.manub.embeddedkafka.EmbeddedKafka._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
 import scala.reflect.io.Directory
 

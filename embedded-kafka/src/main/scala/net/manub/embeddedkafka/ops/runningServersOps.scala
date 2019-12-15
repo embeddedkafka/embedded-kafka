@@ -3,6 +3,7 @@ package net.manub.embeddedkafka.ops
 import net.manub.embeddedkafka.{EmbeddedKafkaConfig, EmbeddedServer}
 
 object RunningServersOps {
+
   /**
     * Wrapper class providing methods for keeping track
     * of running [[EmbeddedServer]]s.

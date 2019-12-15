@@ -35,15 +35,14 @@ class EmbeddedKafkaWithRunningKafkaOnFoundPortSpec
               allConfigs.map(_.kafkaPort).distinct should have size 3
               allConfigs.map(_.zooKeeperPort).distinct should have size 3
               allConfigs
-                .map(
-                  config =>
-                    EmbeddedKafkaConfigImpl(
-                      kafkaPort = 0,
-                      zooKeeperPort = 0,
-                      config.customBrokerProperties,
-                      config.customProducerProperties,
-                      config.customConsumerProperties
-                    )
+                .map(config =>
+                  EmbeddedKafkaConfigImpl(
+                    kafkaPort = 0,
+                    zooKeeperPort = 0,
+                    config.customBrokerProperties,
+                    config.customProducerProperties,
+                    config.customConsumerProperties
+                  )
                 )
                 .distinct should have size 1
               actualConfig2

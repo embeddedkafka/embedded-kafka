@@ -2,20 +2,22 @@ import sbtrelease.Version
 
 parallelExecution in ThisBuild := false
 
-val kafkaVersion = "2.3.1"
+val kafkaVersion = "2.4.0"
 val akkaVersion = "2.5.27"
 
 lazy val commonSettings = Seq(
   organization := "io.github.embeddedkafka",
-  scalaVersion := "2.12.9",
-  crossScalaVersions := Seq("2.12.9", "2.11.12"),
+  scalaVersion := "2.13.1",
+  crossScalaVersions := Seq("2.12.10", "2.11.12", "2.13.1"),
   homepage := Some(url("https://github.com/embeddedkafka/embedded-kafka")),
   parallelExecution in Test := false,
   logBuffered in Test := false,
   fork in Test := true,
   javaOptions ++= Seq("-Xms512m", "-Xmx2048m"),
   scalacOptions += "-deprecation",
-  scalafmtOnCompile := true
+  scalafmtOnCompile := true,
+  // for release candidate builds of Apache Kafka
+  //resolvers += "Apache Staging" at "https://repository.apache.org/content/groups/staging/"
 )
 
 lazy val commonLibrarySettings = libraryDependencies ++= Seq(

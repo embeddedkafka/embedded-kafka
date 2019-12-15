@@ -20,7 +20,7 @@ import org.apache.kafka.common.serialization.{
 import org.apache.kafka.common.utils.Time
 import org.scalatest.BeforeAndAfterAll
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
 import org.scalatest.OptionValues._
 
