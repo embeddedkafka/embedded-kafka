@@ -77,7 +77,7 @@ lazy val embeddedKafka = (project in file("embedded-kafka"))
   .settings(commonSettings: _*)
   .settings(commonLibrarySettings)
   .settings(libraryDependencies ++= Seq(
-    "org.mockito" % "mockito-core" % "3.2.0" % Test,
+    "org.mockito" % "mockito-core" % "3.2.4" % Test,
     "org.scalatestplus" %% "mockito-1-10" % "3.1.0.0" % Test
   ))
   .settings(releaseSettings: _*)
