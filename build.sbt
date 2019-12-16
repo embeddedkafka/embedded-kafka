@@ -15,9 +15,7 @@ lazy val commonSettings = Seq(
   fork in Test := true,
   javaOptions ++= Seq("-Xms512m", "-Xmx2048m"),
   scalacOptions += "-deprecation",
-  scalafmtOnCompile := true,
-  // for release candidate builds of Apache Kafka
-  //resolvers += "Apache Staging" at "https://repository.apache.org/content/groups/staging/"
+  scalafmtOnCompile := true
 )
 
 lazy val commonLibrarySettings = libraryDependencies ++= Seq(

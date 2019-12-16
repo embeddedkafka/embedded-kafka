@@ -536,7 +536,7 @@ class EmbeddedKafkaMethodsSpec
           topicMessagesMap.values.map(_.size).sum
         )
 
-      consumedMessages.mapValues(_.sorted) shouldEqual topicMessagesMap
+      consumedMessages.mapValues(_.sorted).toMap shouldEqual topicMessagesMap
 
       producer.close()
     }
@@ -574,7 +574,7 @@ class EmbeddedKafkaMethodsSpec
           topicMessagesMap.values.map(_.size).sum
         )
 
-      consumedMessages.mapValues(_.sorted) shouldEqual topicMessagesMap
+      consumedMessages.mapValues(_.sorted).toMap shouldEqual topicMessagesMap
 
       producer.close()
     }
