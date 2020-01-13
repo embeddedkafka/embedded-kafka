@@ -1,5 +1,10 @@
 package net.manub.embeddedkafka
 
+import net.manub.embeddedkafka.EmbeddedKafkaSpecSupport.{
+  Available,
+  NotAvailable
+}
+
 class EmbeddedKafkaWithRunningKafkaOnFoundPortSpec
     extends EmbeddedKafkaSpecSupport
     with EmbeddedKafka {
@@ -64,12 +69,12 @@ class EmbeddedKafkaWithRunningKafkaOnFoundPortSpec
   }
 
   private def everyServerIsAvailable(config: EmbeddedKafkaConfig): Unit = {
-    kafkaIsAvailable(config.kafkaPort)
-    zookeeperIsAvailable(config.zooKeeperPort)
+    expectedServerStatus(config.kafkaPort, Available)
+    expectedServerStatus(config.zooKeeperPort, Available)
   }
 
   private def noServerIsAvailable(config: EmbeddedKafkaConfig): Unit = {
-    kafkaIsNotAvailable(config.kafkaPort)
-    zookeeperIsNotAvailable(config.zooKeeperPort)
+    expectedServerStatus(config.kafkaPort, NotAvailable)
+    expectedServerStatus(config.zooKeeperPort, NotAvailable)
   }
 }
