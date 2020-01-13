@@ -1,5 +1,7 @@
 package net.manub.embeddedkafka.ops
 
+import java.nio.file.Path
+
 import kafka.server.{KafkaConfig, KafkaServer}
 import net.manub.embeddedkafka.{
   EmbeddedK,
@@ -9,7 +11,6 @@ import net.manub.embeddedkafka.{
 }
 import org.apache.kafka.common.security.auth.SecurityProtocol
 
-import scala.reflect.io.Directory
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
 
@@ -26,7 +27,7 @@ trait KafkaOps {
       kafkaPort: Int,
       zooKeeperPort: Int,
       customBrokerProperties: Map[String, String],
-      kafkaLogDir: Directory
+      kafkaLogDir: Path
   ) = {
     val zkAddress = s"localhost:$zooKeeperPort"
     val listener  = s"${SecurityProtocol.PLAINTEXT}://localhost:$kafkaPort"
@@ -38,7 +39,7 @@ trait KafkaOps {
       KafkaConfig.ListenersProp                          -> listener,
       KafkaConfig.AdvertisedListenersProp                -> listener,
       KafkaConfig.AutoCreateTopicsEnableProp             -> autoCreateTopics.toString,
-      KafkaConfig.LogDirProp                             -> kafkaLogDir.toAbsolute.path,
+      KafkaConfig.LogDirProp                             -> kafkaLogDir.toAbsolutePath.toString,
       KafkaConfig.LogFlushIntervalMessagesProp           -> 1.toString,
       KafkaConfig.OffsetsTopicReplicationFactorProp      -> 1.toString,
       KafkaConfig.OffsetsTopicPartitionsProp             -> 1.toString,
@@ -55,7 +56,7 @@ trait KafkaOps {
 
   def startKafka(
       config: EmbeddedKafkaConfig,
-      kafkaLogDir: Directory
+      kafkaLogDir: Path
   ): KafkaServer =
     startKafka(
       config.kafkaPort,
@@ -82,7 +83,7 @@ trait RunningKafkaOps {
     * @param config       an implicit [[EmbeddedKafkaConfig]]
     * @return             an [[EmbeddedK]] server
     */
-  def startKafka(kafkaLogsDir: Directory, factory: Option[EmbeddedZ] = None)(
+  def startKafka(kafkaLogsDir: Path, factory: Option[EmbeddedZ] = None)(
       implicit config: EmbeddedKafkaConfig
   ): EmbeddedK = {
     val kafkaServer = startKafka(config, kafkaLogsDir)

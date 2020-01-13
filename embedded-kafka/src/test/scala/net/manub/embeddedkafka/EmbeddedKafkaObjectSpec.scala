@@ -1,5 +1,7 @@
 package net.manub.embeddedkafka
 
+import java.nio.file.Files
+
 import org.apache.kafka.common.serialization.{
   StringDeserializer,
   StringSerializer
@@ -8,7 +10,6 @@ import net.manub.embeddedkafka.EmbeddedKafka._
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
-import scala.reflect.io.Directory
 
 class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
   val consumerPollTimeout: FiniteDuration = 5.seconds
@@ -130,8 +131,10 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
       }
 
       "return true when both Kafka and Zookeeper are running, if started separately" in {
-        EmbeddedKafka.startZooKeeper(Directory.makeTemp("zookeeper-test-logs"))
-        EmbeddedKafka.startKafka(Directory.makeTemp("kafka-test-logs"))
+        EmbeddedKafka.startZooKeeper(
+          Files.createTempDirectory("zookeeper-test-logs")
+        )
+        EmbeddedKafka.startKafka(Files.createTempDirectory("kafka-test-logs"))
 
         EmbeddedKafka.isRunning shouldBe true
         EmbeddedKafka.stop()
@@ -139,7 +142,9 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
       }
 
       "return false when only Zookeeper is running" in {
-        EmbeddedKafka.startZooKeeper(Directory.makeTemp("zookeeper-test-logs"))
+        EmbeddedKafka.startZooKeeper(
+          Files.createTempDirectory("zookeeper-test-logs")
+        )
         EmbeddedKafka.isRunning shouldBe false
         EmbeddedKafka.stop()
         EmbeddedKafka.isRunning shouldBe false

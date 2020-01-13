@@ -1,5 +1,7 @@
 package net.manub.embeddedkafka
 
+import java.nio.file.Path
+
 import kafka.server.KafkaServer
 import org.apache.zookeeper.server.ServerCnxnFactory
 
@@ -16,10 +18,10 @@ private[embeddedkafka] trait EmbeddedServer {
   * An instance of an embedded Zookeeper server.
   *
   * @param factory    the server.
-  * @param logsDirs   the [[Directory]] logs are to be written to.
+  * @param logsDirs   the directory logs are to be written to.
   * @param config     the [[EmbeddedKafkaConfig]] used to start the factory.
   */
-case class EmbeddedZ(factory: ServerCnxnFactory, logsDirs: Directory)(
+case class EmbeddedZ(factory: ServerCnxnFactory, logsDirs: Path)(
     implicit config: EmbeddedKafkaConfig
 ) extends EmbeddedServer {
 
@@ -30,14 +32,14 @@ case class EmbeddedZ(factory: ServerCnxnFactory, logsDirs: Directory)(
     */
   override def stop(clearLogs: Boolean): Unit = {
     factory.shutdown()
-    if (clearLogs) logsDirs.deleteRecursively()
+    if (clearLogs) Directory(logsDirs.toFile).deleteRecursively
   }
 }
 
 private[embeddedkafka] trait EmbeddedServerWithKafka extends EmbeddedServer {
   def factory: Option[EmbeddedZ]
   def broker: KafkaServer
-  def logsDirs: Directory
+  def logsDirs: Path
 }
 
 /**
@@ -45,13 +47,13 @@ private[embeddedkafka] trait EmbeddedServerWithKafka extends EmbeddedServer {
   *
   * @param factory         the optional [[EmbeddedZ]] server which Kafka relies upon.
   * @param broker          the Kafka server.
-  * @param logsDirs        the [[Directory]] logs are to be written to.
+  * @param logsDirs        the directory logs are to be written to.
   * @param config          the [[EmbeddedKafkaConfig]] used to start the broker.
   */
 case class EmbeddedK(
     factory: Option[EmbeddedZ],
     broker: KafkaServer,
-    logsDirs: Directory,
+    logsDirs: Path,
     config: EmbeddedKafkaConfig
 ) extends EmbeddedServerWithKafka {
 
@@ -67,14 +69,14 @@ case class EmbeddedK(
 
     factory.foreach(_.stop(clearLogs))
 
-    if (clearLogs) logsDirs.deleteRecursively()
+    if (clearLogs) Directory(logsDirs.toFile).deleteRecursively
   }
 }
 
 object EmbeddedK {
   def apply(
       broker: KafkaServer,
-      logsDirs: Directory,
+      logsDirs: Path,
       config: EmbeddedKafkaConfig
   ): EmbeddedK =
     EmbeddedK(factory = None, broker, logsDirs, config)
