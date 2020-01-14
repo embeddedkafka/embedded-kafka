@@ -1,5 +1,7 @@
 package net.manub.embeddedkafka
 
+import java.nio.file.{Files, Path}
+
 import net.manub.embeddedkafka.ops._
 
 import scala.reflect.io.Directory
@@ -20,7 +22,7 @@ trait EmbeddedKafka
   override private[embeddedkafka] def withRunningServers[T](
       config: EmbeddedKafkaConfig,
       actualZkPort: Int,
-      kafkaLogsDir: Directory
+      kafkaLogsDir: Path
   )(body: EmbeddedKafkaConfig => T): T = {
     val broker =
       startKafka(
@@ -51,8 +53,8 @@ object EmbeddedKafka
     extends EmbeddedKafka
     with RunningEmbeddedKafkaOps[EmbeddedKafkaConfig, EmbeddedK] {
   override def start()(implicit config: EmbeddedKafkaConfig): EmbeddedK = {
-    val zkLogsDir    = Directory.makeTemp("zookeeper-logs")
-    val kafkaLogsDir = Directory.makeTemp("kafka-logs")
+    val zkLogsDir    = Files.createTempDirectory("zookeeper-logs")
+    val kafkaLogsDir = Files.createTempDirectory("kafka-logs")
 
     val factory =
       EmbeddedZ(startZooKeeper(config.zooKeeperPort, zkLogsDir), zkLogsDir)
@@ -88,7 +90,7 @@ private[embeddedkafka] trait EmbeddedKafkaSupport[C <: EmbeddedKafkaConfig] {
   private[embeddedkafka] def withRunningServers[T](
       config: C,
       actualZkPort: Int,
-      kafkaLogsDir: Directory
+      kafkaLogsDir: Path
   )(body: C => T): T
 
   /**
@@ -140,12 +142,12 @@ private[embeddedkafka] trait EmbeddedKafkaSupport[C <: EmbeddedKafkaConfig] {
 
   private[embeddedkafka] def withTempDir[T](
       prefix: String
-  )(body: Directory => T): T = {
-    val dir = Directory.makeTemp(prefix)
+  )(body: Path => T): T = {
+    val dir = Files.createTempDirectory(prefix)
     try {
       body(dir)
     } finally {
-      dir.deleteRecursively()
+      Directory(dir.toFile).deleteRecursively
     }
   }
 }
