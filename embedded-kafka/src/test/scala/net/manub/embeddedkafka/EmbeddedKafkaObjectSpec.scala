@@ -5,6 +5,7 @@ import org.apache.kafka.common.serialization.{
   StringSerializer
 }
 import net.manub.embeddedkafka.EmbeddedKafka._
+import net.manub.embeddedkafka.EmbeddedKafkaSpecSupport._
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
@@ -18,13 +19,13 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
       "start and stop Kafka and Zookeeper on the default ports" in {
         EmbeddedKafka.start()
 
-        kafkaIsAvailable()
-        zookeeperIsAvailable()
+        expectedServerStatus(defaultKafkaPort, Available)
+        expectedServerStatus(defaultZookeeperPort, Available)
 
         EmbeddedKafka.stop()
 
-        kafkaIsNotAvailable()
-        zookeeperIsNotAvailable()
+        expectedServerStatus(defaultKafkaPort, NotAvailable)
+        expectedServerStatus(defaultZookeeperPort, NotAvailable)
       }
 
       "start and stop Kafka and Zookeeper on different specified ports using an implicit configuration" in {
@@ -32,8 +33,8 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
           EmbeddedKafkaConfig(kafkaPort = 12345, zooKeeperPort = 54321)
         EmbeddedKafka.start()
 
-        kafkaIsAvailable(12345)
-        zookeeperIsAvailable(54321)
+        expectedServerStatus(12345, Available)
+        expectedServerStatus(54321, Available)
 
         EmbeddedKafka.stop()
       }
@@ -46,19 +47,19 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
           EmbeddedKafkaConfig(kafkaPort = 8000, zooKeeperPort = 8001)
         )
 
-        kafkaIsAvailable(7000)
-        zookeeperIsAvailable(7001)
+        expectedServerStatus(7000, Available)
+        expectedServerStatus(7001, Available)
 
-        kafkaIsAvailable(8000)
-        zookeeperIsAvailable(8001)
+        expectedServerStatus(8000, Available)
+        expectedServerStatus(8001, Available)
 
         EmbeddedKafka.stop(firstBroker)
 
-        kafkaIsNotAvailable(7000)
-        zookeeperIsNotAvailable(7001)
+        expectedServerStatus(7000, NotAvailable)
+        expectedServerStatus(7001, NotAvailable)
 
-        kafkaIsAvailable(8000)
-        zookeeperIsAvailable(8001)
+        expectedServerStatus(8000, Available)
+        expectedServerStatus(8001, Available)
 
         EmbeddedKafka.stop()
       }
@@ -73,16 +74,16 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
         val usedZookeeperPort = EmbeddedKafka.zookeeperPort(kafka.factory.get)
         val usedKafkaPort     = EmbeddedKafka.kafkaPort(kafka.broker)
 
-        kafkaIsAvailable(usedKafkaPort)
-        zookeeperIsAvailable(usedZookeeperPort)
+        expectedServerStatus(usedKafkaPort, Available)
+        expectedServerStatus(usedZookeeperPort, Available)
 
         kafka.config.kafkaPort should be(usedKafkaPort)
         kafka.config.zooKeeperPort should be(usedZookeeperPort)
 
         EmbeddedKafka.stop()
 
-        kafkaIsNotAvailable(usedKafkaPort)
-        zookeeperIsNotAvailable(usedZookeeperPort)
+        expectedServerStatus(usedKafkaPort, NotAvailable)
+        expectedServerStatus(usedZookeeperPort, NotAvailable)
       }
 
       "start and stop multiple Kafka instances on specified ports" in {
@@ -103,7 +104,7 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
         publishToKafka(topic, "hello world!")(someConfig, serializer)
         publishToKafka(topic, someOtherMessage)(someOtherConfig, serializer)
 
-        kafkaIsAvailable(someConfig.kafkaPort)
+        expectedServerStatus(someConfig.kafkaPort, Available)
         EmbeddedKafka.stop(someBroker)
 
         val anotherConsumer =

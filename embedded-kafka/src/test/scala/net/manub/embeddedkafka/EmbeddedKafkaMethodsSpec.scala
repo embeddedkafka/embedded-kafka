@@ -19,15 +19,17 @@ import org.apache.kafka.common.serialization.{
 }
 import org.apache.kafka.common.utils.Time
 import org.scalatest.BeforeAndAfterAll
-
-import scala.jdk.CollectionConverters._
-import scala.concurrent.duration._
 import org.scalatest.OptionValues._
+import org.scalatest.concurrent.JavaFutures
+
+import scala.concurrent.duration._
+import scala.jdk.CollectionConverters._
 
 class EmbeddedKafkaMethodsSpec
     extends EmbeddedKafkaSpecSupport
-    with EmbeddedKafka
-    with BeforeAndAfterAll {
+    with BeforeAndAfterAll
+    with JavaFutures
+    with EmbeddedKafka {
   val consumerPollTimeout: FiniteDuration = 5.seconds
 
   override def beforeAll(): Unit = {
