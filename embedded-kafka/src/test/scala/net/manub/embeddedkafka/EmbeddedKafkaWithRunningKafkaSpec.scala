@@ -1,5 +1,6 @@
 package net.manub.embeddedkafka
 
+import net.manub.embeddedkafka.EmbeddedKafkaSpecSupport._
 import org.scalatest.exceptions.TestFailedException
 
 class EmbeddedKafkaWithRunningKafkaSpec
@@ -8,13 +9,13 @@ class EmbeddedKafkaWithRunningKafkaSpec
   "the withRunningKafka method" should {
     "start a Kafka broker on port 6001 by default" in {
       withRunningKafka {
-        kafkaIsAvailable()
+        expectedServerStatus(defaultKafkaPort, Available)
       }
     }
 
     "start a ZooKeeper instance on port 6000 by default" in {
       withRunningKafka {
-        zookeeperIsAvailable()
+        expectedServerStatus(defaultZookeeperPort, Available)
       }
     }
 
@@ -24,8 +25,8 @@ class EmbeddedKafkaWithRunningKafkaSpec
           true shouldBe true
         }
 
-        kafkaIsNotAvailable()
-        zookeeperIsNotAvailable()
+        expectedServerStatus(defaultKafkaPort, NotAvailable)
+        expectedServerStatus(defaultZookeeperPort, NotAvailable)
       }
 
       "the enclosed test fails" in {
@@ -35,8 +36,8 @@ class EmbeddedKafkaWithRunningKafkaSpec
           }
         }
 
-        kafkaIsNotAvailable()
-        zookeeperIsNotAvailable()
+        expectedServerStatus(defaultKafkaPort, NotAvailable)
+        expectedServerStatus(defaultZookeeperPort, NotAvailable)
       }
     }
 
@@ -45,7 +46,7 @@ class EmbeddedKafkaWithRunningKafkaSpec
         EmbeddedKafkaConfig(kafkaPort = 12345)
 
       withRunningKafka {
-        kafkaIsAvailable(12345)
+        expectedServerStatus(12345, Available)
       }
     }
 
@@ -54,7 +55,7 @@ class EmbeddedKafkaWithRunningKafkaSpec
         EmbeddedKafkaConfig(zooKeeperPort = 12345)
 
       withRunningKafka {
-        zookeeperIsAvailable(12345)
+        expectedServerStatus(12345, Available)
       }
     }
   }
