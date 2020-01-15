@@ -1,12 +1,12 @@
 package net.manub.embeddedkafka
 
+import net.manub.embeddedkafka.EmbeddedKafka._
 import org.apache.kafka.common.serialization.StringSerializer
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.tagobjects.Slow
 
 class EmbeddedKafkaUnavailableSpec
     extends EmbeddedKafkaSpecSupport
-    with EmbeddedKafka
     with BeforeAndAfterAll {
   "the publishToKafka method" should {
     "throw a KafkaUnavailableException when Kafka is unavailable when trying to publish" in {

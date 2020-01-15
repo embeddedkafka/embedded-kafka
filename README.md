@@ -156,20 +156,56 @@ def createCustomTopic(topic: String, topicConfig: Map[String,String], partitions
 
 ### Custom producers
 
-It is possible to create producers for custom types in two ways:
+~~It is possible to create producers for custom types in two ways:~~
 
-* Using the syntax `aKafkaProducer thatSerializesValuesWith classOf[Serializer[V]]`. This will return a `KafkaProducer[String, V]`
-* Using the syntax `aKafkaProducer[V]`. This will return a `KafkaProducer[String, V]`, using an implicit `Serializer[V]`.
+~~Using the syntax `aKafkaProducer thatSerializesValuesWith classOf[Serializer[V]]`. This will return a `KafkaProducer[String, V]`~~
+~~Using the syntax `aKafkaProducer[V]`. This will return a `KafkaProducer[String, V]`, using an implicit `Serializer[V]`.~~
+
+The direct usage of `KafkaProducer` has been deprecated. `ProducerOps` has a loan API that handles Producer lifecycle.
+
+Given implicits `Deserializer`s for each type and an `EmbeddedKafkaConfig` it is possible to use `withProducer[A, B, R] { your code here }` where R is the code return type.
 
 For more information about how to use the utility methods, you can either look at the Scaladocs or at the tests of this project.
 
 ### Custom consumers
 
-Use the `Consumers` trait that easily creates consumers of arbitrary key-value types and manages their lifecycle (via a loaner pattern).
+~~Use the `Consumers` trait that easily creates consumers of arbitrary key-value types and manages their lifecycle (via a loaner pattern).~~
 
-* For basic String consumption use `Consumers.withStringConsumer { your code here }`.
-* For arbitrary key and value types, expose implicit `Deserializer`s for each type and use `Consumers.withConsumer { your code here }`.
-* If you just want to create a consumer and manage its lifecycle yourself then try `Consumers.newConsumer()`.
+~~* For basic String consumption use `Consumers.withStringConsumer { your code here }`.~~
+~~* For arbitrary key and value types, expose implicit `Deserializer`s for each type and use `Consumers.withConsumer { your code here }`.~~
+~~* If you just want to create a consumer and manage its lifecycle yourself then try `Consumers.newConsumer()`.~~
+
+The `Consumers` trait has been removed in favor of a more uniform API.
+
+The direct usage of `KafkaConsumer` has been deprecated. `ConsumerOps` has a loan API that handles Consumer lifecycle.
+
+Given implicits `Serializer`s for each type and an `EmbeddedKafkaConfig` it is possible to use `withConsumer[A, B, R] { your code here }` where R is the code return type.
+
+### Loan methods example
+
+A simple test using loan methods can be as simple as this:
+
+```scala
+  implicit val serializer: Serializer[String]     = new StringSerializer()
+  implicit val deserializer: Deserializer[String] = new StringDeserializer()
+  val key                                         = "key"
+  val value                                       = "value"
+  val topic                                       = "loan_method_example"
+
+  withProducer[String, String, Unit](producer =>
+    producer.send(new ProducerRecord[String, String](topic, key, value)))
+
+  withConsumer[String, String, Assertion](consumer => {
+    consumer.subscribe(Collections.singletonList(topic))
+
+    eventually {
+      val records = consumer.poll(java.time.Duration.ofMillis(1.seconds.toMillis)).asScala
+      records should have size 1
+      records.head.key shouldBe key
+      records.head.value shouldBe value
+    }
+  })
+```
 
 ### Easy message consumption
 

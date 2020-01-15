@@ -3,7 +3,8 @@ package net.manub.embeddedkafka.ops
 import net.manub.embeddedkafka.{
   EmbeddedKafkaConfig,
   KafkaUnavailableException,
-  duration2JavaDuration
+  duration2JavaDuration,
+  loanAndClose
 }
 import org.apache.kafka.clients.consumer.{
   ConsumerConfig,
@@ -14,12 +15,12 @@ import org.apache.kafka.clients.consumer.{
 import org.apache.kafka.common.serialization.{Deserializer, StringDeserializer}
 import org.apache.kafka.common.{KafkaException, TopicPartition}
 
+import scala.collection.immutable.Map
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.TimeoutException
 import scala.concurrent.duration._
-import scala.util.Try
 import scala.jdk.CollectionConverters._
-import scala.collection.immutable.Map
+import scala.util.Try
 
 /**
   * Trait for Consumer-related actions.
@@ -41,6 +42,10 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
       ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> false.toString
     )
 
+  @deprecated(
+    "Direct usage of KafkaConsumer is discouraged, see loan method withConsumer",
+    "2.4.1"
+  )
   def kafkaConsumer[K, T](
       implicit config: C,
       keyDeserializer: Deserializer[K],
@@ -277,4 +282,26 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
       case ex: KafkaException => throw new KafkaUnavailableException(ex)
     }.get
   }
+
+  /** Loaner pattern that allows running a code block with a newly created producer.
+    * The producer's lifecycle will be automatically handled and closed at the end of the
+    * given code block.
+    *
+    * @param config     an implicit [[EmbeddedKafkaConfig]]
+    * @param keyDeserializer an implicit [[Deserializer]] for the type [[K]]
+    * @param valueDeserializer an implicit [[Deserializer]] for the type [[V]]
+    * @param body         the function to execute that returns [[T]]
+    */
+  def withConsumer[K, V, T](body: KafkaConsumer[K, V] => T)(
+      implicit config: C,
+      keyDeserializer: Deserializer[K],
+      valueDeserializer: Deserializer[V]
+  ): T =
+    loanAndClose(
+      new KafkaConsumer(
+        baseConsumerConfig.asJava,
+        keyDeserializer,
+        valueDeserializer
+      )
+    )(body)
 }
