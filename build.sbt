@@ -25,14 +25,26 @@ lazy val commonLibrarySettings = libraryDependencies ++= Seq(
 )
 
 lazy val publishSettings = Seq(
-  licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
+  licenses += ("MIT", url("https://opensource.org/licenses/MIT")),
   publishArtifact in Test := false,
   developers := List(
     Developer(
       "manub",
       "Emanuele Blanco",
       "emanuele.blanco@gmail.com",
-      url("http://twitter.com/manub")
+      url("https://twitter.com/manub")
+    ),
+    Developer(
+      "francescopellegrini",
+      "Francesco Pellegrini",
+      "francesco.pelle@gmail.com",
+      url("https://github.com/francescopellegrini")
+    ),
+    Developer(
+      "NeQuissimus",
+      "Tim Steinbach",
+      "steinbach.tim@gmail.com",
+      url("https://github.com/NeQuissimus")
     )
   )
 )
