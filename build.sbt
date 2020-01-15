@@ -13,7 +13,16 @@ lazy val commonSettings = Seq(
   logBuffered in Test := false,
   fork in Test := true,
   javaOptions ++= Seq("-Xms512m", "-Xmx2048m"),
-  scalacOptions += "-deprecation",
+  scalacOptions ++= Seq(
+    "-deprecation",
+    "-encoding",
+    "utf8",
+    "-Xlint:missing-interpolator",
+    "-Xlint:private-shadow",
+    "-Xlint:type-parameter-shadow",
+    "-Ywarn-dead-code",
+    "-Ywarn-unused"
+  ),
   scalafmtOnCompile := true
 )
 

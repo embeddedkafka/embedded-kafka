@@ -630,7 +630,8 @@ class EmbeddedKafkaMethodsSpec
         consumer.subscribe(Collections.singletonList(topic))
 
         eventually {
-          val records = consumer.poll(duration2JavaDuration(1.seconds)).asScala.toList
+          val records =
+            consumer.poll(duration2JavaDuration(1.seconds)).asScala.toList
           records should have size 1
           val r :: _ = records
           r.key shouldBe key
