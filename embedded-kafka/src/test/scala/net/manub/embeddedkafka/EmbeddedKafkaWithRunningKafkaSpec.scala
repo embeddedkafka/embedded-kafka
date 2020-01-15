@@ -1,11 +1,14 @@
 package net.manub.embeddedkafka
 
+import net.manub.embeddedkafka.EmbeddedKafka._
 import net.manub.embeddedkafka.EmbeddedKafkaSpecSupport._
 import org.scalatest.exceptions.TestFailedException
+import net.manub.embeddedkafka.EmbeddedKafkaConfig.{
+  defaultKafkaPort,
+  defaultZookeeperPort
+}
 
-class EmbeddedKafkaWithRunningKafkaSpec
-    extends EmbeddedKafkaSpecSupport
-    with EmbeddedKafka {
+class EmbeddedKafkaWithRunningKafkaSpec extends EmbeddedKafkaSpecSupport {
   "the withRunningKafka method" should {
     "start a Kafka broker on port 6001 by default" in {
       withRunningKafka {

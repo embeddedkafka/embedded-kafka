@@ -7,6 +7,10 @@ import org.apache.kafka.common.serialization.{
   StringSerializer
 }
 import net.manub.embeddedkafka.EmbeddedKafka._
+import net.manub.embeddedkafka.EmbeddedKafkaConfig.{
+  defaultKafkaPort,
+  defaultZookeeperPort
+}
 import net.manub.embeddedkafka.EmbeddedKafkaSpecSupport._
 
 import scala.jdk.CollectionConverters._

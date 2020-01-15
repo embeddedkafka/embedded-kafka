@@ -3,16 +3,15 @@ package net.manub.embeddedkafka.streams
 import net.manub.embeddedkafka.Codecs._
 import net.manub.embeddedkafka.ConsumerExtensions._
 import net.manub.embeddedkafka.EmbeddedKafkaConfig
+import net.manub.embeddedkafka.streams.EmbeddedKafkaStreams._
 import org.apache.kafka.common.serialization.{Serde, Serdes}
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.kstream.{Consumed, KStream, Produced}
+import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class ExampleKafkaStreamsSpec
-    extends AnyWordSpec
-    with Matchers
-    with EmbeddedKafkaStreamsAllInOne {
+class ExampleKafkaStreamsSpec extends AnyWordSpec with Matchers {
   import net.manub.embeddedkafka.Codecs.stringKeyValueCrDecoder
 
   implicit val config: EmbeddedKafkaConfig =
@@ -56,7 +55,7 @@ class ExampleKafkaStreamsSpec
       runStreams(Seq(inTopic, outTopic), streamBuilder.build()) {
         publishToKafka(inTopic, "hello", "world")
         publishToKafka(inTopic, "foo", "bar")
-        val consumer = newConsumer[String, String]()
+        val consumer = kafkaConsumer[String, String]
         consumer.consumeLazily[(String, String)](outTopic).take(2) should be(
           Seq("hello" -> "world", "foo" -> "bar")
         )
@@ -71,14 +70,14 @@ class ExampleKafkaStreamsSpec
 
       stream.to(outTopic, Produced.`with`(stringSerde, stringSerde))
 
-      runStreamsWithStringConsumer(
-        Seq(inTopic, outTopic),
-        streamBuilder.build()
-      ) { consumer =>
-        publishToKafka(inTopic, "hello", "world")
-        val h :: _ = consumer.consumeLazily[(String, String)](outTopic).toList
-        h should be("hello" -> "world")
-      }
+      runStreams(Seq(inTopic, outTopic), streamBuilder.build())(
+        withConsumer[String, String, Assertion]({ consumer =>
+          publishToKafka(inTopic, "hello", "world")
+          val h :: _ = consumer.consumeLazily[(String, String)](outTopic).toList
+          h should be("hello" -> "world")
+        })
+      )(config)
+
     }
   }
 }

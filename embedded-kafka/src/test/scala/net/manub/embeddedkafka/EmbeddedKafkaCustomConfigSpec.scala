@@ -1,15 +1,14 @@
 package net.manub.embeddedkafka
 
 import kafka.server.KafkaConfig
+import net.manub.embeddedkafka.EmbeddedKafka._
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 
 import scala.language.postfixOps
 import scala.util.Random
 
-class EmbeddedKafkaCustomConfigSpec
-    extends EmbeddedKafkaSpecSupport
-    with EmbeddedKafka {
+class EmbeddedKafkaCustomConfigSpec extends EmbeddedKafkaSpecSupport {
   val TwoMegabytes   = 2097152
   val ThreeMegabytes = 3145728
 

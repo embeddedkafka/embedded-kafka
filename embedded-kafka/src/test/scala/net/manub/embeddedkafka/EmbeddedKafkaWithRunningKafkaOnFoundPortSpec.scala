@@ -1,13 +1,13 @@
 package net.manub.embeddedkafka
 
+import net.manub.embeddedkafka.EmbeddedKafka._
 import net.manub.embeddedkafka.EmbeddedKafkaSpecSupport.{
   Available,
   NotAvailable
 }
 
 class EmbeddedKafkaWithRunningKafkaOnFoundPortSpec
-    extends EmbeddedKafkaSpecSupport
-    with EmbeddedKafka {
+    extends EmbeddedKafkaSpecSupport {
   "the withRunningKafkaOnFoundPort method" should {
     "start and stop Kafka and Zookeeper successfully on non-zero ports" in {
       val userDefinedConfig =

@@ -3,7 +3,8 @@ package net.manub.embeddedkafka.ops
 import net.manub.embeddedkafka.{
   EmbeddedKafka,
   EmbeddedKafkaConfig,
-  KafkaUnavailableException
+  KafkaUnavailableException,
+  loanAndClose
 }
 import org.apache.kafka.clients.producer.{
   KafkaProducer,
@@ -13,8 +14,8 @@ import org.apache.kafka.clients.producer.{
 import org.apache.kafka.common.serialization.{Serializer, StringSerializer}
 
 import scala.concurrent.duration._
-import scala.util.{Failure, Try}
 import scala.jdk.CollectionConverters._
+import scala.util.{Failure, Try}
 
 /**
   * Trait for Producer-related actions.
@@ -151,6 +152,28 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
     }
   }
 
+  /** Loaner pattern that allows running a code block with a newly created consumer.
+    * The consumer's lifecycle will be automatically handled and closed at the end of the
+    * given code block.
+    *
+    * @param config     an implicit [[EmbeddedKafkaConfig]]
+    * @param keySerializer an implicit [[Serializer]] for the type [[K]]
+    * @param valueSerializer an implicit [[Serializer]] for the type [[V]]
+    * @param body         the function to execute that returns [[T]]
+    */
+  def withProducer[K, V, T](body: KafkaProducer[K, V] => T)(
+      implicit config: C,
+      keySerializer: Serializer[K],
+      valueSerializer: Serializer[V]
+  ): T =
+    loanAndClose(
+      new KafkaProducer(
+        baseProducerConfig.asJava,
+        keySerializer,
+        valueSerializer
+      )
+    )(body)
+
   private def publishToKafka[K, T](
       kafkaProducer: KafkaProducer[K, T],
       record: ProducerRecord[K, T]
@@ -168,6 +191,10 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
     }
   }
 
+  @deprecated(
+    "Direct usage of KafkaProducer is discouraged, see loan method withProducer",
+    "2.4.1"
+  )
   def kafkaProducer[K, T](topic: String, key: K, message: T)(
       implicit config: C,
       keySerializer: Serializer[K],
@@ -179,6 +206,10 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
       serializer
     )
 
+  @deprecated(
+    "Direct usage of KafkaProducer is discouraged, see loan method withProducer",
+    "2.4.1"
+  )
   object aKafkaProducer {
     private[this] var producers = Vector.empty[KafkaProducer[_, _]]
 

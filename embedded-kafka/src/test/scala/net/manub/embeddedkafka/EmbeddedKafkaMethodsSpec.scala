@@ -1,9 +1,11 @@
 package net.manub.embeddedkafka
 
+import java.util.Collections
 import java.util.concurrent.TimeoutException
 
 import kafka.server.KafkaConfig
 import kafka.zk.KafkaZkClient
+import net.manub.embeddedkafka.EmbeddedKafka._
 import org.apache.kafka.clients.producer.{
   KafkaProducer,
   ProducerConfig,
@@ -11,16 +13,12 @@ import org.apache.kafka.clients.producer.{
 }
 import org.apache.kafka.common.config.TopicConfig
 import org.apache.kafka.common.header.internals.RecordHeaders
-import org.apache.kafka.common.serialization.{
-  ByteArraySerializer,
-  Deserializer,
-  StringDeserializer,
-  StringSerializer
-}
+import org.apache.kafka.common.serialization._
 import org.apache.kafka.common.utils.Time
-import org.scalatest.BeforeAndAfterAll
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.JavaFutures
+import org.scalatest.time.{Milliseconds, Seconds, Span}
+import org.scalatest.{Assertion, BeforeAndAfterAll}
 
 import scala.concurrent.duration._
 import scala.jdk.CollectionConverters._
@@ -28,9 +26,10 @@ import scala.jdk.CollectionConverters._
 class EmbeddedKafkaMethodsSpec
     extends EmbeddedKafkaSpecSupport
     with BeforeAndAfterAll
-    with JavaFutures
-    with EmbeddedKafka {
-  val consumerPollTimeout: FiniteDuration = 5.seconds
+    with JavaFutures {
+  private val consumerPollTimeout: FiniteDuration = 5.seconds
+  private implicit val patience: PatienceConfig =
+    PatienceConfig(Span(5, Seconds), Span(100, Milliseconds))
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -612,6 +611,32 @@ class EmbeddedKafkaMethodsSpec
         )
       )
       producer.close()
+    }
+  }
+
+  "the consumer and producer loaner methods" should {
+    "loan consumer and producer" in {
+      implicit val serializer: Serializer[String]     = new StringSerializer()
+      implicit val deserializer: Deserializer[String] = new StringDeserializer()
+      val key                                         = "key"
+      val value                                       = "value"
+      val topic                                       = "loan_test_topic"
+
+      withProducer[String, String, Unit](producer =>
+        producer.send(new ProducerRecord[String, String](topic, key, value))
+      )
+
+      withConsumer[String, String, Assertion](consumer => {
+        consumer.subscribe(Collections.singletonList(topic))
+
+        eventually {
+          val records = consumer.poll(duration2JavaDuration(1.seconds)).asScala.toList
+          records should have size 1
+          val r :: _ = records
+          r.key shouldBe key
+          r.value shouldBe value
+        }
+      })
     }
   }
 }

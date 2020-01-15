@@ -38,9 +38,6 @@ trait EmbeddedKafkaSpecSupport
 }
 
 object EmbeddedKafkaSpecSupport {
-  lazy val defaultKafkaPort     = 6000
-  lazy val defaultZookeeperPort = 6001
-
   sealed trait ServerStatus
   case object Available    extends ServerStatus
   case object NotAvailable extends ServerStatus

@@ -71,3 +71,5 @@ private[embeddedkafka] trait EmbeddedKafkaStreamsSupport[
     props
   }
 }
+
+object EmbeddedKafkaStreams extends EmbeddedKafkaStreams
