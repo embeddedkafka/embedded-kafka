@@ -39,6 +39,12 @@ lazy val publishSettings = Seq(
       "Francesco Pellegrini",
       "francesco.pelle@gmail.com",
       url("https://github.com/francescopellegrini")
+    ),
+    Developer(
+      "NeQuissimus",
+      "Tim Steinbach",
+      "steinbach.tim@gmail.com",
+      url("https://github.com/NeQuissimus")
     )
   )
 )
