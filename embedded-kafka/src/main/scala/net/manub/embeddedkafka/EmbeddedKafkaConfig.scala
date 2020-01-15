@@ -20,11 +20,14 @@ case class EmbeddedKafkaConfigImpl(
 }
 
 object EmbeddedKafkaConfig {
+  lazy val defaultKafkaPort     = 6000
+  lazy val defaultZookeeperPort = 6001
+
   implicit val defaultConfig: EmbeddedKafkaConfig = apply()
 
   def apply(
-      kafkaPort: Int = 6001,
-      zooKeeperPort: Int = 6000,
+      kafkaPort: Int = defaultKafkaPort,
+      zooKeeperPort: Int = defaultZookeeperPort,
       customBrokerProperties: Map[String, String] = Map.empty,
       customProducerProperties: Map[String, String] = Map.empty,
       customConsumerProperties: Map[String, String] = Map.empty

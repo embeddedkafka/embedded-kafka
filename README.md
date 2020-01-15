@@ -192,10 +192,10 @@ A simple test using loan methods can be as simple as this:
   val value                                       = "value"
   val topic                                       = "loan_method_example"
 
-  withProducer[String, String, Unit](producer =>
+  EmbeddedKafka.withProducer[String, String, Unit](producer =>
     producer.send(new ProducerRecord[String, String](topic, key, value)))
 
-  withConsumer[String, String, Assertion](consumer => {
+  EmbeddedKafka.withConsumer[String, String, Assertion](consumer => {
     consumer.subscribe(Collections.singletonList(topic))
 
     eventually {
