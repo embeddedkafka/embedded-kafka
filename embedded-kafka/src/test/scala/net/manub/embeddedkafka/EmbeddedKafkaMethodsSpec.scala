@@ -263,9 +263,7 @@ class EmbeddedKafkaMethodsSpec
 
       whenReady(
         producer.send(new ProducerRecord[String, String](topic, message))
-      ) { _ =>
-        consumeFirstStringMessageFrom(topic) shouldBe message
-      }
+      ) { _ => consumeFirstStringMessageFrom(topic) shouldBe message }
 
       producer.close()
     }
