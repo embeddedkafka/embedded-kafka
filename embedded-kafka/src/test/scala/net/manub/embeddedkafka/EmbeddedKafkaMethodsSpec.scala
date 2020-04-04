@@ -232,13 +232,15 @@ class EmbeddedKafkaMethodsSpec
         Time.SYSTEM
       )
 
-      try {
+      eventually {
         val noTopicExistsAnymore = topics.forall(t => !zkClient.topicExists(t))
         val allTopicsAreMarkedForDeletion =
           topics.forall(t => zkClient.getTopicDeletions.contains(t))
 
         assert(allTopicsAreMarkedForDeletion || noTopicExistsAnymore)
-      } finally zkClient.close()
+      }
+
+      zkClient.close()
     }
   }
 
