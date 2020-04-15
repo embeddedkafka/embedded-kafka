@@ -2,12 +2,12 @@ import sbtrelease.Version
 
 parallelExecution in ThisBuild := false
 
-val kafkaVersion = "2.4.1"
+val kafkaVersion = "2.5.0"
 
 lazy val commonSettings = Seq(
   organization := "io.github.embeddedkafka",
   scalaVersion := "2.13.1",
-  crossScalaVersions := Seq("2.12.10", "2.11.12", "2.13.1"),
+  crossScalaVersions := Seq("2.12.10", "2.13.1"),
   homepage := Some(url("https://github.com/embeddedkafka/embedded-kafka")),
   parallelExecution in Test := false,
   logBuffered in Test := false,
