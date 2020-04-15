@@ -2,6 +2,7 @@ package net.manub.embeddedkafka
 
 import java.nio.file.Files
 
+import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.common.serialization.{
   StringDeserializer,
   StringSerializer
@@ -112,12 +113,13 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
         expectedServerStatus(someConfig.kafkaPort, Available)
         EmbeddedKafka.stop(someBroker)
 
-        val anotherConsumer =
-          kafkaConsumer(someOtherConfig, deserializer, deserializer)
-        anotherConsumer.subscribe(List(topic).asJava)
-
         val moreRecords =
-          anotherConsumer.poll(duration2JavaDuration(consumerPollTimeout))
+          withConsumer[String, String, ConsumerRecords[String, String]] {
+            anotherConsumer =>
+              anotherConsumer.subscribe(List(topic).asJava)
+              anotherConsumer.poll(duration2JavaDuration(consumerPollTimeout))
+          }(someOtherConfig, deserializer, deserializer)
+
         moreRecords.count shouldBe 1
 
         val someOtherRecord = moreRecords.iterator().next

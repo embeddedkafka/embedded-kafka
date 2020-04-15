@@ -55,11 +55,12 @@ class ExampleKafkaStreamsSpec extends AnyWordSpec with Matchers {
       runStreams(Seq(inTopic, outTopic), streamBuilder.build()) {
         publishToKafka(inTopic, "hello", "world")
         publishToKafka(inTopic, "foo", "bar")
-        val consumer = kafkaConsumer[String, String]
-        consumer.consumeLazily[(String, String)](outTopic).take(2) should be(
-          Seq("hello" -> "world", "foo" -> "bar")
-        )
-        consumer.close()
+
+        withConsumer[String, String, Assertion] { consumer =>
+          consumer.consumeLazily[(String, String)](outTopic).take(2) should be(
+            Seq("hello" -> "world", "foo" -> "bar")
+          )
+        }
       }
     }
 
