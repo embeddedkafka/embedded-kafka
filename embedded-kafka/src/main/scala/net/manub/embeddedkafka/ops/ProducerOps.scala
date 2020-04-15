@@ -1,7 +1,6 @@
 package net.manub.embeddedkafka.ops
 
 import net.manub.embeddedkafka.{
-  EmbeddedKafka,
   EmbeddedKafkaConfig,
   KafkaUnavailableException,
   loanAndClose

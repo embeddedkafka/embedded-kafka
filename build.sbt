@@ -27,7 +27,6 @@ lazy val commonSettings = Seq(
 )
 
 lazy val commonLibrarySettings = libraryDependencies ++= Seq(
-  "org.apache.avro" % "avro" % "1.9.2",
   "org.apache.kafka" %% "kafka" % kafkaVersion,
   "org.slf4j" % "slf4j-log4j12" % "1.7.30" % Test,
   "org.scalatest" %% "scalatest" % "3.1.1" % Test
@@ -91,6 +90,7 @@ lazy val embeddedKafka = (project in file("embedded-kafka"))
   .settings(commonSettings: _*)
   .settings(commonLibrarySettings)
   .settings(libraryDependencies ++= Seq(
+    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.10.3" % Test,
     "org.mockito" % "mockito-core" % "3.3.3" % Test,
     "org.scalatestplus" %% "mockito-1-10" % "3.1.0.0" % Test
   ))
