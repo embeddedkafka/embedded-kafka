@@ -20,8 +20,8 @@ case class EmbeddedKafkaConfigImpl(
 }
 
 object EmbeddedKafkaConfig {
-  lazy val defaultKafkaPort     = 6000
-  lazy val defaultZookeeperPort = 6001
+  lazy val defaultKafkaPort     = 6001
+  lazy val defaultZookeeperPort = 6000
 
   implicit val defaultConfig: EmbeddedKafkaConfig = apply()
 
