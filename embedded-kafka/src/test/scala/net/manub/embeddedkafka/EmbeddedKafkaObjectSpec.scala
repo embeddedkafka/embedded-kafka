@@ -2,7 +2,6 @@ package net.manub.embeddedkafka
 
 import java.nio.file.Files
 
-import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.common.serialization.{
   StringDeserializer,
   StringSerializer
@@ -13,11 +12,14 @@ import net.manub.embeddedkafka.EmbeddedKafkaConfig.{
   defaultZookeeperPort
 }
 import net.manub.embeddedkafka.EmbeddedKafkaSpecSupport._
+import org.scalatest.OptionValues
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
 
-class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
+class EmbeddedKafkaObjectSpec
+    extends EmbeddedKafkaSpecSupport
+    with OptionValues {
   val consumerPollTimeout: FiniteDuration = 5.seconds
 
   "the EmbeddedKafka object" when {
@@ -114,16 +116,17 @@ class EmbeddedKafkaObjectSpec extends EmbeddedKafkaSpecSupport {
         EmbeddedKafka.stop(someBroker)
 
         val moreRecords =
-          withConsumer[String, String, ConsumerRecords[String, String]] {
-            anotherConsumer =>
-              anotherConsumer.subscribe(List(topic).asJava)
-              anotherConsumer.poll(duration2JavaDuration(consumerPollTimeout))
+          withConsumer[String, String, Iterable[String]] { anotherConsumer =>
+            anotherConsumer.subscribe(List(topic).asJava)
+            anotherConsumer
+              .poll(duration2JavaDuration(consumerPollTimeout))
+              .records(topic)
+              .asScala
+              .map(Codecs.stringValueCrDecoder)
           }(someOtherConfig, deserializer, deserializer)
 
-        moreRecords.count shouldBe 1
-
-        val someOtherRecord = moreRecords.iterator().next
-        someOtherRecord.value shouldBe someOtherMessage
+        moreRecords.size shouldBe 1
+        moreRecords.headOption.value shouldBe someOtherMessage
 
         EmbeddedKafka.stop(someOtherBroker)
       }
