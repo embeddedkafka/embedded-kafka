@@ -6,6 +6,10 @@ import java.util.concurrent.TimeoutException
 import kafka.server.KafkaConfig
 import kafka.zk.KafkaZkClient
 import net.manub.embeddedkafka.EmbeddedKafka._
+import net.manub.embeddedkafka.serializers.{
+  TestJsonDeserializer,
+  TestJsonSerializer
+}
 import org.apache.kafka.clients.producer.{
   KafkaProducer,
   ProducerConfig,
@@ -338,23 +342,21 @@ class EmbeddedKafkaMethodsSpec
     }
 
     "return a message published to a topic with custom decoder" in {
-      import avro._
-
-      val message = TestAvroClass("name")
+      val message = TestClass("name")
       val topic   = "consume_test_topic"
-      implicit val testAvroClassDecoder: Deserializer[TestAvroClass] =
-        specificAvroDeserializer[TestAvroClass](TestAvroClass.SCHEMA$)
+      implicit val deserializer: Deserializer[TestClass] =
+        new TestJsonDeserializer[TestClass]
 
-      val producer = new KafkaProducer[String, TestAvroClass](
+      val producer = new KafkaProducer[String, TestClass](
         Map[String, Object](
           ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}"
         ).asJava,
         new StringSerializer,
-        specificAvroSerializer[TestAvroClass]
+        new TestJsonSerializer[TestClass]
       )
 
       whenReady(producer.send(new ProducerRecord(topic, message))) { _ =>
-        consumeFirstMessageFrom[TestAvroClass](topic) shouldBe message
+        consumeFirstMessageFrom[TestClass](topic) shouldBe message
       }
 
       producer.close()
@@ -396,49 +398,47 @@ class EmbeddedKafkaMethodsSpec
     }
 
     "return a message published to a topic with custom decoders" in {
-      import avro._
-
-      val key     = TestAvroClass("key")
-      val message = TestAvroClass("message")
+      val key     = TestClass("key")
+      val message = TestClass("message")
       val topic   = "consume_test_topic"
-      implicit val testAvroClassDecoder: Deserializer[TestAvroClass] =
-        specificAvroDeserializer[TestAvroClass](TestAvroClass.SCHEMA$)
+      implicit val deserializer: Deserializer[TestClass] =
+        new TestJsonDeserializer[TestClass]
+      val serializer = new TestJsonSerializer[TestClass]
 
-      val producer = new KafkaProducer[TestAvroClass, TestAvroClass](
+      val producer = new KafkaProducer[TestClass, TestClass](
         Map[String, Object](
           ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}"
         ).asJava,
-        specificAvroSerializer[TestAvroClass],
-        specificAvroSerializer[TestAvroClass]
+        serializer,
+        serializer
       )
 
       whenReady(producer.send(new ProducerRecord(topic, key, message))) { _ =>
-        consumeFirstKeyedMessageFrom[TestAvroClass, TestAvroClass](topic) shouldBe (key, message)
+        consumeFirstKeyedMessageFrom[TestClass, TestClass](topic) shouldBe (key, message)
       }
 
       producer.close()
     }
 
     "return a message published to a topic with 2 different decoders" in {
-      import avro._
+      val key     = "key"
+      val message = TestClass("message")
+      val topic   = "consume_test_topic"
+      implicit val stringDeserializer: StringDeserializer =
+        new StringDeserializer
+      implicit val deserializer: Deserializer[TestClass] =
+        new TestJsonDeserializer[TestClass]
 
-      val key                                        = "key"
-      val message                                    = TestAvroClass("message")
-      val topic                                      = "consume_test_topic"
-      implicit val stringDecoder: StringDeserializer = new StringDeserializer
-      implicit val testAvroClassDecoder: Deserializer[TestAvroClass] =
-        specificAvroDeserializer[TestAvroClass](TestAvroClass.SCHEMA$)
-
-      val producer = new KafkaProducer[String, TestAvroClass](
+      val producer = new KafkaProducer[String, TestClass](
         Map[String, Object](
           ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}"
         ).asJava,
         new StringSerializer,
-        specificAvroSerializer[TestAvroClass]
+        new TestJsonSerializer[TestClass]
       )
 
       whenReady(producer.send(new ProducerRecord(topic, key, message))) { _ =>
-        consumeFirstKeyedMessageFrom[String, TestAvroClass](topic) shouldBe (key, message)
+        consumeFirstKeyedMessageFrom[String, TestClass](topic) shouldBe (key, message)
       }
 
       producer.close()
@@ -602,12 +602,13 @@ class EmbeddedKafkaMethodsSpec
     }
 
     "return a producer that encodes messages for a custom type" in {
-      import avro._
-      val producer = aKafkaProducer[TestAvroClass]
+      implicit val serializer: Serializer[TestClass] =
+        new TestJsonSerializer[TestClass]
+      val producer = aKafkaProducer[TestClass]
       producer.send(
-        new ProducerRecord[String, TestAvroClass](
+        new ProducerRecord[String, TestClass](
           "a_topic",
-          TestAvroClass("name")
+          TestClass("name")
         )
       )
       producer.close()
@@ -641,3 +642,5 @@ class EmbeddedKafkaMethodsSpec
     }
   }
 }
+
+final case class TestClass(name: String)
