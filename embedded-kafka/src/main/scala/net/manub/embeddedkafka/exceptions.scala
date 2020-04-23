@@ -5,5 +5,3 @@ class KafkaUnavailableException(msg: String, cause: Throwable)
   def this(msg: String) = this(msg, null)
   def this(cause: Throwable) = this(null, cause)
 }
-
-class KafkaSpecException(msg: String) extends RuntimeException(msg)

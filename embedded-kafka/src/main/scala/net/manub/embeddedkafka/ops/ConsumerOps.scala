@@ -42,21 +42,6 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
       ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> false.toString
     )
 
-  @deprecated(
-    "Direct usage of KafkaConsumer is discouraged, see loan method withConsumer",
-    "2.4.1"
-  )
-  def kafkaConsumer[K, T](
-      implicit config: C,
-      keyDeserializer: Deserializer[K],
-      deserializer: Deserializer[T]
-  ) =
-    new KafkaConsumer[K, T](
-      baseConsumerConfig.asJava,
-      keyDeserializer,
-      deserializer
-    )
-
   def consumeFirstStringMessageFrom(topic: String, autoCommit: Boolean = false)(
       implicit config: C
   ): String =

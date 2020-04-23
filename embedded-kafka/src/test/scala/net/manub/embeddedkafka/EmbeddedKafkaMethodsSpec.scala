@@ -19,10 +19,9 @@ import org.apache.kafka.common.config.TopicConfig
 import org.apache.kafka.common.header.internals.RecordHeaders
 import org.apache.kafka.common.serialization._
 import org.apache.kafka.common.utils.Time
-import org.scalatest.OptionValues._
 import org.scalatest.concurrent.JavaFutures
 import org.scalatest.time.{Milliseconds, Seconds, Span}
-import org.scalatest.{Assertion, BeforeAndAfterAll}
+import org.scalatest.{Assertion, BeforeAndAfterAll, OptionValues}
 
 import scala.concurrent.duration._
 import scala.jdk.CollectionConverters._
@@ -30,6 +29,7 @@ import scala.jdk.CollectionConverters._
 class EmbeddedKafkaMethodsSpec
     extends EmbeddedKafkaSpecSupport
     with BeforeAndAfterAll
+    with OptionValues
     with JavaFutures {
   private val consumerPollTimeout: FiniteDuration = 5.seconds
   private implicit val patience: PatienceConfig =
@@ -54,18 +54,17 @@ class EmbeddedKafkaMethodsSpec
 
       publishToKafka(topic, message)
 
-      val consumer = kafkaConsumer
-      consumer.subscribe(List(topic).asJava)
+      withConsumer[String, String, Assertion] { consumer =>
+        consumer.subscribe(List(topic).asJava)
 
-      val records =
-        consumer.poll(duration2JavaDuration(consumerPollTimeout))
+        val records =
+          consumer.poll(duration2JavaDuration(consumerPollTimeout))
 
-      records.iterator().hasNext shouldBe true
-      val record = records.iterator().next()
+        records.iterator().hasNext shouldBe true
+        val record = records.iterator().next()
 
-      record.value() shouldBe message
-
-      consumer.close()
+        record.value() shouldBe message
+      }
     }
 
     "publish synchronously a String message with a header to Kafka" in {
@@ -81,21 +80,20 @@ class EmbeddedKafkaMethodsSpec
 
       publishToKafka(producerRecord)
 
-      val consumer = kafkaConsumer
-      consumer.subscribe(List(topic).asJava)
+      withConsumer[String, String, Assertion] { consumer =>
+        consumer.subscribe(List(topic).asJava)
 
-      val records =
-        consumer.poll(duration2JavaDuration(consumerPollTimeout))
+        val records =
+          consumer.poll(duration2JavaDuration(consumerPollTimeout))
 
-      records.iterator().hasNext shouldBe true
-      val record = records.iterator().next()
+        records.iterator().hasNext shouldBe true
+        val record = records.iterator().next()
 
-      record.value() shouldBe message
-      val myHeader          = record.headers().lastHeader("my_header")
-      val actualHeaderValue = new String(myHeader.value().map(_.toChar))
-      actualHeaderValue shouldBe headerValue
-
-      consumer.close()
+        record.value() shouldBe message
+        val myHeader          = record.headers().lastHeader("my_header")
+        val actualHeaderValue = new String(myHeader.value().map(_.toChar))
+        actualHeaderValue shouldBe headerValue
+      }
     }
 
     "publish synchronously a String message with String key to Kafka" in {
@@ -107,19 +105,18 @@ class EmbeddedKafkaMethodsSpec
 
       publishToKafka(topic, key, message)
 
-      val consumer = kafkaConsumer
-      consumer.subscribe(List(topic).asJava)
+      withConsumer[String, String, Assertion] { consumer =>
+        consumer.subscribe(List(topic).asJava)
 
-      val records =
-        consumer.poll(duration2JavaDuration(consumerPollTimeout))
+        val records =
+          consumer.poll(duration2JavaDuration(consumerPollTimeout))
 
-      records.iterator().hasNext shouldBe true
-      val record = records.iterator().next()
+        records.iterator().hasNext shouldBe true
+        val record = records.iterator().next()
 
-      record.key() shouldBe key
-      record.value() shouldBe message
-
-      consumer.close()
+        record.key() shouldBe key
+        record.value() shouldBe message
+      }
     }
 
     "publish synchronously a batch of String messages with String keys to Kafka" in {
@@ -135,25 +132,24 @@ class EmbeddedKafkaMethodsSpec
 
       publishToKafka(topic, messages)
 
-      val consumer = kafkaConsumer
-      consumer.subscribe(List(topic).asJava)
+      withConsumer[String, String, Assertion] { consumer =>
+        consumer.subscribe(List(topic).asJava)
 
-      val records = consumer
-        .poll(duration2JavaDuration(consumerPollTimeout))
-        .iterator()
+        val records = consumer
+          .poll(duration2JavaDuration(consumerPollTimeout))
+          .iterator()
 
-      records.hasNext shouldBe true
+        records.hasNext shouldBe true
 
-      val record1 = records.next()
-      record1.key() shouldBe key1
-      record1.value() shouldBe message1
+        val record1 = records.next()
+        record1.key() shouldBe key1
+        record1.value() shouldBe message1
 
-      records.hasNext shouldBe true
-      val record2 = records.next()
-      record2.key() shouldBe key2
-      record2.value() shouldBe message2
-
-      consumer.close()
+        records.hasNext shouldBe true
+        val record2 = records.next()
+        record2.key() shouldBe key2
+        record2.value() shouldBe message2
+      }
     }
   }
 
@@ -577,40 +573,6 @@ class EmbeddedKafkaMethodsSpec
 
       consumedMessages.mapValues(_.sorted).toMap shouldEqual topicMessagesMap
 
-      producer.close()
-    }
-  }
-
-  "the aKafkaProducerThat method" should {
-    "return a producer that encodes messages for the given encoder" in {
-      val producer = aKafkaProducer thatSerializesValuesWith classOf[
-        ByteArraySerializer
-      ]
-      producer.send(
-        new ProducerRecord[String, Array[Byte]]("a_topic", "a message".getBytes)
-      )
-      producer.close()
-    }
-  }
-
-  "the aKafkaProducer object" should {
-    "return a producer that encodes messages for the given type" in {
-      import Codecs._
-      val producer = aKafkaProducer[String]
-      producer.send(new ProducerRecord[String, String]("a_topic", "a message"))
-      producer.close()
-    }
-
-    "return a producer that encodes messages for a custom type" in {
-      implicit val serializer: Serializer[TestClass] =
-        new TestJsonSerializer[TestClass]
-      val producer = aKafkaProducer[TestClass]
-      producer.send(
-        new ProducerRecord[String, TestClass](
-          "a_topic",
-          TestClass("name")
-        )
-      )
       producer.close()
     }
   }
