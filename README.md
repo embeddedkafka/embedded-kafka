@@ -2,7 +2,7 @@
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.embeddedkafka/embedded-kafka_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.embeddedkafka/embedded-kafka_2.13)
 ![Build](https://github.com/embeddedkafka/embedded-kafka/workflows/Build/badge.svg)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d8264e794fc041448f57c2afb3c0c028?branch=master)](https://www.codacy.com/app/francescopellegrini/embedded-kafka)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e6fea84592574f7dabffd44117ceb9e2)](https://www.codacy.com/gh/embeddedkafka/embedded-kafka)
 [![Scala Steward badge](https://img.shields.io/badge/Scala_Steward-helping-blue.svg?style=flat&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAQCAMAAAARSr4IAAAAVFBMVEUAAACHjojlOy5NWlrKzcYRKjGFjIbp293YycuLa3pYY2LSqql4f3pCUFTgSjNodYRmcXUsPD/NTTbjRS+2jomhgnzNc223cGvZS0HaSD0XLjbaSjElhIr+AAAAAXRSTlMAQObYZgAAAHlJREFUCNdNyosOwyAIhWHAQS1Vt7a77/3fcxxdmv0xwmckutAR1nkm4ggbyEcg/wWmlGLDAA3oL50xi6fk5ffZ3E2E3QfZDCcCN2YtbEWZt+Drc6u6rlqv7Uk0LdKqqr5rk2UCRXOk0vmQKGfc94nOJyQjouF9H/wCc9gECEYfONoAAAAASUVORK5CYII=)](https://scala-steward.org)
 
 A library that provides an in-memory Kafka instance to run your tests against.
