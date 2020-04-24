@@ -1,5 +1,6 @@
 package net.manub.embeddedkafka
 
+import net.manub.embeddedkafka.Codecs.stringValueCrDecoder
 import net.manub.embeddedkafka.ConsumerExtensions._
 import org.apache.kafka.clients.consumer.{
   ConsumerRecord,
@@ -16,7 +17,6 @@ import scala.concurrent.duration._
 class ConsumerExtensionsSpec
     extends EmbeddedKafkaSpecSupport
     with MockitoSugar {
-  import net.manub.embeddedkafka.Codecs.stringValueCrDecoder
 
   "consumeLazily" should {
     "retry to get messages with the configured maximum number of attempts when poll fails" in {

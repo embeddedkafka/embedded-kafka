@@ -9,8 +9,8 @@ import scala.language.postfixOps
 import scala.util.Random
 
 class EmbeddedKafkaCustomConfigSpec extends EmbeddedKafkaSpecSupport {
-  val TwoMegabytes   = 2097152
-  val ThreeMegabytes = 3145728
+  final val TwoMegabytes   = 2097152
+  final val ThreeMegabytes = 3145728
 
   "the custom config" should {
     "allow pass additional producer parameters" in {

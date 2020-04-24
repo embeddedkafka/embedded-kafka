@@ -12,8 +12,6 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class ExampleKafkaStreamsSpec extends AnyWordSpec with Matchers {
-  import net.manub.embeddedkafka.Codecs.stringKeyValueCrDecoder
-
   implicit val config: EmbeddedKafkaConfig =
     EmbeddedKafkaConfig(kafkaPort = 7000, zooKeeperPort = 7001)
 
