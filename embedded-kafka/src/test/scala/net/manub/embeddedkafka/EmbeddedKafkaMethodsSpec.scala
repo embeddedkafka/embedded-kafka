@@ -327,7 +327,8 @@ class EmbeddedKafkaMethodsSpec
         ).asJava
       )
 
-      import Codecs._
+      implicit val deser: Deserializer[Array[Byte]] = Codecs.nullDeserializer
+
       whenReady(
         producer.send(new ProducerRecord[String, String](topic, message))
       ) { _ =>
