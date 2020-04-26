@@ -24,9 +24,7 @@ lazy val commonSettings = Seq(
     "-Ywarn-unused"
   ),
   scalafmtOnCompile := true,
-  coverageEnabled := true,
-  coverageMinimum := 80,
-  coverageFailOnMinimum := false
+  coverageMinimum := 80
 )
 
 lazy val commonLibrarySettings = libraryDependencies ++= Seq(
