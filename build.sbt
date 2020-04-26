@@ -91,7 +91,7 @@ lazy val embeddedKafka = (project in file("embedded-kafka"))
   .settings(commonSettings: _*)
   .settings(commonLibrarySettings)
   .settings(libraryDependencies ++= Seq(
-    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.10.3" % Test,
+    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.11.0" % Test,
     "org.mockito" % "mockito-core" % "3.3.3" % Test,
     "org.scalatestplus" %% "mockito-1-10" % "3.1.0.0" % Test
   ))
