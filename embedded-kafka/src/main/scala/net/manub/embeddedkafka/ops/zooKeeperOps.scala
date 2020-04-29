@@ -10,7 +10,7 @@ import org.apache.zookeeper.server.{ServerCnxnFactory, ZooKeeperServer}
   * Trait for ZooKeeper-related actions.
   */
 trait ZooKeeperOps {
-  def startZooKeeper(
+  private[embeddedkafka] def startZooKeeper(
       zooKeeperPort: Int,
       zkLogsDir: Path
   ): ServerCnxnFactory = {
