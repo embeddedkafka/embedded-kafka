@@ -54,16 +54,6 @@ trait KafkaOps {
     broker
   }
 
-  def startKafka(
-      config: EmbeddedKafkaConfig,
-      kafkaLogDir: Path
-  ): KafkaServer =
-    startKafka(
-      config.kafkaPort,
-      config.zooKeeperPort,
-      config.customBrokerProperties,
-      kafkaLogDir
-    )
 }
 
 /**
@@ -86,7 +76,12 @@ trait RunningKafkaOps {
   def startKafka(kafkaLogsDir: Path, factory: Option[EmbeddedZ] = None)(
       implicit config: EmbeddedKafkaConfig
   ): EmbeddedK = {
-    val kafkaServer = startKafka(config, kafkaLogsDir)
+    val kafkaServer = startKafka(
+      config.kafkaPort,
+      config.zooKeeperPort,
+      config.customBrokerProperties,
+      kafkaLogsDir
+    )
 
     val configWithUsedPorts = EmbeddedKafkaConfig(
       kafkaPort(kafkaServer),
