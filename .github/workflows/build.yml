@@ -13,6 +13,8 @@ jobs:
     - uses: actions/setup-java@v1
       with:
         java-version: 1.8
+    - name: Check formatting
+      run: sbt scalafmtCheckAll
     - name: Compile
       run: sbt compile
     - name: Run cross-version tests
