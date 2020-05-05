@@ -28,12 +28,16 @@ class EmbeddedKafkaWithRunningKafkaOnFoundPortSpec
         actualConfig1 =>
           everyServerIsAvailable(actualConfig1)
           publishStringMessageToKafka("topic", "message1")(actualConfig1)
-          consumeFirstStringMessageFrom("topic")(actualConfig1) shouldBe "message1"
+          consumeFirstStringMessageFrom("topic")(
+            actualConfig1
+          ) shouldBe "message1"
           val actualConfig2 = withRunningKafkaOnFoundPort(userDefinedConfig) {
             actualConfig2 =>
               everyServerIsAvailable(actualConfig2)
               publishStringMessageToKafka("topic", "message2")(actualConfig2)
-              consumeFirstStringMessageFrom("topic")(actualConfig2) shouldBe "message2"
+              consumeFirstStringMessageFrom("topic")(
+                actualConfig2
+              ) shouldBe "message2"
               val allConfigs =
                 Seq(userDefinedConfig, actualConfig1, actualConfig2)
               // Confirm both actual configs are running on separate non-zero ports, but otherwise equal

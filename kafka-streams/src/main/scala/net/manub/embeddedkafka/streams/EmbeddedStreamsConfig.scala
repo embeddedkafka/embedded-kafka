@@ -14,15 +14,16 @@ import org.apache.kafka.streams.StreamsConfig
 private[embeddedkafka] trait EmbeddedStreamsConfig[C <: EmbeddedKafkaConfig] {
   protected[embeddedkafka] def baseStreamConfig(streamName: String)(
       implicit kafkaConfig: C
-  ): Map[String, AnyRef] = Map(
-    StreamsConfig.APPLICATION_ID_CONFIG    -> streamName,
-    StreamsConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${kafkaConfig.kafkaPort}",
-    StreamsConfig.STATE_DIR_CONFIG -> Files
-      .createTempDirectory(streamName)
-      .toString,
-    // force stream consumers to start reading from the beginning so as not to lose messages
-    ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> OffsetResetStrategy.EARLIEST.toString.toLowerCase
-  )
+  ): Map[String, AnyRef] =
+    Map(
+      StreamsConfig.APPLICATION_ID_CONFIG    -> streamName,
+      StreamsConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${kafkaConfig.kafkaPort}",
+      StreamsConfig.STATE_DIR_CONFIG -> Files
+        .createTempDirectory(streamName)
+        .toString,
+      // force stream consumers to start reading from the beginning so as not to lose messages
+      ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> OffsetResetStrategy.EARLIEST.toString.toLowerCase
+    )
 
   /**
     * @param streamName  the name of the stream. It will be used as the Application ID

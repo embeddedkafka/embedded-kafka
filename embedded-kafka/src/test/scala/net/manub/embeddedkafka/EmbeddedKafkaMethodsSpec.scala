@@ -411,7 +411,9 @@ class EmbeddedKafkaMethodsSpec
       )
 
       whenReady(producer.send(new ProducerRecord(topic, key, message))) { _ =>
-        consumeFirstKeyedMessageFrom[TestClass, TestClass](topic) shouldBe (key, message)
+        consumeFirstKeyedMessageFrom[TestClass, TestClass](
+          topic
+        ) shouldBe (key, message)
       }
 
       producer.close()
@@ -435,7 +437,9 @@ class EmbeddedKafkaMethodsSpec
       )
 
       whenReady(producer.send(new ProducerRecord(topic, key, message))) { _ =>
-        consumeFirstKeyedMessageFrom[String, TestClass](topic) shouldBe (key, message)
+        consumeFirstKeyedMessageFrom[String, TestClass](
+          topic
+        ) shouldBe (key, message)
       }
 
       producer.close()
