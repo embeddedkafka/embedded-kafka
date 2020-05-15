@@ -147,7 +147,7 @@ private[embeddedkafka] trait EmbeddedKafkaSupport[C <: EmbeddedKafkaConfig] {
     try {
       body(dir)
     } finally {
-      Directory(dir.toFile).deleteRecursively
+      val _ = Directory(dir.toFile).deleteRecursively
     }
   }
 }

@@ -19,10 +19,10 @@ private[embeddedkafka] trait EmbeddedServer {
   *
   * @param factory    the server.
   * @param logsDirs   the directory logs are to be written to.
-  * @param config     the [[EmbeddedKafkaConfig]] used to start the factory.
   */
-case class EmbeddedZ(factory: ServerCnxnFactory, logsDirs: Path)(
-    implicit config: EmbeddedKafkaConfig
+case class EmbeddedZ(
+    factory: ServerCnxnFactory,
+    logsDirs: Path
 ) extends EmbeddedServer {
 
   /**
@@ -32,7 +32,9 @@ case class EmbeddedZ(factory: ServerCnxnFactory, logsDirs: Path)(
     */
   override def stop(clearLogs: Boolean): Unit = {
     factory.shutdown()
-    if (clearLogs) Directory(logsDirs.toFile).deleteRecursively
+    if (clearLogs) {
+      val _ = Directory(logsDirs.toFile).deleteRecursively
+    }
   }
 }
 
@@ -69,7 +71,9 @@ case class EmbeddedK(
 
     factory.foreach(_.stop(clearLogs))
 
-    if (clearLogs) Directory(logsDirs.toFile).deleteRecursively
+    if (clearLogs) {
+      val _ = Directory(logsDirs.toFile).deleteRecursively
+    }
   }
 }
 

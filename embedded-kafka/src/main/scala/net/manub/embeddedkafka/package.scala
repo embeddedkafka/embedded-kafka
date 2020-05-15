@@ -3,7 +3,9 @@ package net.manub
 import scala.concurrent.duration.FiniteDuration
 
 package object embeddedkafka {
-  implicit class ServerOps(servers: Seq[EmbeddedServer]) {
+  implicit private[embeddedkafka] class ServerOps(
+      servers: Seq[EmbeddedServer]
+  ) {
     def toFilteredSeq[T <: EmbeddedServer](
         filter: EmbeddedServer => Boolean
     ): Seq[T] =

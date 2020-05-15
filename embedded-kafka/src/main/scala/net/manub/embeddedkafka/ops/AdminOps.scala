@@ -39,7 +39,7 @@ trait AdminOps[C <: EmbeddedKafkaConfig] {
       topicConfig: Map[String, String] = Map.empty,
       partitions: Int = 1,
       replicationFactor: Int = 1
-  )(implicit config: C): Unit = {
+  )(implicit config: C): Try[Unit] = {
     val newTopic = new NewTopic(topic, partitions, replicationFactor.toShort)
       .configs(topicConfig.asJava)
 
@@ -48,7 +48,7 @@ trait AdminOps[C <: EmbeddedKafkaConfig] {
         .createTopics(Seq(newTopic).asJava)
         .all
         .get(topicCreationTimeout.length, topicCreationTimeout.unit)
-    }
+    }.map(_ => ())
   }
 
   /**
@@ -66,7 +66,7 @@ trait AdminOps[C <: EmbeddedKafkaConfig] {
         .deleteTopics(topics.asJava, opts)
         .all
         .get(topicDeletionTimeout.length, topicDeletionTimeout.unit)
-    }
+    }.map(_ => ())
   }
 
   /**

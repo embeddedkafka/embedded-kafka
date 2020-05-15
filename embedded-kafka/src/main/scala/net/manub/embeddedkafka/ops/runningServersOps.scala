@@ -8,7 +8,7 @@ object RunningServersOps {
     * Wrapper class providing methods for keeping track
     * of running [[EmbeddedServer]]s.
     */
-  class RunningServers {
+  private[embeddedkafka] class RunningServers {
     private[this] var servers: Seq[EmbeddedServer] = Seq.empty
 
     /**
@@ -62,7 +62,7 @@ object RunningServersOps {
 /**
   * Trait for keeping track of running [[EmbeddedServer]]s.
   */
-trait RunningServersOps {
+private[embeddedkafka] trait RunningServersOps {
   import RunningServersOps._
 
   private[embeddedkafka] val runningServers = new RunningServers

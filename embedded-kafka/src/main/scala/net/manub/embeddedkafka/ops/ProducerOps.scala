@@ -146,7 +146,7 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
 
     producer.close()
 
-    records.collectFirst {
+    val _ = records.collectFirst {
       case Failure(ex) => throw new KafkaUnavailableException(ex)
     }
   }
