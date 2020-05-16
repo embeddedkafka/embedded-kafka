@@ -15,6 +15,8 @@ import org.apache.kafka.clients.consumer.{
 import org.apache.kafka.common.serialization.{Deserializer, StringDeserializer}
 import org.apache.kafka.common.{KafkaException, TopicPartition}
 
+// Used by Scala 2.12
+import scala.collection.compat._
 import scala.collection.immutable.Map
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.TimeoutException
@@ -173,7 +175,7 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
       autoCommit,
       timeout,
       resetTimeoutOnEachMessage
-    )(config, new StringDeserializer(), valueDeserializer)
+    )(config, new StringDeserializer(), valueDeserializer).view
       .mapValues(_.map { case (_, m) => m })
       .toMap
   }
@@ -247,7 +249,7 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
           s"Unable to retrieve $number message(s) from Kafka in $timeout"
         )
       }
-      messagesBuffers.mapValues(_.toList).toMap
+      messagesBuffers.view.mapValues(_.toList).toMap
     }
 
     consumer.close()

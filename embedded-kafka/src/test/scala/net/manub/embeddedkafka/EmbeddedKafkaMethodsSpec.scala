@@ -23,6 +23,8 @@ import org.scalatest.concurrent.JavaFutures
 import org.scalatest.time.{Milliseconds, Seconds, Span}
 import org.scalatest.{Assertion, BeforeAndAfterAll, OptionValues}
 
+// Used by Scala 2.12
+import scala.collection.compat._
 import scala.concurrent.duration._
 import scala.jdk.CollectionConverters._
 
@@ -538,7 +540,9 @@ class EmbeddedKafkaMethodsSpec
           topicMessagesMap.values.map(_.size).sum
         )
 
-      consumedMessages.mapValues(_.sorted).toMap shouldEqual topicMessagesMap
+      consumedMessages.view
+        .mapValues(_.sorted)
+        .toMap shouldEqual topicMessagesMap
 
       producer.close()
     }
@@ -576,7 +580,9 @@ class EmbeddedKafkaMethodsSpec
           topicMessagesMap.values.map(_.size).sum
         )
 
-      consumedMessages.mapValues(_.sorted).toMap shouldEqual topicMessagesMap
+      consumedMessages.view
+        .mapValues(_.sorted)
+        .toMap shouldEqual topicMessagesMap
 
       producer.close()
     }
