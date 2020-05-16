@@ -6,7 +6,7 @@ import org.apache.kafka.common.errors.SerializationException
 import org.apache.kafka.common.serialization.Serializer
 
 /**
-  * Inspired by org.apache.kafka.connect.json.JsonSerializer
+  * Inspired by `org.apache.kafka.connect.json.JsonSerializer`
   */
 class TestJsonSerializer[T] extends Serializer[T] {
   private val mapper = new ObjectMapper().registerModule(DefaultScalaModule)

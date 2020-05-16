@@ -113,7 +113,7 @@ private[embeddedkafka] trait EmbeddedKafkaSupport[C <: EmbeddedKafkaConfig] {
     * then executes the body passed as a parameter.
     * The actual ports of the servers will be detected and inserted into a copied version of
     * the [[EmbeddedKafkaConfig]] that gets passed to body. This is useful if you set any port
-    * to 0, which will listen on an arbitrary available port.
+    * to `0`, which will listen on an arbitrary available port.
     *
     * @param config the user-defined [[EmbeddedKafkaConfig]]
     * @param body   the function to execute, given an [[EmbeddedKafkaConfig]] with the actual

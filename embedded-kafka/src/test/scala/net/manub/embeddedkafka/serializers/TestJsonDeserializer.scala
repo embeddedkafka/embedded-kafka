@@ -8,7 +8,7 @@ import org.apache.kafka.common.serialization.Deserializer
 import scala.reflect.ClassTag
 
 /**
-  * Inspired by org.apache.kafka.connect.json.JsonDeserializer
+  * Inspired by `org.apache.kafka.connect.json.JsonDeserializer`
   */
 class TestJsonDeserializer[T](implicit tag: ClassTag[T], ev: Null <:< T)
     extends Deserializer[T] {

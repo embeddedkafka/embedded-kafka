@@ -7,7 +7,9 @@ import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
 import scala.util.Try
 
-/** Method extensions for Kafka's [[KafkaConsumer]] API allowing easy testing. */
+/**
+  * Method extensions for Kafka's `KafkaConsumer` API allowing easy testing.
+  */
 object ConsumerExtensions {
   case class ConsumerRetryConfig(
       maximumAttempts: Int = 3,
@@ -17,12 +19,12 @@ object ConsumerExtensions {
   implicit class ConsumerOps[K, V](val consumer: KafkaConsumer[K, V]) {
 
     /** Consume messages from one or many topics and return them as a lazily evaluated Scala Stream.
-      * Depending on how many messages are taken from the Scala Stream it will try up to retryConf.maximumAttempts times
+      * Depending on how many messages are taken from the Scala Stream it will try up to `retryConf.maximumAttempts` times
       * to consume batches from the given topic, until it reaches the number of desired messages or
       * return otherwise.
       *
       * @param topics          the topics from which to consume messages
-      * @param decoder         the function to use for decoding all [[ConsumerRecord]]
+      * @param decoder         the function to use for decoding all `ConsumerRecord`s
       * @param retryConf       contains the maximum number of attempts to try and get the next batch and the amount
       *                        of time, in milliseconds, to wait in the buffer for any messages to be available
       * @return the stream of consumed messages that you can do `.take(n: Int).toList`
