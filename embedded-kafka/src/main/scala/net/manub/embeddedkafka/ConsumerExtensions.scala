@@ -30,6 +30,7 @@ object ConsumerExtensions {
       * @return the stream of consumed messages that you can do `.take(n: Int).toList`
       *         to evaluate the requested number of messages.
       */
+    @deprecated("Stream has been deprecated in Scala 2.12", since = "2.5.1")
     def consumeLazily[T](topics: String*)(
         implicit decoder: ConsumerRecord[K, V] => T,
         retryConf: ConsumerRetryConfig = ConsumerRetryConfig()
