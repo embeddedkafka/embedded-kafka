@@ -15,7 +15,8 @@ lazy val commonSettings = Seq(
   javaOptions ++= Seq("-Xms512m", "-Xmx2048m"),
   scalacOptions -= "-Xfatal-warnings",
   scalafmtOnCompile := true,
-  coverageMinimum := 80
+  coverageMinimum := 80,
+  coverageFailOnMinimum := true
 )
 
 lazy val commonLibrarySettings = libraryDependencies ++= Seq(
