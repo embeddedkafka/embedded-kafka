@@ -23,6 +23,8 @@ import org.scalatest.concurrent.JavaFutures
 import org.scalatest.time.{Milliseconds, Seconds, Span}
 import org.scalatest.{Assertion, BeforeAndAfterAll, OptionValues}
 
+// Used by Scala 2.12
+import scala.collection.compat._
 import scala.concurrent.duration._
 import scala.jdk.CollectionConverters._
 
@@ -37,7 +39,7 @@ class EmbeddedKafkaMethodsSpec
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    EmbeddedKafka.start()
+    val _ = EmbeddedKafka.start()
   }
 
   override def afterAll(): Unit = {
@@ -413,7 +415,7 @@ class EmbeddedKafkaMethodsSpec
       whenReady(producer.send(new ProducerRecord(topic, key, message))) { _ =>
         consumeFirstKeyedMessageFrom[TestClass, TestClass](
           topic
-        ) shouldBe (key, message)
+        ) shouldBe key -> message
       }
 
       producer.close()
@@ -439,7 +441,7 @@ class EmbeddedKafkaMethodsSpec
       whenReady(producer.send(new ProducerRecord(topic, key, message))) { _ =>
         consumeFirstKeyedMessageFrom[String, TestClass](
           topic
-        ) shouldBe (key, message)
+        ) shouldBe key -> message
       }
 
       producer.close()
@@ -538,7 +540,9 @@ class EmbeddedKafkaMethodsSpec
           topicMessagesMap.values.map(_.size).sum
         )
 
-      consumedMessages.mapValues(_.sorted).toMap shouldEqual topicMessagesMap
+      consumedMessages.view
+        .mapValues(_.sorted)
+        .toMap shouldEqual topicMessagesMap
 
       producer.close()
     }
@@ -576,7 +580,9 @@ class EmbeddedKafkaMethodsSpec
           topicMessagesMap.values.map(_.size).sum
         )
 
-      consumedMessages.mapValues(_.sorted).toMap shouldEqual topicMessagesMap
+      consumedMessages.view
+        .mapValues(_.sorted)
+        .toMap shouldEqual topicMessagesMap
 
       producer.close()
     }
@@ -590,9 +596,10 @@ class EmbeddedKafkaMethodsSpec
       val value                                       = "value"
       val topic                                       = "loan_test_topic"
 
-      withProducer[String, String, Unit](producer =>
-        producer.send(new ProducerRecord[String, String](topic, key, value))
-      )
+      withProducer[String, String, Unit] { producer =>
+        val _ =
+          producer.send(new ProducerRecord[String, String](topic, key, value))
+      }
 
       withConsumer[String, String, Assertion](consumer => {
         consumer.subscribe(Collections.singletonList(topic))

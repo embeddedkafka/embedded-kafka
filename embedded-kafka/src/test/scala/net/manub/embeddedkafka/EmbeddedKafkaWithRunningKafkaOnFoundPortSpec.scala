@@ -5,6 +5,7 @@ import net.manub.embeddedkafka.EmbeddedKafkaSpecSupport.{
   Available,
   NotAvailable
 }
+import org.scalatest.Assertion
 
 class EmbeddedKafkaWithRunningKafkaOnFoundPortSpec
     extends EmbeddedKafkaSpecSupport {
@@ -72,12 +73,12 @@ class EmbeddedKafkaWithRunningKafkaOnFoundPortSpec
     }
   }
 
-  private def everyServerIsAvailable(config: EmbeddedKafkaConfig): Unit = {
+  private def everyServerIsAvailable(config: EmbeddedKafkaConfig): Assertion = {
     expectedServerStatus(config.kafkaPort, Available)
     expectedServerStatus(config.zooKeeperPort, Available)
   }
 
-  private def noServerIsAvailable(config: EmbeddedKafkaConfig): Unit = {
+  private def noServerIsAvailable(config: EmbeddedKafkaConfig): Assertion = {
     expectedServerStatus(config.kafkaPort, NotAvailable)
     expectedServerStatus(config.zooKeeperPort, NotAvailable)
   }

@@ -31,10 +31,10 @@ class ExampleKafkaStreamsSpec extends AnyWordSpec with Matchers {
         publishToKafka(inTopic, "hello", "world")
         publishToKafka(inTopic, "foo", "bar")
         publishToKafka(inTopic, "baz", "yaz")
-        withConsumer[String, String, Unit] { consumer =>
-          val consumedMessages: Stream[(String, String)] =
-            consumer.consumeLazily(outTopic)
-          consumedMessages.take(2) should be(
+        withConsumer[String, String, Assertion] { consumer =>
+          val consumedMessages =
+            consumer.consumeLazily[(String, String)](outTopic)
+          consumedMessages.take(2).toList should be(
             Seq("hello" -> "world", "foo" -> "bar")
           )
           val h :: _ = consumedMessages.drop(2).toList

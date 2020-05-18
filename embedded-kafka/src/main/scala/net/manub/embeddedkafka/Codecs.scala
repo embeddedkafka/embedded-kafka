@@ -3,7 +3,9 @@ package net.manub.embeddedkafka
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization._
 
-/** useful encoders/serializers, decoders/deserializers and [[ConsumerRecord]] decoders**/
+/**
+  * useful encoders/serializers, decoders/deserializers and `ConsumerRecord` decoders
+  */
 object Codecs {
   implicit val stringSerializer: Serializer[String] = new StringSerializer()
   implicit val nullSerializer: Serializer[Array[Byte]] =

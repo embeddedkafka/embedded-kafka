@@ -6,7 +6,7 @@ import net.manub.embeddedkafka.{EmbeddedKafkaConfig, EmbeddedServer}
   * Combined trait with all Ops traits.
   *
   * @tparam C an [[EmbeddedKafkaConfig]]
-  * @tparam S an [[EmbeddedServer]]
+  * @tparam S an `EmbeddedServer`
   */
 private[embeddedkafka] trait EmbeddedKafkaOps[
     C <: EmbeddedKafkaConfig,
@@ -18,13 +18,11 @@ private[embeddedkafka] trait EmbeddedKafkaOps[
     with KafkaOps
 
 /**
-  * [[EmbeddedKafkaOps]] extension relying on [[RunningServersOps]]
-  * for keeping track of running [[EmbeddedServer]]s.
+  * [[EmbeddedKafkaOps]] extension relying on `RunningServersOps`
+  * for keeping track of running `EmbeddedServer`s.
   *
   * @tparam C an [[EmbeddedKafkaConfig]]
-  * @tparam S an [[EmbeddedServer]]
-  *
-  * @see [[RunningServersOps]]
+  * @tparam S an `EmbeddedServer`
   */
 private[embeddedkafka] trait RunningEmbeddedKafkaOps[
     C <: EmbeddedKafkaConfig,

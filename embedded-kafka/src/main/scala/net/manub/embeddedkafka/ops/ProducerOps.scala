@@ -36,11 +36,10 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
     )
 
   /**
-    * Publishes synchronously a message of type [[String]] to the running Kafka broker.
+    * Publishes synchronously a message of type `String` to the running Kafka broker.
     *
-    * @see [[EmbeddedKafka#publishToKafka]]
     * @param topic   the topic to which publish the message (it will be auto-created)
-    * @param message the [[String]] message to publish
+    * @param message the message to publish
     * @param config  an implicit [[EmbeddedKafkaConfig]]
     * @throws KafkaUnavailableException if unable to connect to Kafka
     */
@@ -53,9 +52,9 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
     * Publishes synchronously a message to the running Kafka broker.
     *
     * @param topic      the topic to which publish the message (it will be auto-created)
-    * @param message    the message of type [[T]] to publish
+    * @param message    the message of type `T` to publish
     * @param config     an implicit [[EmbeddedKafkaConfig]]
-    * @param serializer an implicit [[Serializer]] for the type [[T]]
+    * @param serializer an implicit `Serializer` for the type `T`
     * @throws KafkaUnavailableException if unable to connect to Kafka
     */
   @throws(classOf[KafkaUnavailableException])
@@ -75,9 +74,9 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
   /**
     * Publishes synchronously a message to the running Kafka broker.
     *
-    * @param producerRecord the producerRecord of type [[T]] to publish
+    * @param producerRecord the producerRecord of type `T` to publish
     * @param config         an implicit [[EmbeddedKafkaConfig]]
-    * @param serializer     an implicit [[Serializer]] for the type [[T]]
+    * @param serializer     an implicit `Serializer` for the type `T`
     * @throws KafkaUnavailableException if unable to connect to Kafka
     */
   @throws(classOf[KafkaUnavailableException])
@@ -97,10 +96,10 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
     * Publishes synchronously a message to the running Kafka broker.
     *
     * @param topic      the topic to which publish the message (it will be auto-created)
-    * @param key        the key of type [[K]] to publish
-    * @param message    the message of type [[T]] to publish
+    * @param key        the key of type `K` to publish
+    * @param message    the message of type `T` to publish
     * @param config     an implicit [[EmbeddedKafkaConfig]]
-    * @param serializer an implicit [[Serializer]] for the type [[T]]
+    * @param serializer an implicit `Serializer` for the type `T`
     * @throws KafkaUnavailableException if unable to connect to Kafka
     */
   @throws(classOf[KafkaUnavailableException])
@@ -118,10 +117,10 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
     * Publishes synchronously a batch of message to the running Kafka broker.
     *
     * @param topic      the topic to which publish the message (it will be auto-created)
-    * @param messages    the keys and messages of type [[(K, T)]] to publish
+    * @param messages    the keys and messages of type `(K, T)` to publish
     * @param config     an implicit [[EmbeddedKafkaConfig]]
-    * @param keySerializer an implicit [[Serializer]] for the type [[K]]
-    * @param serializer an implicit [[Serializer]] for the type [[T]]
+    * @param keySerializer an implicit `Serializer` for the type `K`
+    * @param serializer an implicit `Serializer` for the type `T`
     * @throws KafkaUnavailableException if unable to connect to Kafka
     */
   @throws(classOf[KafkaUnavailableException])
@@ -146,7 +145,7 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
 
     producer.close()
 
-    records.collectFirst {
+    val _ = records.collectFirst {
       case Failure(ex) => throw new KafkaUnavailableException(ex)
     }
   }
@@ -156,9 +155,9 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
     * given code block.
     *
     * @param config     an implicit [[EmbeddedKafkaConfig]]
-    * @param keySerializer an implicit [[Serializer]] for the type [[K]]
-    * @param valueSerializer an implicit [[Serializer]] for the type [[V]]
-    * @param body         the function to execute that returns [[T]]
+    * @param keySerializer an implicit `Serializer` for the type `K`
+    * @param valueSerializer an implicit `Serializer` for the type `V`
+    * @param body         the function to execute that returns `T`
     */
   def withProducer[K, V, T](body: KafkaProducer[K, V] => T)(
       implicit config: C,

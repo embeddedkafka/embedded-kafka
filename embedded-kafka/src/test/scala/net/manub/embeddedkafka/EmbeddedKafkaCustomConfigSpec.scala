@@ -45,5 +45,5 @@ class EmbeddedKafkaCustomConfigSpec extends EmbeddedKafkaSpecSupport {
   }
 
   def generateMessageOfLength(length: Int): String =
-    Stream.continually(Random.nextPrintableChar) take length mkString
+    Iterator.continually(Random.nextPrintableChar) take length mkString
 }

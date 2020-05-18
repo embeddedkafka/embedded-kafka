@@ -30,10 +30,8 @@ trait ZooKeeperOps {
 }
 
 /**
-  * [[ZooKeeperOps]] extension relying on [[RunningServersOps]] for
+  * [[ZooKeeperOps]] extension relying on `RunningServersOps` for
   * keeping track of running [[EmbeddedZ]] instances.
-  *
-  * @see [[RunningServersOps]]
   */
 trait RunningZooKeeperOps {
   this: ZooKeeperOps with RunningServersOps =>

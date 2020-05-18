@@ -57,10 +57,8 @@ trait KafkaOps {
 }
 
 /**
-  * [[KafkaOps]] extension relying on [[RunningServersOps]] for
+  * [[KafkaOps]] extension relying on `RunningServersOps` for
   * keeping track of running [[EmbeddedK]] instances.
-  *
-  * @see [[RunningServersOps]]
   */
 trait RunningKafkaOps {
   this: KafkaOps with RunningServersOps =>

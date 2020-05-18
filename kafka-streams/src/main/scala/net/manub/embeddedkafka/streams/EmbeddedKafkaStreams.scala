@@ -14,9 +14,7 @@ import org.apache.kafka.streams.{KafkaStreams, Topology}
 import scala.jdk.CollectionConverters._
 
 /** Helper trait for running Kafka Streams.
-  * Use [[EmbeddedKafkaStreamsSupport.runStreams]] to execute your streams.
-  *
-  * @see [[EmbeddedKafkaStreamsSupport]]
+  * Use `.runStreams` to execute your streams.
   */
 trait EmbeddedKafkaStreams
     extends EmbeddedKafkaStreamsSupport[EmbeddedKafkaConfig]
@@ -40,7 +38,7 @@ private[embeddedkafka] trait EmbeddedKafkaStreamsSupport[
     * @param topology       the streams topology that will be used to instantiate the streams with
     *                       a default configuration (all state directories are different and
     *                       in temp folders)
-    * @param extraConfig    additional KafkaStreams configuration (overwrite existing keys in
+    * @param extraConfig    additional Kafka Streams configuration (overwrite existing keys in
     *                       default config)
     * @param block          the code block that will executed while the streams are active.
     *                       Once the block has been executed the streams will be closed.

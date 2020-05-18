@@ -15,6 +15,8 @@ import org.apache.kafka.clients.consumer.{
 import org.apache.kafka.common.serialization.{Deserializer, StringDeserializer}
 import org.apache.kafka.common.{KafkaException, TopicPartition}
 
+// Used by Scala 2.12
+import scala.collection.compat._
 import scala.collection.immutable.Map
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.TimeoutException
@@ -58,20 +60,17 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
     )
 
   /**
-    * Consumes the first message available in a given topic, deserializing it as type [[V]].
+    * Consumes the first message available in a given topic, deserializing it as type `V`.
     *
-    * Only the message that is returned is committed if autoCommit is false.
-    * If autoCommit is true then all messages that were polled will be committed.
+    * Only the message that is returned is committed if `autoCommit` is `false`.
+    * If `autoCommit` is `true` then all messages that were polled will be committed.
     *
     * @param topic        the topic to consume a message from
-    * @param autoCommit   if false, only the offset for the consumed message will be committed.
-    *                     if true, the offset for the last polled message will be committed instead.
-    *                     Defaulted to false.
+    * @param autoCommit   if `false`, only the offset for the consumed message will be committed.
+    *                     if `true`, the offset for the last polled message will be committed instead.
     * @param config       an implicit [[EmbeddedKafkaConfig]]
-    * @param valueDeserializer an implicit [[org.apache.kafka.common.serialization.Deserializer]] for the type [[V]]
-    * @return the first message consumed from the given topic, with a type [[V]]
-    * @throws TimeoutException          if unable to consume a message within 5 seconds
-    * @throws KafkaUnavailableException if unable to connect to Kafka
+    * @param valueDeserializer an implicit `Deserializer` for the type `V`
+    * @return the first message consumed from the given topic, with a type `V`
     */
   @throws(classOf[TimeoutException])
   @throws(classOf[KafkaUnavailableException])
@@ -85,21 +84,18 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
     ).head
 
   /**
-    * Consumes the first message available in a given topic, deserializing it as type [[(K, V)]].
+    * Consumes the first message available in a given topic, deserializing it as type `(K, V)`.
     *
-    * Only the message that is returned is committed if autoCommit is false.
-    * If autoCommit is true then all messages that were polled will be committed.
+    * Only the message that is returned is committed if `autoCommit` is `false`.
+    * If `autoCommit` is `true` then all messages that were polled will be committed.
     *
     * @param topic        the topic to consume a message from
-    * @param autoCommit   if false, only the offset for the consumed message will be committed.
-    *                     if true, the offset for the last polled message will be committed instead.
-    *                     Defaulted to false.
+    * @param autoCommit   if `false`, only the offset for the consumed message will be committed.
+    *                     if `true`, the offset for the last polled message will be committed instead.
     * @param config       an implicit [[EmbeddedKafkaConfig]]
-    * @param keyDeserializer an implicit [[org.apache.kafka.common.serialization.Deserializer]] for the type [[K]]
-    * @param valueDeserializer an implicit [[org.apache.kafka.common.serialization.Deserializer]] for the type [[V]]
-    * @return the first message consumed from the given topic, with a type [[(K, V)]]
-    * @throws TimeoutException          if unable to consume a message within 5 seconds
-    * @throws KafkaUnavailableException if unable to connect to Kafka
+    * @param keyDeserializer an implicit `Deserializer` for the type `K`
+    * @param valueDeserializer an implicit `Deserializer` for the type `V`
+    * @return the first message consumed from the given topic, with a type `(K, V)`
     */
   @throws(classOf[TimeoutException])
   @throws(classOf[KafkaUnavailableException])
@@ -143,28 +139,25 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
     )(topic)
 
   /**
-    * Consumes the first n messages available in given topics, deserializes them as type [[V]], and returns
-    * the n messages in a Map from topic name to List[V].
+    * Consumes the first n messages available in given topics, deserializes them as type `V`, and returns
+    * the n messages in a `Map` from topic name to `List[V]`.
     *
-    * Only the messages that are returned are committed if autoCommit is false.
-    * If autoCommit is true then all messages that were polled will be committed.
+    * Only the messages that are returned are committed if `autoCommit` is `false`.
+    * If `autoCommit` is `true` then all messages that were polled will be committed.
     *
     * @param topics                    the topics to consume messages from
     * @param number                    the number of messages to consume in a batch
-    * @param autoCommit                if false, only the offset for the consumed messages will be committed.
-    *                                  if true, the offset for the last polled message will be committed instead.
-    *                                  Defaulted to false.
-    * @param timeout                   the interval to wait for messages before throwing TimeoutException
-    * @param resetTimeoutOnEachMessage when true, throw TimeoutException if we have a silent period
-    *                                  (no incoming messages) for the timeout interval; when false,
-    *                                  throw TimeoutException after the timeout interval if we
+    * @param autoCommit                if `false`, only the offset for the consumed messages will be committed.
+    *                                  if `true`, the offset for the last polled message will be committed instead.
+    * @param timeout                   the interval to wait for messages before throwing `TimeoutException`
+    * @param resetTimeoutOnEachMessage when `true`, throw `TimeoutException` if we have a silent period
+    *                                  (no incoming messages) for the timeout interval; when `false`,
+    *                                  throw `TimeoutException` after the timeout interval if we
     *                                  haven't received all of the expected messages
     * @param config                    an implicit [[EmbeddedKafkaConfig]]
-    * @param                           valueDeserializer an implicit [[org.apache.kafka.common.serialization.Deserializer]]
-    *                                  for the type [[V]]
-    * @return the List of messages consumed from the given topics, each with a type [[V]]
-    * @throws TimeoutException          if unable to consume messages within specified timeout
-    * @throws KafkaUnavailableException if unable to connect to Kafka
+    * @param                           valueDeserializer an implicit `Deserializer`
+    *                                  for the type `V`
+    * @return the List of messages consumed from the given topics, each with a type `V`
     */
   def consumeNumberMessagesFromTopics[V](
       topics: Set[String],
@@ -182,34 +175,31 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
       autoCommit,
       timeout,
       resetTimeoutOnEachMessage
-    )(config, new StringDeserializer(), valueDeserializer)
+    )(config, new StringDeserializer(), valueDeserializer).view
       .mapValues(_.map { case (_, m) => m })
       .toMap
   }
 
   /**
-    * Consumes the first n messages available in given topics, deserializes them as type [[(K, V)]], and returns
-    * the n messages in a Map from topic name to List[(K, V)].
+    * Consumes the first n messages available in given topics, deserializes them as type `(K, V)`, and returns
+    * the n messages in a `Map` from topic name to `List[(K, V)]`.
     *
-    * Only the messages that are returned are committed if autoCommit is false.
-    * If autoCommit is true then all messages that were polled will be committed.
+    * Only the messages that are returned are committed if `autoCommit` is `false`.
+    * If `autoCommit` is `true` then all messages that were polled will be committed.
     *
     * @param topics       the topics to consume messages from
     * @param number       the number of messages to consume in a batch
-    * @param autoCommit   if false, only the offset for the consumed messages will be committed.
-    *                     if true, the offset for the last polled message will be committed instead.
-    *                     Defaulted to false.
-    * @param timeout      the interval to wait for messages before throwing TimeoutException
-    * @param resetTimeoutOnEachMessage when true, throw TimeoutException if we have a silent period
-    *                                  (no incoming messages) for the timeout interval; when false,
-    *                                  throw TimeoutException after the timeout interval if we
+    * @param autoCommit   if `false`, only the offset for the consumed messages will be committed.
+    *                     if `true`, the offset for the last polled message will be committed instead.
+    * @param timeout      the interval to wait for messages before throwing `TimeoutException`
+    * @param resetTimeoutOnEachMessage when `true`, throw `TimeoutException` if we have a silent period
+    *                                  (no incoming messages) for the timeout interval; when `false`,
+    *                                  throw `TimeoutException` after the timeout interval if we
     *                                  haven't received all of the expected messages
     * @param config       an implicit [[EmbeddedKafkaConfig]]
-    * @param keyDeserializer an implicit [[org.apache.kafka.common.serialization.Deserializer]] for the type [[K]]
-    * @param valueDeserializer an implicit [[org.apache.kafka.common.serialization.Deserializer]] for the type [[V]]
-    * @return the List of messages consumed from the given topics, each with a type [[(K, V)]]
-    * @throws TimeoutException          if unable to consume messages within specified timeout
-    * @throws KafkaUnavailableException if unable to connect to Kafka
+    * @param keyDeserializer an implicit `Deserializer` for the type `K`
+    * @param valueDeserializer an implicit `Deserializer` for the type `V`
+    * @return the List of messages consumed from the given topics, each with a type `(K, V)`
     */
   def consumeNumberKeyedMessagesFromTopics[K, V](
       topics: Set[String],
@@ -259,7 +249,7 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
           s"Unable to retrieve $number message(s) from Kafka in $timeout"
         )
       }
-      messagesBuffers.mapValues(_.toList).toMap
+      messagesBuffers.view.mapValues(_.toList).toMap
     }
 
     consumer.close()
@@ -273,9 +263,9 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
     * given code block.
     *
     * @param config     an implicit [[EmbeddedKafkaConfig]]
-    * @param keyDeserializer an implicit [[Deserializer]] for the type [[K]]
-    * @param valueDeserializer an implicit [[Deserializer]] for the type [[V]]
-    * @param body         the function to execute that returns [[T]]
+    * @param keyDeserializer an implicit `Deserializer` for the type `K`
+    * @param valueDeserializer an implicit `Deserializer` for the type `V`
+    * @param body         the function to execute that returns `T`
     */
   def withConsumer[K, V, T](body: KafkaConsumer[K, V] => T)(
       implicit config: C,

@@ -14,7 +14,7 @@ import scala.util.Try
 
 /**
   * Trait for admin-level actions on Kafka components.
-  * Relies on [[AdminClient]].
+  * Relies on `org.apache.kafka.clients.admin.AdminClient`.
   *
   * @tparam C an [[EmbeddedKafkaConfig]]
   */
@@ -29,9 +29,9 @@ trait AdminOps[C <: EmbeddedKafkaConfig] {
     * Creates a topic with a custom configuration.
     *
     * @param topic             the topic name
-    * @param topicConfig       per topic configuration [[Map]]
-    * @param partitions        number of partitions [[Int]]
-    * @param replicationFactor replication factor [[Int]]
+    * @param topicConfig       per topic configuration `Map`
+    * @param partitions        number of partitions
+    * @param replicationFactor replication factor
     * @param config            an implicit [[EmbeddedKafkaConfig]]
     */
   def createCustomTopic(
@@ -39,7 +39,7 @@ trait AdminOps[C <: EmbeddedKafkaConfig] {
       topicConfig: Map[String, String] = Map.empty,
       partitions: Int = 1,
       replicationFactor: Int = 1
-  )(implicit config: C): Unit = {
+  )(implicit config: C): Try[Unit] = {
     val newTopic = new NewTopic(topic, partitions, replicationFactor.toShort)
       .configs(topicConfig.asJava)
 
@@ -48,7 +48,7 @@ trait AdminOps[C <: EmbeddedKafkaConfig] {
         .createTopics(Seq(newTopic).asJava)
         .all
         .get(topicCreationTimeout.length, topicCreationTimeout.unit)
-    }
+    }.map(_ => ())
   }
 
   /**
@@ -66,11 +66,11 @@ trait AdminOps[C <: EmbeddedKafkaConfig] {
         .deleteTopics(topics.asJava, opts)
         .all
         .get(topicDeletionTimeout.length, topicDeletionTimeout.unit)
-    }
+    }.map(_ => ())
   }
 
   /**
-    * Creates an [[AdminClient]], then executes the body passed as a parameter.
+    * Creates an `AdminClient`, then executes the body passed as a parameter.
     *
     * @param body   the function to execute
     * @param config an implicit [[EmbeddedKafkaConfig]]
