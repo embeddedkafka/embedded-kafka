@@ -1,33 +1,28 @@
-import sbtrelease.Version
+import Dependencies._
 
-parallelExecution in ThisBuild := false
+ThisBuild / parallelExecution := false
 
-val kafkaVersion = "2.5.0"
-
-lazy val commonSettings = Seq(
-  organization := "io.github.embeddedkafka",
-  scalaVersion := "2.13.1",
-  crossScalaVersions := Seq("2.12.11", "2.13.1"),
-  homepage := Some(url("https://github.com/embeddedkafka/embedded-kafka")),
-  parallelExecution in Test := false,
-  logBuffered in Test := false,
-  fork in Test := true,
+lazy val compileSettings = Seq(
+  Compile / compile := (Compile / compile)
+    .dependsOn(
+      Compile / scalafmtSbt,
+      Compile / scalafmtAll
+    )
+    .value,
+  libraryDependencies ++= Common.testDeps,
   javaOptions ++= Seq("-Xms512m", "-Xmx2048m"),
-  scalacOptions -= "-Xfatal-warnings",
-  scalafmtOnCompile := true,
+  scalacOptions -= "-Xfatal-warnings"
+)
+
+lazy val coverageSettings = Seq(
   coverageMinimum := 80,
   coverageFailOnMinimum := true
 )
 
-lazy val commonLibrarySettings = libraryDependencies ++= Seq(
-  "org.apache.kafka" %% "kafka" % kafkaVersion,
-  "org.slf4j" % "slf4j-log4j12" % "1.7.30" % Test,
-  "org.scalatest" %% "scalatest" % "3.1.2" % Test
-)
-
 lazy val publishSettings = Seq(
+  homepage := Some(url("https://github.com/embeddedkafka/embedded-kafka")),
   licenses += ("MIT", url("https://opensource.org/licenses/MIT")),
-  publishArtifact in Test := false,
+  Test / publishArtifact := false,
   developers := List(
     Developer(
       "manub",
@@ -65,36 +60,38 @@ lazy val releaseSettings = Seq(
     commitNextVersion,
     pushChanges
   ),
-  releaseVersionBump := Version.Bump.Minor,
+  releaseVersionBump := sbtrelease.Version.Bump.Minor,
   releaseCrossBuild := true
 )
+
+lazy val testSettings = Seq(
+  Test / fork := true,
+  Test / logBuffered := false,
+  Test / parallelExecution := false
+)
+
+lazy val commonSettings = Seq(
+  organization := "io.github.embeddedkafka",
+  scalaVersion := Versions.Scala,
+  crossScalaVersions := Seq(Versions.Scala212, Versions.Scala)
+) ++ compileSettings ++ coverageSettings ++ publishSettings ++ releaseSettings ++ testSettings
 
 lazy val root = (project in file("."))
   .settings(name := "embedded-kafka-root")
   .settings(commonSettings: _*)
   .settings(publishArtifact := false)
-  .settings(releaseSettings: _*)
-  .settings(skip in publish := true)
+  .settings(publish / skip := true)
   .aggregate(embeddedKafka, kafkaStreams)
 
 lazy val embeddedKafka = (project in file("embedded-kafka"))
   .settings(name := "embedded-kafka")
-  .settings(publishSettings: _*)
   .settings(commonSettings: _*)
-  .settings(commonLibrarySettings)
-  .settings(libraryDependencies ++= Seq(
-    "org.mockito" % "mockito-core" % "3.3.3" % Test,
-    "org.scalatestplus" %% "mockito-1-10" % "3.1.0.0" % Test
-  ))
-  .settings(releaseSettings: _*)
+  .settings(
+    libraryDependencies ++= EmbeddedKafka.prodDeps ++ EmbeddedKafka.testDeps
+  )
 
 lazy val kafkaStreams = (project in file("kafka-streams"))
   .settings(name := "embedded-kafka-streams")
-  .settings(publishSettings: _*)
   .settings(commonSettings: _*)
-  .settings(commonLibrarySettings)
-  .settings(releaseSettings: _*)
-  .settings(libraryDependencies ++= Seq(
-    "org.apache.kafka" % "kafka-streams" % kafkaVersion
-  ))
+  .settings(libraryDependencies ++= KafkaStreams.prodDeps)
   .dependsOn(embeddedKafka)
