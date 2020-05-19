@@ -190,13 +190,13 @@ A simple test using loan methods can be as simple as this:
   })
 ```
 
-### Easy message consumption
+### ~~Easy message consumption~~
 
-With `ConsumerExtensions` you can turn a consumer to a Scala lazy Stream of `T` and treat it as a collection for easy assertion.
+~~With `ConsumerExtensions` you can turn a consumer to a Scala lazy Stream of `T` and treat it as a collection for easy assertion.~~
 
-* Just import the extensions.
-* Bring an implicit `ConsumerRecord[_, _] => T` transform function into scope (some common functions are provided in `Codecs`).
-* On any `KafkaConsumer` instance you can now do:
+* ~~Just import the extensions.~~
+* ~~Bring an implicit `ConsumerRecord[_, _] => T` transform function into scope (some common functions are provided in `Codecs`).~~
+* ~~On any `KafkaConsumer` instance you can now do:~~
 
 ```scala
 import net.manub.embeddedkafka.ConsumerExtensions._
@@ -208,6 +208,8 @@ consumer.consumeLazily[(String, String)]("from-this-topic").take(3).toList shoul
   "3" -> "three"
 ))
 ```
+
+`Stream` has been deprecated in Scala 2.13
 
 ## embedded-kafka-streams
 
