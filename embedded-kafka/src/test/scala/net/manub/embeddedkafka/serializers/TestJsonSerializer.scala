@@ -5,6 +5,8 @@ import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import org.apache.kafka.common.errors.SerializationException
 import org.apache.kafka.common.serialization.Serializer
 
+import scala.util.control.NonFatal
+
 /**
   * Inspired by `org.apache.kafka.connect.json.JsonSerializer`
   */
@@ -15,7 +17,7 @@ class TestJsonSerializer[T] extends Serializer[T] {
     Option(data).map { _ =>
       try mapper.writeValueAsBytes(data)
       catch {
-        case e: Exception =>
+        case NonFatal(e) =>
           throw new SerializationException("Error serializing JSON message", e)
       }
     }.orNull
