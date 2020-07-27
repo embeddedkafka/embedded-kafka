@@ -6,6 +6,7 @@ import org.apache.kafka.common.errors.SerializationException
 import org.apache.kafka.common.serialization.Deserializer
 
 import scala.reflect.ClassTag
+import scala.util.control.NonFatal
 
 /**
   * Inspired by `org.apache.kafka.connect.json.JsonDeserializer`
@@ -21,7 +22,7 @@ class TestJsonDeserializer[T](implicit tag: ClassTag[T], ev: Null <:< T)
         tag.runtimeClass.asInstanceOf[Class[T]]
       )
       catch {
-        case e: Exception => throw new SerializationException(e)
+        case NonFatal(e) => throw new SerializationException(e)
       }
     }.orNull
 }
