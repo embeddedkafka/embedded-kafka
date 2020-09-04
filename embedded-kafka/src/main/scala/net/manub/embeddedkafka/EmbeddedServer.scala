@@ -33,7 +33,7 @@ case class EmbeddedZ(
   override def stop(clearLogs: Boolean): Unit = {
     factory.shutdown()
     if (clearLogs) {
-      val _ = Directory(logsDirs.toFile).deleteRecursively
+      val _ = Directory(logsDirs.toFile).deleteRecursively()
     }
   }
 }
@@ -72,7 +72,7 @@ case class EmbeddedK(
     factory.foreach(_.stop(clearLogs))
 
     if (clearLogs) {
-      val _ = Directory(logsDirs.toFile).deleteRecursively
+      val _ = Directory(logsDirs.toFile).deleteRecursively()
     }
   }
 }
