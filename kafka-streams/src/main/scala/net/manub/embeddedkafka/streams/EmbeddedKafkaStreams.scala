@@ -13,7 +13,8 @@ import org.apache.kafka.streams.{KafkaStreams, Topology}
 
 import scala.jdk.CollectionConverters._
 
-/** Helper trait for running Kafka Streams.
+/**
+  * Helper trait for running Kafka Streams.
   * Use `.runStreams` to execute your streams.
   */
 trait EmbeddedKafkaStreams
@@ -30,7 +31,8 @@ private[embeddedkafka] trait EmbeddedKafkaStreamsSupport[
 
   protected[embeddedkafka] def streamsConfig: EmbeddedStreamsConfig[C]
 
-  /** Execute Kafka streams and pass a block of code that can
+  /**
+    * Execute Kafka streams and pass a block of code that can
     * operate while the streams are active.
     * The code block can be used for publishing and consuming messages in Kafka.
     *

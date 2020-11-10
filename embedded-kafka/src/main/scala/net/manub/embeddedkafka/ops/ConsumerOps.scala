@@ -258,7 +258,8 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
     }.get
   }
 
-  /** Loaner pattern that allows running a code block with a newly created producer.
+  /**
+    * Loaner pattern that allows running a code block with a newly created producer.
     * The producer's lifecycle will be automatically handled and closed at the end of the
     * given code block.
     *
