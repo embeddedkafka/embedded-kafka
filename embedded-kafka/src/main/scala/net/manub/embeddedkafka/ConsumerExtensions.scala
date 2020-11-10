@@ -18,7 +18,8 @@ object ConsumerExtensions {
 
   implicit class ConsumerOps[K, V](val consumer: KafkaConsumer[K, V]) {
 
-    /** Consume messages from one or many topics and return them as a lazily evaluated Scala Stream.
+    /**
+      * Consume messages from one or many topics and return them as a lazily evaluated Scala Stream.
       * Depending on how many messages are taken from the Scala Stream it will try up to `retryConf.maximumAttempts` times
       * to consume batches from the given topic, until it reaches the number of desired messages or
       * return otherwise.
@@ -42,7 +43,8 @@ object ConsumerExtensions {
       }
     }
 
-    /** Get the next batch of messages from Kafka.
+    /**
+      * Get the next batch of messages from Kafka.
       *
       * @param poll            the amount of time to wait in the buffer for any messages to be available
       * @param topics          the topic to consume
