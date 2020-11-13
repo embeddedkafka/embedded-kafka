@@ -16,6 +16,7 @@ private[embeddedkafka] trait EmbeddedKafkaOps[
     with ProducerOps[C]
     with ZooKeeperOps
     with KafkaOps
+    with ConnectOps
 
 /**
   * [[EmbeddedKafkaOps]] extension relying on `RunningServersOps`
@@ -32,3 +33,4 @@ private[embeddedkafka] trait RunningEmbeddedKafkaOps[
     with ServerStarter[C, S]
     with RunningZooKeeperOps
     with RunningKafkaOps
+    with RunningConnectOps

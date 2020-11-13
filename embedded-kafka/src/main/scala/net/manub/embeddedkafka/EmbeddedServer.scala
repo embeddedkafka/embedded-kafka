@@ -3,6 +3,7 @@ package net.manub.embeddedkafka
 import java.nio.file.Path
 
 import kafka.server.KafkaServer
+import org.apache.kafka.connect.runtime.Connect
 import org.apache.zookeeper.server.ServerCnxnFactory
 
 import scala.reflect.io.Directory
@@ -84,4 +85,22 @@ object EmbeddedK {
       config: EmbeddedKafkaConfig
   ): EmbeddedK =
     EmbeddedK(factory = None, broker, logsDirs, config)
+}
+
+/**
+  * An instance of an embedded Connect server.
+  *
+  * @param connect    the server.
+  */
+case class EmbeddedC(
+    connect: Connect,
+    config: EmbeddedKafkaConfig
+) extends EmbeddedServer {
+
+  /**
+    * Shuts down the Connect server.
+    */
+  override def stop(clearLogs: Boolean): Unit = {
+    connect.stop()
+  }
 }

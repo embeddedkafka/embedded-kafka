@@ -21,7 +21,8 @@ object Dependencies {
 
   object EmbeddedKafka {
     lazy val prodDeps: Seq[ModuleID] = Seq(
-      "org.apache.kafka" %% "kafka" % Versions.Kafka
+      "org.apache.kafka" %% "kafka"           % Versions.Kafka,
+      "org.apache.kafka"  % "connect-runtime" % Versions.Kafka
     )
 
     lazy val testDeps: Seq[ModuleID] = Seq(

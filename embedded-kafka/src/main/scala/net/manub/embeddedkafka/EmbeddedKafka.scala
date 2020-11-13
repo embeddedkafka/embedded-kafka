@@ -4,7 +4,7 @@ import java.nio.file.{Files, Path}
 
 import net.manub.embeddedkafka.ops._
 
-import scala.reflect.io.Directory
+import scala.reflect.io.{Directory, File}
 
 trait EmbeddedKafka
     extends EmbeddedKafkaSupport[EmbeddedKafkaConfig]
@@ -35,9 +35,11 @@ trait EmbeddedKafka
     val configWithUsedPorts = EmbeddedKafkaConfig(
       EmbeddedKafka.kafkaPort(broker),
       actualZkPort,
+      config.connectPort,
       config.customBrokerProperties,
       config.customProducerProperties,
-      config.customConsumerProperties
+      config.customConsumerProperties,
+      config.customConnectProperties
     )
 
     try {
@@ -45,6 +47,36 @@ trait EmbeddedKafka
     } finally {
       broker.shutdown()
       broker.awaitShutdown()
+    }
+  }
+
+  override private[embeddedkafka] def withRunningConnectServer[T](
+      config: EmbeddedKafkaConfig,
+      offsets: Path
+  )(body: EmbeddedKafkaConfig => T): T = {
+    val connectServer =
+      startConnect(
+        config.connectPort,
+        offsets,
+        config.customConnectProperties,
+        config.kafkaPort
+      )
+
+    val configWithUsedPorts = EmbeddedKafkaConfig(
+      config.kafkaPort,
+      config.zooKeeperPort,
+      EmbeddedKafka.connectPort(connectServer),
+      config.customBrokerProperties,
+      config.customProducerProperties,
+      config.customConsumerProperties,
+      config.customConnectProperties
+    )
+
+    try {
+      body(configWithUsedPorts)
+    } finally {
+      connectServer.stop()
+      connectServer.awaitStop()
     }
   }
 }
@@ -62,9 +94,11 @@ object EmbeddedKafka
     val configWithUsedPorts = EmbeddedKafkaConfig(
       config.kafkaPort,
       zookeeperPort(factory),
+      config.connectPort,
       config.customBrokerProperties,
       config.customProducerProperties,
-      config.customConsumerProperties
+      config.customConsumerProperties,
+      config.customConnectProperties
     )
 
     startKafka(kafkaLogsDir, Option(factory))(configWithUsedPorts)
@@ -77,7 +111,7 @@ object EmbeddedKafka
 }
 
 private[embeddedkafka] trait EmbeddedKafkaSupport[C <: EmbeddedKafkaConfig] {
-  this: ZooKeeperOps with KafkaOps =>
+  this: ZooKeeperOps with KafkaOps with ConnectOps =>
 
   /**
     * Starts a Kafka broker (and performs additional logic, if any), then executes the body passed as a parameter.
@@ -91,6 +125,18 @@ private[embeddedkafka] trait EmbeddedKafkaSupport[C <: EmbeddedKafkaConfig] {
       config: C,
       actualZkPort: Int,
       kafkaLogsDir: Path
+  )(body: C => T): T
+
+  /**
+    * Starts a Connect server.
+    *
+    * @param config       the user-defined [[EmbeddedKafkaConfig]]
+    * @param offsets      the path for the file offsets
+    * @param body         the function to execute
+    */
+  private[embeddedkafka] def withRunningConnectServer[T](
+      config: C,
+      offsets: Path
   )(body: C => T): T
 
   /**
@@ -127,6 +173,21 @@ private[embeddedkafka] trait EmbeddedKafkaSupport[C <: EmbeddedKafkaConfig] {
     }
   }
 
+  /**
+    * Starts a ZooKeeper instance, a Kafka broker and Connect server (and performs additional logic, if any),
+    * then executes the body passed as a parameter.
+    *
+    * @param body   the function to execute
+    * @param config an implicit [[EmbeddedKafkaConfig]]
+    */
+  def withRunningKafkaConnect[T](body: => T)(implicit config: C): T = {
+    withRunningKafka {
+      withTempFile("connect", "offsets") { offsetsFile =>
+        withRunningConnectServer(config, offsetsFile)(_ => body)
+      }
+    }
+  }
+
   private[embeddedkafka] def withRunningZooKeeper[T](
       port: Int
   )(body: Int => T): T = {
@@ -148,6 +209,18 @@ private[embeddedkafka] trait EmbeddedKafkaSupport[C <: EmbeddedKafkaConfig] {
       body(dir)
     } finally {
       val _ = Directory(dir.toFile).deleteRecursively()
+    }
+  }
+
+  private[embeddedkafka] def withTempFile[T](
+      prefix: String,
+      suffix: String
+  )(body: Path => T): T = {
+    val file = Files.createTempFile(prefix, suffix)
+    try {
+      body(file)
+    } finally {
+      val _ = File(file.toFile).delete()
     }
   }
 }

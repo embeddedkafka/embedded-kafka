@@ -84,9 +84,11 @@ trait RunningKafkaOps {
     val configWithUsedPorts = EmbeddedKafkaConfig(
       kafkaPort(kafkaServer),
       config.zooKeeperPort,
+      config.connectPort,
       config.customBrokerProperties,
       config.customProducerProperties,
-      config.customConsumerProperties
+      config.customConsumerProperties,
+      config.customConnectProperties
     )
 
     val broker =

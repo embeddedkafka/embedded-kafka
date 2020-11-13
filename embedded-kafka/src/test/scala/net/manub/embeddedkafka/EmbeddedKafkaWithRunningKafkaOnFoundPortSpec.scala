@@ -49,9 +49,11 @@ class EmbeddedKafkaWithRunningKafkaOnFoundPortSpec
                   EmbeddedKafkaConfigImpl(
                     kafkaPort = 0,
                     zooKeeperPort = 0,
+                    connectPort = 0,
                     config.customBrokerProperties,
                     config.customProducerProperties,
-                    config.customConsumerProperties
+                    config.customConsumerProperties,
+                    config.customConnectProperties
                   )
                 )
                 .distinct should have size 1
