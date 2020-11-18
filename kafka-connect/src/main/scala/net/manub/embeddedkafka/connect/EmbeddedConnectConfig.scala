@@ -1,6 +1,6 @@
 package net.manub.embeddedkafka.connect
 
-import java.io.File
+import java.nio.file.Path
 
 import net.manub.embeddedkafka.EmbeddedKafkaConfig
 
@@ -15,7 +15,7 @@ import org.apache.kafka.connect.runtime.WorkerConfig
 private[embeddedkafka] trait EmbeddedConnectConfig[C <: EmbeddedKafkaConfig] {
   protected[embeddedkafka] def baseConnectConfig(
       connectPort: Int,
-      offsets: File
+      offsets: Path
   )(
       implicit kafkaConfig: C
   ): Map[String, String] =
@@ -25,7 +25,7 @@ private[embeddedkafka] trait EmbeddedConnectConfig[C <: EmbeddedKafkaConfig] {
       WorkerConfig.KEY_CONVERTER_CLASS_CONFIG              -> "org.apache.kafka.connect.json.JsonConverter",
       WorkerConfig.VALUE_CONVERTER_CLASS_CONFIG            -> "org.apache.kafka.connect.json.JsonConverter",
       WorkerConfig.OFFSET_COMMIT_INTERVAL_MS_CONFIG        -> "10000",
-      StandaloneConfig.OFFSET_STORAGE_FILE_FILENAME_CONFIG -> offsets.getAbsolutePath
+      StandaloneConfig.OFFSET_STORAGE_FILE_FILENAME_CONFIG -> offsets.toFile.getAbsolutePath
     )
 
   /**
@@ -36,7 +36,7 @@ private[embeddedkafka] trait EmbeddedConnectConfig[C <: EmbeddedKafkaConfig] {
     * @param kafkaConfig the Kafka test configuration.
     * @return a map of config parameters for running the Kafka Connect server.
     */
-  def config(connectPort: Int, offsets: File, extraConfig: Map[String, String])(
+  def config(connectPort: Int, offsets: Path, extraConfig: Map[String, String])(
       implicit kafkaConfig: C
   ): Map[String, String] =
     baseConnectConfig(connectPort, offsets) ++ extraConfig

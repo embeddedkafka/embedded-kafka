@@ -1,6 +1,6 @@
 package net.manub.embeddedkafka.connect
 
-import java.io.File
+import java.nio.file.Path
 
 import org.apache.kafka.common.utils.Time
 import org.apache.kafka.connect.connector.policy.ConnectorClientConfigOverridePolicy
@@ -53,7 +53,7 @@ private[embeddedkafka] trait EmbeddedKafkaConnectSupport[
     */
   def startConnect[T](
       connectPort: Int,
-      offsets: File,
+      offsets: Path,
       extraConfig: Map[String, String] = Map.empty
   )(block: => T)(implicit config: C): T =
     withRunningKafka {

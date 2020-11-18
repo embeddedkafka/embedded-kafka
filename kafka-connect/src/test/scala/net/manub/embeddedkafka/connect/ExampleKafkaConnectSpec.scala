@@ -16,7 +16,7 @@ class ExampleKafkaConnectSpec extends EmbeddedKafkaSpecSupport {
   "A Kafka Connect test" should {
     "start a Connect server on a specified port" in {
       val connectPort = 7002
-      val offsets     = Files.createTempFile("connect", ".offsets").toFile
+      val offsets     = Files.createTempFile("connect", ".offsets")
       startConnect(connectPort, offsets) {
         expectedServerStatus(connectPort, Available)
       }
@@ -26,7 +26,7 @@ class ExampleKafkaConnectSpec extends EmbeddedKafkaSpecSupport {
 
     "start a Connect server with custom properties" in {
       val connectPort = 7002
-      val offsets     = Files.createTempFile("connect", ".offsets").toFile
+      val offsets     = Files.createTempFile("connect", ".offsets")
       val extraConfig = Map(
         WorkerConfig.KEY_CONVERTER_CLASS_CONFIG   -> "org.apache.kafka.connect.storage.StringConverter",
         WorkerConfig.VALUE_CONVERTER_CLASS_CONFIG -> "org.apache.kafka.connect.storage.StringConverter"
@@ -40,7 +40,7 @@ class ExampleKafkaConnectSpec extends EmbeddedKafkaSpecSupport {
 
     "fail to start a Connect server with invalid properties" in {
       val connectPort = 7002
-      val offsets     = Files.createTempFile("connect", ".offsets").toFile
+      val offsets     = Files.createTempFile("connect", ".offsets")
       val extraConfig = Map(
         WorkerConfig.KEY_CONVERTER_CLASS_CONFIG -> "InvalidKeyConverter"
       )
