@@ -25,7 +25,7 @@ private[embeddedkafka] trait EmbeddedConnectConfig[C <: EmbeddedKafkaConfig] {
       WorkerConfig.KEY_CONVERTER_CLASS_CONFIG              -> "org.apache.kafka.connect.json.JsonConverter",
       WorkerConfig.VALUE_CONVERTER_CLASS_CONFIG            -> "org.apache.kafka.connect.json.JsonConverter",
       WorkerConfig.OFFSET_COMMIT_INTERVAL_MS_CONFIG        -> "10000",
-      StandaloneConfig.OFFSET_STORAGE_FILE_FILENAME_CONFIG -> offsets.toFile.getAbsolutePath
+      StandaloneConfig.OFFSET_STORAGE_FILE_FILENAME_CONFIG -> offsets.toAbsolutePath.toString
     )
 
   /**
