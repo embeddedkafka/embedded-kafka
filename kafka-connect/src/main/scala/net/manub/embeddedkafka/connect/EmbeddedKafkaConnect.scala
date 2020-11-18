@@ -20,7 +20,7 @@ import net.manub.embeddedkafka.{
   EmbeddedKafkaSupport
 }
 
-import scala.jdk.CollectionConverters.MapHasAsJava
+import scala.jdk.CollectionConverters._
 
 /**
   * Helper trait for running Kafka Connect server.

@@ -13,7 +13,7 @@ class ExampleKafkaConnectSpec extends EmbeddedKafkaSpecSupport {
   implicit val kafkaConfig: EmbeddedKafkaConfig =
     EmbeddedKafkaConfig(kafkaPort = 7000, zooKeeperPort = 7001)
 
-  "A Kafka connect test" should {
+  "A Kafka Connect test" should {
     "start a Connect server on a specified port" in {
       val connectPort = 7002
       val offsets     = Files.createTempFile("connect", ".offsets").toFile
