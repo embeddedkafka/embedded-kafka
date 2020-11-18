@@ -35,4 +35,10 @@ object Dependencies {
     )
   }
 
+  object KafkaConnect {
+    lazy val prodDeps: Seq[ModuleID] = Seq(
+      "org.apache.kafka" % "connect-runtime" % Versions.Kafka
+    )
+  }
+
 }

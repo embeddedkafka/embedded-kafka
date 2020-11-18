@@ -213,7 +213,7 @@ consumer.consumeLazily[(String, String)]("from-this-topic").take(3).toList shoul
 
 ## embedded-kafka-streams
 
-A library that builds on top of `embedded-kafka` to offer easy testing of [Kafka Streams](https://cwiki.apache.org/confluence/display/KAFKA/Kafka+Streams).
+A library that builds on top of `embedded-kafka` to offer easy testing of [Kafka Streams](https://kafka.apache.org/documentation/streams).
 
 It takes care of instantiating and starting your streams as well as closing them after running your test-case code.
 
@@ -223,3 +223,16 @@ It takes care of instantiating and starting your streams as well as closing them
 * Have a look at the [example test](kafka-streams/src/test/scala/net/manub/embeddedkafka/streams/ExampleKafkaStreamsSpec.scala)
 * For most of the cases have your class extend the `EmbeddedKafkaStreams` trait. This offers both streams management and easy loaning of producers and consumers for asserting resulting messages in output/sink topics.
 * Use `EmbeddedKafkaStreams.runStreams` and `EmbeddedKafka.withConsumer` and `EmbeddedKafka.withProducer`. This allows you to create your own consumers of custom types as seen in the [example test](kafka-streams/src/test/scala/net/manub/embeddedkafka/streams/ExampleKafkaStreamsSpec.scala).
+
+## embedded-kafka-connect
+
+A library that builds on top of `embedded-kafka` to offer easy testing of [Kafka Connect](https://kafka.apache.org/documentation/#connect).
+
+It takes care of instantiating and starting a Kafka Connect server as well as closing it after running your test-case code.
+
+### How to use
+
+* In your `build.sbt` file add the following dependency (replace `x.x.x` with the appropriate version): `"io.github.embeddedkafka" %% "embedded-kafka-connect" % "x.x.x" % Test`
+* Have a look at the [example test](kafka-connect/src/test/scala/net/manub/embeddedkafka/connect/ExampleKafkaConnectSpec.scala)
+* For most of the cases have your class extend the `EmbeddedKafkaConnect` trait.
+* Use `EmbeddedKafkaConnect.startConnect`. This allows you to start a Kafka Connect server to interact with as seen in the [example test](kafka-connect/src/test/scala/net/manub/embeddedkafka/connect/ExampleKafkaConnectSpec.scala).
