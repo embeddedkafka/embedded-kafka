@@ -16,6 +16,12 @@ embedded-kafka is available on Maven Central, compiled for Scala 2.12 and 2.13.
 
 Versions match the version of Kafka they're built against.
 
+## Important known limitation
+
+As Kafka core inlines the Scala library, you cannot use a different Scala **patch** version than [what Kafka used to compile its jars](https://github.com/apache/kafka/blob/trunk/gradle/dependencies.gradle#L30)!
+
+Make sure to check the versions used by the corresponding release on Apache's repository.
+
 ## embedded-kafka
 
 ### How to use
