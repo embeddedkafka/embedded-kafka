@@ -12,15 +12,15 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class ExampleKafkaStreamsSpec extends AnyWordSpec with Matchers {
-  implicit val config: EmbeddedKafkaConfig =
-    EmbeddedKafkaConfig(kafkaPort = 7000, zooKeeperPort = 7001)
-
   val (inTopic, outTopic) = ("in", "out")
 
   val stringSerde: Serde[String] = Serdes.String()
 
   "A Kafka streams test" should {
     "be easy to run with streams and consumer lifecycle management" in {
+      implicit val config: EmbeddedKafkaConfig =
+        EmbeddedKafkaConfig(kafkaPort = 7000, zooKeeperPort = 7001)
+
       val streamBuilder = new StreamsBuilder
       val stream: KStream[String, String] =
         streamBuilder.stream(inTopic, Consumed.`with`(stringSerde, stringSerde))
@@ -43,7 +43,39 @@ class ExampleKafkaStreamsSpec extends AnyWordSpec with Matchers {
       }
     }
 
+    "be easy to run with streams on arbitrary available ports" in {
+      val userDefinedConfig: EmbeddedKafkaConfig =
+        EmbeddedKafkaConfig(kafkaPort = 0, zooKeeperPort = 0)
+
+      val streamBuilder = new StreamsBuilder
+      val stream: KStream[String, String] =
+        streamBuilder.stream(inTopic, Consumed.`with`(stringSerde, stringSerde))
+
+      stream.to(outTopic, Produced.`with`(stringSerde, stringSerde))
+
+      runStreamsOnFoundPort(userDefinedConfig)(
+        Seq(inTopic, outTopic),
+        streamBuilder.build()
+      ) { implicit config =>
+        publishToKafka(inTopic, "hello", "world")
+        publishToKafka(inTopic, "foo", "bar")
+        publishToKafka(inTopic, "baz", "yaz")
+        withConsumer[String, String, Assertion] { consumer =>
+          val consumedMessages =
+            consumer.consumeLazily[(String, String)](outTopic)
+          consumedMessages.take(2).toList should be(
+            Seq("hello" -> "world", "foo" -> "bar")
+          )
+          val h :: _ = consumedMessages.drop(2).toList
+          h should be("baz" -> "yaz")
+        }
+      }
+    }
+
     "allow support creating custom consumers" in {
+      implicit val config: EmbeddedKafkaConfig =
+        EmbeddedKafkaConfig(kafkaPort = 7000, zooKeeperPort = 7001)
+
       val streamBuilder = new StreamsBuilder
       val stream: KStream[String, String] =
         streamBuilder.stream(inTopic, Consumed.`with`(stringSerde, stringSerde))
@@ -63,6 +95,9 @@ class ExampleKafkaStreamsSpec extends AnyWordSpec with Matchers {
     }
 
     "allow for easy string based testing" in {
+      implicit val config: EmbeddedKafkaConfig =
+        EmbeddedKafkaConfig(kafkaPort = 7000, zooKeeperPort = 7001)
+
       val streamBuilder = new StreamsBuilder
       val stream: KStream[String, String] =
         streamBuilder.stream(inTopic, Consumed.`with`(stringSerde, stringSerde))
