@@ -5,7 +5,7 @@ on:
     branches: [master]
 
 jobs:
-  build:
+  coverage_report:
     runs-on: ubuntu-latest
 
     steps:
