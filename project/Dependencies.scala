@@ -8,7 +8,7 @@ object Dependencies {
     val Kafka                = "2.7.0"
     val Slf4j                = "1.7.30"
     val ScalaTest            = "3.2.5"
-    val ScalaTestPlusMockito = "3.2.2.0"
+    val ScalaTestPlusMockito = "3.2.5.0"
   }
 
   object Common {
@@ -25,7 +25,7 @@ object Dependencies {
     )
 
     lazy val testDeps: Seq[ModuleID] = Seq(
-      "org.scalatestplus" %% "mockito-3-3" % Versions.ScalaTestPlusMockito
+      "org.scalatestplus" %% "mockito-3-4" % Versions.ScalaTestPlusMockito
     ).map(_ % Test)
   }
 
