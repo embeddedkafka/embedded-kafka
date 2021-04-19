@@ -17,11 +17,15 @@ embedded-kafka is available on Maven Central, compiled for Scala 2.12 and 2.13.
 
 Versions match the version of Kafka they're built against.
 
-## Important known limitation
+## Important known limitation (prior to v2.8.0)
 
-As Kafka core inlines the Scala library, you cannot use a different Scala **patch** version than [what Kafka used to compile its jars](https://github.com/apache/kafka/blob/trunk/gradle/dependencies.gradle#L30)!
+[Prior to v2.8.0](https://github.com/apache/kafka/pull/10174) Kafka core was inlining the Scala library, so you couldn't use a different Scala **patch** version than [what Kafka used to compile its jars](https://github.com/apache/kafka/blob/trunk/gradle/dependencies.gradle#L30)!
 
-Make sure to check the versions used by the corresponding release on Apache's repository.
+## Breaking change: new package name
+
+From v2.8.0 onwards package name has been updated to reflect the library group id (i.e. `io.github.embeddedkafka`).
+
+Aliases to the old package name have been added, along with a one-time [Scalafix rule](https://github.com/embeddedkafka/embedded-kafka-scalafix) to ensure the smoothest migration.
 
 ## embedded-kafka
 
@@ -206,8 +210,8 @@ A simple test using loan methods can be as simple as this:
 * ~~On any `KafkaConsumer` instance you can now do:~~
 
 ```scala
-import net.manub.embeddedkafka.ConsumerExtensions._
-import net.manub.embeddedkafka.Codecs.stringKeyValueCrDecoder
+import io.github.embeddedkafka.ConsumerExtensions._
+import io.github.embeddedkafka.Codecs.stringKeyValueCrDecoder
 ...
 consumer.consumeLazily[(String, String)]("from-this-topic").take(3).toList should be (Seq(
   "1" -> "one",
@@ -227,9 +231,9 @@ It takes care of instantiating and starting your streams as well as closing them
 ### How to use
 
 * In your `build.sbt` file add the following dependency (replace `x.x.x` with the appropriate version): `"io.github.embeddedkafka" %% "embedded-kafka-streams" % "x.x.x" % Test`
-* Have a look at the [example test](kafka-streams/src/test/scala/net/manub/embeddedkafka/streams/ExampleKafkaStreamsSpec.scala)
+* Have a look at the [example test](kafka-streams/src/test/scala/io/github/embeddedkafka/streams/ExampleKafkaStreamsSpec.scala)
 * For most of the cases have your class extend the `EmbeddedKafkaStreams` trait. This offers both streams management and easy loaning of producers and consumers for asserting resulting messages in output/sink topics.
-* Use `EmbeddedKafkaStreams.runStreams` and `EmbeddedKafka.withConsumer` and `EmbeddedKafka.withProducer`. This allows you to create your own consumers of custom types as seen in the [example test](kafka-streams/src/test/scala/net/manub/embeddedkafka/streams/ExampleKafkaStreamsSpec.scala).
+* Use `EmbeddedKafkaStreams.runStreams` and `EmbeddedKafka.withConsumer` and `EmbeddedKafka.withProducer`. This allows you to create your own consumers of custom types as seen in the [example test](kafka-streams/src/test/scala/io/github/embeddedkafka/streams/ExampleKafkaStreamsSpec.scala).
 
 ## embedded-kafka-connect
 
@@ -240,6 +244,6 @@ It takes care of instantiating and starting a Kafka Connect server as well as cl
 ### How to use
 
 * In your `build.sbt` file add the following dependency (replace `x.x.x` with the appropriate version): `"io.github.embeddedkafka" %% "embedded-kafka-connect" % "x.x.x" % Test`
-* Have a look at the [example test](kafka-connect/src/test/scala/net/manub/embeddedkafka/connect/ExampleKafkaConnectSpec.scala)
+* Have a look at the [example test](kafka-connect/src/test/scala/io/github/embeddedkafka/connect/ExampleKafkaConnectSpec.scala)
 * For most of the cases have your class extend the `EmbeddedKafkaConnect` trait.
-* Use `EmbeddedKafkaConnect.startConnect`. This allows you to start a Kafka Connect server to interact with as seen in the [example test](kafka-connect/src/test/scala/net/manub/embeddedkafka/connect/ExampleKafkaConnectSpec.scala).
+* Use `EmbeddedKafkaConnect.startConnect`. This allows you to start a Kafka Connect server to interact with as seen in the [example test](kafka-connect/src/test/scala/io/github/embeddedkafka/connect/ExampleKafkaConnectSpec.scala).
