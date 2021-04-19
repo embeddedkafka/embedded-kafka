@@ -5,10 +5,10 @@ object Dependencies {
   object Versions {
     val Scala                = "2.13.5"
     val Scala212             = "2.12.12"
-    val Kafka                = "2.7.0"
+    val Kafka                = "2.8.0"
     val Slf4j                = "1.7.30"
-    val ScalaTest            = "3.2.5"
-    val ScalaTestPlusMockito = "3.2.5.0"
+    val ScalaTest            = "3.2.7"
+    val ScalaTestPlusMockito = "3.2.7.0"
   }
 
   object Common {
