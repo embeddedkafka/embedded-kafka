@@ -15,8 +15,9 @@ lazy val compileSettings = Seq(
 )
 
 lazy val coverageSettings = Seq(
-  coverageMinimum := 80,
-  coverageFailOnMinimum := true
+  coverageMinimumStmtTotal := 80,
+  coverageFailOnMinimum := true,
+  coverageExcludedPackages := "net\\.manub\\.embeddedkafka\\..*;net\\.manub\\.embeddedkafka\\.connect\\..*;net\\.manub\\.embeddedkafka\\.streams\\..*"
 )
 
 lazy val publishSettings = Seq(
