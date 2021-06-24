@@ -11,8 +11,6 @@ import io.github.embeddedkafka.{
 }
 import org.apache.kafka.streams.{KafkaStreams, Topology}
 
-import scala.jdk.CollectionConverters._
-
 /**
   * Helper trait for running Kafka Streams.
   * Use `.runStreams` to execute your streams.
@@ -95,7 +93,11 @@ private[embeddedkafka] trait EmbeddedKafkaStreamsSupport[
 
   private def map2Properties(map: Map[String, AnyRef]): Properties = {
     val props = new Properties
-    props.putAll(map.asJava)
+
+    map.foreach {
+      case (k, v) => props.put(k, v)
+    }
+
     props
   }
 }
