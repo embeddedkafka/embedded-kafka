@@ -19,17 +19,23 @@ object ConsumerExtensions {
   implicit class ConsumerOps[K, V](val consumer: KafkaConsumer[K, V]) {
 
     /**
-      * Consume messages from one or many topics and return them as a lazily evaluated Scala Stream.
-      * Depending on how many messages are taken from the Scala Stream it will try up to `retryConf.maximumAttempts` times
-      * to consume batches from the given topic, until it reaches the number of desired messages or
-      * return otherwise.
+      * Consume messages from one or many topics and return them as a lazily
+      * evaluated Scala Stream. Depending on how many messages are taken from
+      * the Scala Stream it will try up to `retryConf.maximumAttempts` times to
+      * consume batches from the given topic, until it reaches the number of
+      * desired messages or return otherwise.
       *
-      * @param topics          the topics from which to consume messages
-      * @param decoder         the function to use for decoding all `ConsumerRecord`s
-      * @param retryConf       contains the maximum number of attempts to try and get the next batch and the amount
-      *                        of time, in milliseconds, to wait in the buffer for any messages to be available
-      * @return the stream of consumed messages that you can do `.take(n: Int).toList`
-      *         to evaluate the requested number of messages.
+      * @param topics
+      *   the topics from which to consume messages
+      * @param decoder
+      *   the function to use for decoding all `ConsumerRecord`s
+      * @param retryConf
+      *   contains the maximum number of attempts to try and get the next batch
+      *   and the amount of time, in milliseconds, to wait in the buffer for any
+      *   messages to be available
+      * @return
+      *   the stream of consumed messages that you can do `.take(n: Int).toList`
+      *   to evaluate the requested number of messages.
       */
     @deprecated("Stream has been deprecated in Scala 2.13", since = "2.5.1")
     def consumeLazily[T](topics: String*)(
@@ -46,10 +52,15 @@ object ConsumerExtensions {
     /**
       * Get the next batch of messages from Kafka.
       *
-      * @param poll            the amount of time to wait in the buffer for any messages to be available
-      * @param topics          the topic to consume
-      * @param decoder         the function to use for decoding all [[ConsumerRecord]]
-      * @return the next batch of messages
+      * @param poll
+      *   the amount of time to wait in the buffer for any messages to be
+      *   available
+      * @param topics
+      *   the topic to consume
+      * @param decoder
+      *   the function to use for decoding all [[ConsumerRecord]]
+      * @return
+      *   the next batch of messages
       */
     private def getNextBatch[T](poll: FiniteDuration, topics: Seq[String])(
         implicit decoder: ConsumerRecord[K, V] => T
