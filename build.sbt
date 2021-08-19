@@ -16,7 +16,7 @@ lazy val compileSettings = Seq(
 
 lazy val coverageSettings = Seq(
   coverageMinimumStmtTotal := 80,
-  coverageFailOnMinimum := true,
+  coverageFailOnMinimum    := true,
   coverageExcludedPackages := "net\\.manub\\.embeddedkafka\\..*;net\\.manub\\.embeddedkafka\\.connect\\..*;net\\.manub\\.embeddedkafka\\.streams\\..*"
 )
 
@@ -62,18 +62,18 @@ lazy val releaseSettings = Seq(
     pushChanges
   ),
   releaseVersionBump := sbtrelease.Version.Bump.Minor,
-  releaseCrossBuild := true
+  releaseCrossBuild  := true
 )
 
 lazy val testSettings = Seq(
-  Test / fork := true,
-  Test / logBuffered := false,
+  Test / fork              := true,
+  Test / logBuffered       := false,
   Test / parallelExecution := false
 )
 
 lazy val commonSettings = Seq(
-  organization := "io.github.embeddedkafka",
-  scalaVersion := Versions.Scala,
+  organization       := "io.github.embeddedkafka",
+  scalaVersion       := Versions.Scala,
   crossScalaVersions := Seq(Versions.Scala212, Versions.Scala)
 ) ++ compileSettings ++ coverageSettings ++ publishSettings ++ releaseSettings ++ testSettings
 

@@ -33,13 +33,13 @@ trait KafkaOps {
     val listener  = s"${SecurityProtocol.PLAINTEXT}://localhost:$kafkaPort"
 
     val brokerProperties = Map[String, Object](
-      KafkaConfig.ZkConnectProp                          -> zkAddress,
-      KafkaConfig.ZkConnectionTimeoutMsProp              -> zkConnectionTimeout.toMillis.toString,
-      KafkaConfig.BrokerIdProp                           -> brokerId.toString,
-      KafkaConfig.ListenersProp                          -> listener,
-      KafkaConfig.AdvertisedListenersProp                -> listener,
-      KafkaConfig.AutoCreateTopicsEnableProp             -> autoCreateTopics.toString,
-      KafkaConfig.LogDirProp                             -> kafkaLogDir.toAbsolutePath.toString,
+      KafkaConfig.ZkConnectProp -> zkAddress,
+      KafkaConfig.ZkConnectionTimeoutMsProp -> zkConnectionTimeout.toMillis.toString,
+      KafkaConfig.BrokerIdProp               -> brokerId.toString,
+      KafkaConfig.ListenersProp              -> listener,
+      KafkaConfig.AdvertisedListenersProp    -> listener,
+      KafkaConfig.AutoCreateTopicsEnableProp -> autoCreateTopics.toString,
+      KafkaConfig.LogDirProp -> kafkaLogDir.toAbsolutePath.toString,
       KafkaConfig.LogFlushIntervalMessagesProp           -> 1.toString,
       KafkaConfig.OffsetsTopicReplicationFactorProp      -> 1.toString,
       KafkaConfig.OffsetsTopicPartitionsProp             -> 1.toString,
@@ -57,8 +57,8 @@ trait KafkaOps {
 }
 
 /**
-  * [[KafkaOps]] extension relying on `RunningServersOps` for
-  * keeping track of running [[EmbeddedK]] instances.
+  * [[KafkaOps]] extension relying on `RunningServersOps` for keeping track of
+  * running [[EmbeddedK]] instances.
   */
 trait RunningKafkaOps {
   this: KafkaOps with RunningServersOps =>
@@ -66,10 +66,14 @@ trait RunningKafkaOps {
   /**
     * Starts a Kafka broker in memory, storing logs in a specific location.
     *
-    * @param kafkaLogsDir the path for the Kafka logs
-    * @param factory      an [[EmbeddedZ]] server
-    * @param config       an implicit [[EmbeddedKafkaConfig]]
-    * @return             an [[EmbeddedK]] server
+    * @param kafkaLogsDir
+    *   the path for the Kafka logs
+    * @param factory
+    *   an [[EmbeddedZ]] server
+    * @param config
+    *   an implicit [[EmbeddedKafkaConfig]]
+    * @return
+    *   an [[EmbeddedK]] server
     */
   def startKafka(kafkaLogsDir: Path, factory: Option[EmbeddedZ] = None)(
       implicit config: EmbeddedKafkaConfig

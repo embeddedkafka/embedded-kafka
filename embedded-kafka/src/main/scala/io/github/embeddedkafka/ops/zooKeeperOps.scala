@@ -30,18 +30,22 @@ trait ZooKeeperOps {
 }
 
 /**
-  * [[ZooKeeperOps]] extension relying on `RunningServersOps` for
-  * keeping track of running [[EmbeddedZ]] instances.
+  * [[ZooKeeperOps]] extension relying on `RunningServersOps` for keeping track
+  * of running [[EmbeddedZ]] instances.
   */
 trait RunningZooKeeperOps {
   this: ZooKeeperOps with RunningServersOps =>
 
   /**
-    * Starts a Zookeeper instance in memory, storing logs in a specific location.
+    * Starts a Zookeeper instance in memory, storing logs in a specific
+    * location.
     *
-    * @param zkLogsDir the path for the Zookeeper logs
-    * @param config    an implicit [[EmbeddedKafkaConfig]]
-    * @return          an [[EmbeddedZ]] server
+    * @param zkLogsDir
+    *   the path for the Zookeeper logs
+    * @param config
+    *   an implicit [[EmbeddedKafkaConfig]]
+    * @return
+    *   an [[EmbeddedZ]] server
     */
   def startZooKeeper(
       zkLogsDir: Path

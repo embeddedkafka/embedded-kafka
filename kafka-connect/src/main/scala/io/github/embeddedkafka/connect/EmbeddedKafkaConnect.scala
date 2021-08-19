@@ -23,8 +23,8 @@ import io.github.embeddedkafka.{
 import scala.jdk.CollectionConverters._
 
 /**
-  * Helper trait for running Kafka Connect server.
-  * Use `.startConnect` to start the server.
+  * Helper trait for running Kafka Connect server. Use `.startConnect` to start
+  * the server.
   */
 trait EmbeddedKafkaConnect
     extends EmbeddedKafkaConnectSupport[EmbeddedKafkaConfig]
@@ -41,15 +41,19 @@ private[embeddedkafka] trait EmbeddedKafkaConnectSupport[
   protected[embeddedkafka] def connectConfig: EmbeddedConnectConfig[C]
 
   /**
-    * Start a Kafka Connect server and pass a block of code that can
-    * operate while the server is active.
+    * Start a Kafka Connect server and pass a block of code that can operate
+    * while the server is active.
     *
-    * @param connectPort the Kafka Connect port for the REST API to listen on.
-    * @param offsets     the file to store offset data in.
-    * @param extraConfig additional Kafka Connect configuration (overwrite existing keys in
-    *                    default config)
-    * @param block       the code block that will executed while the Kafka Connect server
-    *                    is active. Once the block has been executed the server will be stopped.
+    * @param connectPort
+    *   the Kafka Connect port for the REST API to listen on.
+    * @param offsets
+    *   the file to store offset data in.
+    * @param extraConfig
+    *   additional Kafka Connect configuration (overwrite existing keys in
+    *   default config)
+    * @param block
+    *   the code block that will executed while the Kafka Connect server is
+    *   active. Once the block has been executed the server will be stopped.
     */
   def startConnect[T](
       connectPort: Int,

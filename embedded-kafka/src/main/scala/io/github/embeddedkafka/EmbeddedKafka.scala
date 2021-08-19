@@ -80,12 +80,17 @@ private[embeddedkafka] trait EmbeddedKafkaSupport[C <: EmbeddedKafkaConfig] {
   this: ZooKeeperOps with KafkaOps =>
 
   /**
-    * Starts a Kafka broker (and performs additional logic, if any), then executes the body passed as a parameter.
+    * Starts a Kafka broker (and performs additional logic, if any), then
+    * executes the body passed as a parameter.
     *
-    * @param config       the user-defined [[EmbeddedKafkaConfig]]
-    * @param actualZkPort the actual ZooKeeper port
-    * @param kafkaLogsDir the path for the Kafka logs
-    * @param body         the function to execute
+    * @param config
+    *   the user-defined [[EmbeddedKafkaConfig]]
+    * @param actualZkPort
+    *   the actual ZooKeeper port
+    * @param kafkaLogsDir
+    *   the path for the Kafka logs
+    * @param body
+    *   the function to execute
     */
   private[embeddedkafka] def withRunningServers[T](
       config: C,
@@ -94,11 +99,13 @@ private[embeddedkafka] trait EmbeddedKafkaSupport[C <: EmbeddedKafkaConfig] {
   )(body: C => T): T
 
   /**
-    * Starts a ZooKeeper instance and a Kafka broker (and performs additional logic, if any),
-    * then executes the body passed as a parameter.
+    * Starts a ZooKeeper instance and a Kafka broker (and performs additional
+    * logic, if any), then executes the body passed as a parameter.
     *
-    * @param body   the function to execute
-    * @param config an implicit [[EmbeddedKafkaConfig]]
+    * @param body
+    *   the function to execute
+    * @param config
+    *   an implicit [[EmbeddedKafkaConfig]]
     */
   def withRunningKafka[T](body: => T)(implicit config: C): T = {
     withRunningZooKeeper(config.zooKeeperPort) { actualZkPort =>
@@ -109,15 +116,17 @@ private[embeddedkafka] trait EmbeddedKafkaSupport[C <: EmbeddedKafkaConfig] {
   }
 
   /**
-    * Starts a ZooKeeper instance and a Kafka broker (and performs additional logic, if any),
-    * then executes the body passed as a parameter.
-    * The actual ports of the servers will be detected and inserted into a copied version of
-    * the [[EmbeddedKafkaConfig]] that gets passed to body. This is useful if you set any port
-    * to `0`, which will listen on an arbitrary available port.
+    * Starts a ZooKeeper instance and a Kafka broker (and performs additional
+    * logic, if any), then executes the body passed as a parameter. The actual
+    * ports of the servers will be detected and inserted into a copied version
+    * of the [[EmbeddedKafkaConfig]] that gets passed to body. This is useful if
+    * you set any port to `0`, which will listen on an arbitrary available port.
     *
-    * @param config the user-defined [[EmbeddedKafkaConfig]]
-    * @param body   the function to execute, given an [[EmbeddedKafkaConfig]] with the actual
-    *               ports the servers are running on
+    * @param config
+    *   the user-defined [[EmbeddedKafkaConfig]]
+    * @param body
+    *   the function to execute, given an [[EmbeddedKafkaConfig]] with the
+    *   actual ports the servers are running on
     */
   def withRunningKafkaOnFoundPort[T](config: C)(body: C => T): T = {
     withRunningZooKeeper(config.zooKeeperPort) { actualZkPort =>

@@ -13,10 +13,11 @@ import scala.concurrent.duration._
 import scala.util.Try
 
 /**
-  * Trait for admin-level actions on Kafka components.
-  * Relies on `org.apache.kafka.clients.admin.AdminClient`.
+  * Trait for admin-level actions on Kafka components. Relies on
+  * `org.apache.kafka.clients.admin.AdminClient`.
   *
-  * @tparam C an [[EmbeddedKafkaConfig]]
+  * @tparam C
+  *   an [[EmbeddedKafkaConfig]]
   */
 trait AdminOps[C <: EmbeddedKafkaConfig] {
   val zkSessionTimeoutMs                                = 10000
@@ -28,11 +29,16 @@ trait AdminOps[C <: EmbeddedKafkaConfig] {
   /**
     * Creates a topic with a custom configuration.
     *
-    * @param topic             the topic name
-    * @param topicConfig       per topic configuration `Map`
-    * @param partitions        number of partitions
-    * @param replicationFactor replication factor
-    * @param config            an implicit [[EmbeddedKafkaConfig]]
+    * @param topic
+    *   the topic name
+    * @param topicConfig
+    *   per topic configuration `Map`
+    * @param partitions
+    *   number of partitions
+    * @param replicationFactor
+    *   replication factor
+    * @param config
+    *   an implicit [[EmbeddedKafkaConfig]]
     */
   def createCustomTopic(
       topic: String,
@@ -54,8 +60,10 @@ trait AdminOps[C <: EmbeddedKafkaConfig] {
   /**
     * Either deletes or marks for deletion a list of topics.
     *
-    * @param topics  the topic names
-    * @param config an implicit [[EmbeddedKafkaConfig]]
+    * @param topics
+    *   the topic names
+    * @param config
+    *   an implicit [[EmbeddedKafkaConfig]]
     */
   def deleteTopics(topics: List[String])(implicit config: C): Try[Unit] = {
     val opts = new DeleteTopicsOptions()
@@ -72,17 +80,19 @@ trait AdminOps[C <: EmbeddedKafkaConfig] {
   /**
     * Creates an `AdminClient`, then executes the body passed as a parameter.
     *
-    * @param body   the function to execute
-    * @param config an implicit [[EmbeddedKafkaConfig]]
+    * @param body
+    *   the function to execute
+    * @param config
+    *   an implicit [[EmbeddedKafkaConfig]]
     */
   protected def withAdminClient[T](
       body: AdminClient => T
   )(implicit config: C): Try[T] = {
     val adminClient = AdminClient.create(
       Map[String, Object](
-        AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG       -> s"localhost:${config.kafkaPort}",
-        AdminClientConfig.CLIENT_ID_CONFIG               -> "embedded-kafka-admin-client",
-        AdminClientConfig.REQUEST_TIMEOUT_MS_CONFIG      -> zkSessionTimeoutMs.toString,
+        AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
+        AdminClientConfig.CLIENT_ID_CONFIG -> "embedded-kafka-admin-client",
+        AdminClientConfig.REQUEST_TIMEOUT_MS_CONFIG -> zkSessionTimeoutMs.toString,
         AdminClientConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG -> zkConnectionTimeoutMs.toString
       ).asJava
     )

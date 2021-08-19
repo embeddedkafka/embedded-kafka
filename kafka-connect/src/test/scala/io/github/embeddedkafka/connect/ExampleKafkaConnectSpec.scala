@@ -28,7 +28,7 @@ class ExampleKafkaConnectSpec extends EmbeddedKafkaSpecSupport {
       val connectPort = 7002
       val offsets     = Files.createTempFile("connect", ".offsets")
       val extraConfig = Map(
-        WorkerConfig.KEY_CONVERTER_CLASS_CONFIG   -> "org.apache.kafka.connect.storage.StringConverter",
+        WorkerConfig.KEY_CONVERTER_CLASS_CONFIG -> "org.apache.kafka.connect.storage.StringConverter",
         WorkerConfig.VALUE_CONVERTER_CLASS_CONFIG -> "org.apache.kafka.connect.storage.StringConverter"
       )
       startConnect(connectPort, offsets, extraConfig) {

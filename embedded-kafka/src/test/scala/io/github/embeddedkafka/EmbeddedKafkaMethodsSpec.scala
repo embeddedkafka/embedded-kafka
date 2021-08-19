@@ -73,8 +73,8 @@ class EmbeddedKafkaMethodsSpec
       implicit val serializer: StringSerializer     = new StringSerializer()
       implicit val deserializer: StringDeserializer = new StringDeserializer()
       val message                                   = "hello world!"
-      val topic                                     = "publish_test_topic_with_header"
-      val headerValue                               = "my_header_value"
+      val topic       = "publish_test_topic_with_header"
+      val headerValue = "my_header_value"
       val headers = new RecordHeaders()
         .add("my_header", headerValue.toCharArray.map(_.toByte))
       val producerRecord =
@@ -103,7 +103,7 @@ class EmbeddedKafkaMethodsSpec
       implicit val deserializer: StringDeserializer = new StringDeserializer()
       val key                                       = "key"
       val message                                   = "hello world!"
-      val topic                                     = "publish_test_topic_string_key"
+      val topic = "publish_test_topic_string_key"
 
       publishToKafka(topic, key, message)
 
@@ -128,7 +128,7 @@ class EmbeddedKafkaMethodsSpec
       val message1                                  = "hello world!"
       val key2                                      = "key2"
       val message2                                  = "goodbye world!"
-      val topic                                     = "publish_test_topic_batch_string_key"
+      val topic = "publish_test_topic_batch_string_key"
 
       val messages = List((key1, message1), (key2, message2))
 
@@ -187,7 +187,7 @@ class EmbeddedKafkaMethodsSpec
 
     "create a topic with custom number of partitions" in {
       implicit val config: EmbeddedKafkaConfig = EmbeddedKafkaConfig()
-      val topic                                = "test_custom_topic_with_custom_partitions"
+      val topic = "test_custom_topic_with_custom_partitions"
 
       createCustomTopic(
         topic,

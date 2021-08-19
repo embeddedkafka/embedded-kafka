@@ -19,7 +19,8 @@ import scala.util.{Failure, Try}
 /**
   * Trait for Producer-related actions.
   *
-  * @tparam C an [[EmbeddedKafkaConfig]]
+  * @tparam C
+  *   an [[EmbeddedKafkaConfig]]
   */
 trait ProducerOps[C <: EmbeddedKafkaConfig] {
   protected val producerPublishTimeout: FiniteDuration = 10.seconds
@@ -31,17 +32,22 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
   private[embeddedkafka] def defaultProducerConf(implicit config: C) =
     Map[String, Object](
       ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${config.kafkaPort}",
-      ProducerConfig.MAX_BLOCK_MS_CONFIG      -> 10000.toString,
-      ProducerConfig.RETRY_BACKOFF_MS_CONFIG  -> 1000.toString
+      ProducerConfig.MAX_BLOCK_MS_CONFIG     -> 10000.toString,
+      ProducerConfig.RETRY_BACKOFF_MS_CONFIG -> 1000.toString
     )
 
   /**
-    * Publishes synchronously a message of type `String` to the running Kafka broker.
+    * Publishes synchronously a message of type `String` to the running Kafka
+    * broker.
     *
-    * @param topic   the topic to which publish the message (it will be auto-created)
-    * @param message the message to publish
-    * @param config  an implicit [[EmbeddedKafkaConfig]]
-    * @throws KafkaUnavailableException if unable to connect to Kafka
+    * @param topic
+    *   the topic to which publish the message (it will be auto-created)
+    * @param message
+    *   the message to publish
+    * @param config
+    *   an implicit [[EmbeddedKafkaConfig]]
+    * @throws KafkaUnavailableException
+    *   if unable to connect to Kafka
     */
   def publishStringMessageToKafka(topic: String, message: String)(
       implicit config: C
@@ -51,11 +57,16 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
   /**
     * Publishes synchronously a message to the running Kafka broker.
     *
-    * @param topic      the topic to which publish the message (it will be auto-created)
-    * @param message    the message of type `T` to publish
-    * @param config     an implicit [[EmbeddedKafkaConfig]]
-    * @param serializer an implicit `Serializer` for the type `T`
-    * @throws KafkaUnavailableException if unable to connect to Kafka
+    * @param topic
+    *   the topic to which publish the message (it will be auto-created)
+    * @param message
+    *   the message of type `T` to publish
+    * @param config
+    *   an implicit [[EmbeddedKafkaConfig]]
+    * @param serializer
+    *   an implicit `Serializer` for the type `T`
+    * @throws KafkaUnavailableException
+    *   if unable to connect to Kafka
     */
   @throws(classOf[KafkaUnavailableException])
   def publishToKafka[T](
@@ -74,10 +85,14 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
   /**
     * Publishes synchronously a message to the running Kafka broker.
     *
-    * @param producerRecord the producerRecord of type `T` to publish
-    * @param config         an implicit [[EmbeddedKafkaConfig]]
-    * @param serializer     an implicit `Serializer` for the type `T`
-    * @throws KafkaUnavailableException if unable to connect to Kafka
+    * @param producerRecord
+    *   the producerRecord of type `T` to publish
+    * @param config
+    *   an implicit [[EmbeddedKafkaConfig]]
+    * @param serializer
+    *   an implicit `Serializer` for the type `T`
+    * @throws KafkaUnavailableException
+    *   if unable to connect to Kafka
     */
   @throws(classOf[KafkaUnavailableException])
   def publishToKafka[T](
@@ -95,12 +110,18 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
   /**
     * Publishes synchronously a message to the running Kafka broker.
     *
-    * @param topic      the topic to which publish the message (it will be auto-created)
-    * @param key        the key of type `K` to publish
-    * @param message    the message of type `T` to publish
-    * @param config     an implicit [[EmbeddedKafkaConfig]]
-    * @param serializer an implicit `Serializer` for the type `T`
-    * @throws KafkaUnavailableException if unable to connect to Kafka
+    * @param topic
+    *   the topic to which publish the message (it will be auto-created)
+    * @param key
+    *   the key of type `K` to publish
+    * @param message
+    *   the message of type `T` to publish
+    * @param config
+    *   an implicit [[EmbeddedKafkaConfig]]
+    * @param serializer
+    *   an implicit `Serializer` for the type `T`
+    * @throws KafkaUnavailableException
+    *   if unable to connect to Kafka
     */
   @throws(classOf[KafkaUnavailableException])
   def publishToKafka[K, T](topic: String, key: K, message: T)(
@@ -116,12 +137,18 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
   /**
     * Publishes synchronously a batch of message to the running Kafka broker.
     *
-    * @param topic      the topic to which publish the message (it will be auto-created)
-    * @param messages    the keys and messages of type `(K, T)` to publish
-    * @param config     an implicit [[EmbeddedKafkaConfig]]
-    * @param keySerializer an implicit `Serializer` for the type `K`
-    * @param serializer an implicit `Serializer` for the type `T`
-    * @throws KafkaUnavailableException if unable to connect to Kafka
+    * @param topic
+    *   the topic to which publish the message (it will be auto-created)
+    * @param messages
+    *   the keys and messages of type `(K, T)` to publish
+    * @param config
+    *   an implicit [[EmbeddedKafkaConfig]]
+    * @param keySerializer
+    *   an implicit `Serializer` for the type `K`
+    * @param serializer
+    *   an implicit `Serializer` for the type `T`
+    * @throws KafkaUnavailableException
+    *   if unable to connect to Kafka
     */
   @throws(classOf[KafkaUnavailableException])
   def publishToKafka[K, T](topic: String, messages: Seq[(K, T)])(
@@ -151,14 +178,18 @@ trait ProducerOps[C <: EmbeddedKafkaConfig] {
   }
 
   /**
-    * Loaner pattern that allows running a code block with a newly created consumer.
-    * The consumer's lifecycle will be automatically handled and closed at the end of the
-    * given code block.
+    * Loaner pattern that allows running a code block with a newly created
+    * consumer. The consumer's lifecycle will be automatically handled and
+    * closed at the end of the given code block.
     *
-    * @param config     an implicit [[EmbeddedKafkaConfig]]
-    * @param keySerializer an implicit `Serializer` for the type `K`
-    * @param valueSerializer an implicit `Serializer` for the type `V`
-    * @param body         the function to execute that returns `T`
+    * @param config
+    *   an implicit [[EmbeddedKafkaConfig]]
+    * @param keySerializer
+    *   an implicit `Serializer` for the type `K`
+    * @param valueSerializer
+    *   an implicit `Serializer` for the type `V`
+    * @param body
+    *   the function to execute that returns `T`
     */
   def withProducer[K, V, T](body: KafkaProducer[K, V] => T)(
       implicit config: C,
