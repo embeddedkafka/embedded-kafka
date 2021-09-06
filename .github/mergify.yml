@@ -2,7 +2,6 @@ pull_request_rules:
   - name: automatic merge for scala-steward PRs
     conditions:
       - author=scala-steward
-      - -title~=scala-library
       - check-success=test
       - check-success=Codacy Static Code Analysis
     actions:
