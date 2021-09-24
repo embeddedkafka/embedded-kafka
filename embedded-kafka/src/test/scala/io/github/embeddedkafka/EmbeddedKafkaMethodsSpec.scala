@@ -2,7 +2,6 @@ package io.github.embeddedkafka
 
 import java.util.Collections
 import java.util.concurrent.TimeoutException
-
 import kafka.server.KafkaConfig
 import kafka.zk.KafkaZkClient
 import io.github.embeddedkafka.EmbeddedKafka._
@@ -19,6 +18,7 @@ import org.apache.kafka.common.config.TopicConfig
 import org.apache.kafka.common.header.internals.RecordHeaders
 import org.apache.kafka.common.serialization._
 import org.apache.kafka.common.utils.Time
+import org.apache.zookeeper.client.ZKClientConfig
 import org.scalatest.concurrent.JavaFutures
 import org.scalatest.time.{Milliseconds, Seconds, Span}
 import org.scalatest.{Assertion, BeforeAndAfterAll, OptionValues}
@@ -177,7 +177,9 @@ class EmbeddedKafkaMethodsSpec
         zkSessionTimeoutMs,
         zkConnectionTimeoutMs,
         maxInFlightRequests = 1,
-        Time.SYSTEM
+        Time.SYSTEM,
+        "embedded-kafka-zookeeper-client",
+        new ZKClientConfig()
       )
 
       try {
@@ -203,7 +205,9 @@ class EmbeddedKafkaMethodsSpec
         zkSessionTimeoutMs,
         zkConnectionTimeoutMs,
         maxInFlightRequests = 1,
-        Time.SYSTEM
+        Time.SYSTEM,
+        "embedded-kafka-zookeeper-client",
+        new ZKClientConfig()
       )
 
       try {
@@ -231,7 +235,9 @@ class EmbeddedKafkaMethodsSpec
         zkSessionTimeoutMs,
         zkConnectionTimeoutMs,
         maxInFlightRequests = 1,
-        Time.SYSTEM
+        Time.SYSTEM,
+        "embedded-kafka-zookeeper-client",
+        new ZKClientConfig()
       )
 
       eventually {
