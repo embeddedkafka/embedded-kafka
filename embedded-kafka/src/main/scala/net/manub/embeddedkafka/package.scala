@@ -27,8 +27,6 @@ package object embeddedkafka {
 
   @deprecated("Use io.github.embeddedkafka.Codecs instead", "2.8.0")
   val Codecs = io.github.embeddedkafka.Codecs
-  @deprecated("Use io.github.embeddedkafka.ConsumerExtensions instead", "2.8.0")
-  val ConsumerExtensions = io.github.embeddedkafka.ConsumerExtensions
   @deprecated("Use io.github.embeddedkafka.EmbeddedKafka instead", "2.8.0")
   val EmbeddedKafka = io.github.embeddedkafka.EmbeddedKafka
   @deprecated(
