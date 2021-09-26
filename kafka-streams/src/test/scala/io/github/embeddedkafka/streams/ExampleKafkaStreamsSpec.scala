@@ -1,17 +1,23 @@
 package io.github.embeddedkafka.streams
 
 import io.github.embeddedkafka.Codecs._
-import io.github.embeddedkafka.ConsumerExtensions._
 import io.github.embeddedkafka.EmbeddedKafkaConfig
 import io.github.embeddedkafka.streams.EmbeddedKafkaStreams._
 import org.apache.kafka.common.serialization.{Serde, Serdes}
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.kstream.{Consumed, KStream, Produced}
 import org.scalatest.Assertion
+import org.scalatest.concurrent.Eventually
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class ExampleKafkaStreamsSpec extends AnyWordSpec with Matchers {
+import scala.concurrent.duration._
+import scala.jdk.CollectionConverters._
+
+class ExampleKafkaStreamsSpec
+    extends AnyWordSpec
+    with Matchers
+    with Eventually {
   val (inTopic, outTopic) = ("in", "out")
 
   val stringSerde: Serde[String] = Serdes.String()
@@ -31,15 +37,18 @@ class ExampleKafkaStreamsSpec extends AnyWordSpec with Matchers {
         publishToKafka(inTopic, "hello", "world")
         publishToKafka(inTopic, "foo", "bar")
         publishToKafka(inTopic, "baz", "yaz")
-        withConsumer[String, String, Assertion] { consumer =>
-          val consumedMessages =
-            consumer.consumeLazily[(String, String)](outTopic)
-          consumedMessages.take(2).toList should be(
-            Seq("hello" -> "world", "foo" -> "bar")
-          )
-          val h :: _ = consumedMessages.drop(2).toList
-          h should be("baz" -> "yaz")
-        }
+
+        val firstTwoMessages =
+          consumeNumberKeyedMessagesFrom[String, String](outTopic, 2)
+
+        firstTwoMessages should be(
+          Seq("hello" -> "world", "foo" -> "bar")
+        )
+
+        val thirdMessage =
+          consumeFirstKeyedMessageFrom[String, String](outTopic)
+
+        thirdMessage should be("baz" -> "yaz")
       }
     }
 
@@ -60,21 +69,27 @@ class ExampleKafkaStreamsSpec extends AnyWordSpec with Matchers {
         publishToKafka(inTopic, "hello", "world")
         publishToKafka(inTopic, "foo", "bar")
         publishToKafka(inTopic, "baz", "yaz")
-        withConsumer[String, String, Assertion] { consumer =>
-          val consumedMessages =
-            consumer.consumeLazily[(String, String)](outTopic)
-          consumedMessages.take(2).toList should be(
-            Seq("hello" -> "world", "foo" -> "bar")
-          )
-          val h :: _ = consumedMessages.drop(2).toList
-          h should be("baz" -> "yaz")
-        }
+
+        val firstTwoMessages =
+          consumeNumberKeyedMessagesFrom[String, String](outTopic, 2)
+
+        firstTwoMessages should be(
+          Seq("hello" -> "world", "foo" -> "bar")
+        )
+
+        val thirdMessage =
+          consumeFirstKeyedMessageFrom[String, String](outTopic)
+
+        thirdMessage should be("baz" -> "yaz")
       }
     }
 
     "allow support creating custom consumers" in {
       implicit val config: EmbeddedKafkaConfig =
         EmbeddedKafkaConfig(kafkaPort = 7000, zooKeeperPort = 7001)
+
+      implicit val patienceConfig: PatienceConfig =
+        PatienceConfig(5.seconds, 100.millis)
 
       val streamBuilder = new StreamsBuilder
       val stream: KStream[String, String] =
@@ -87,31 +102,18 @@ class ExampleKafkaStreamsSpec extends AnyWordSpec with Matchers {
         publishToKafka(inTopic, "foo", "bar")
 
         withConsumer[String, String, Assertion] { consumer =>
-          consumer.consumeLazily[(String, String)](outTopic).take(2) should be(
-            Seq("hello" -> "world", "foo" -> "bar")
-          )
+          consumer.subscribe(java.util.Collections.singleton(outTopic))
+
+          eventually {
+            val records = consumer
+              .poll(java.time.Duration.ofMillis(100.millis.toMillis))
+              .asScala
+              .map(r => (r.key, r.value))
+
+            records shouldBe Seq("hello" -> "world", "foo" -> "bar")
+          }
         }
       }
-    }
-
-    "allow for easy string based testing" in {
-      implicit val config: EmbeddedKafkaConfig =
-        EmbeddedKafkaConfig(kafkaPort = 7000, zooKeeperPort = 7001)
-
-      val streamBuilder = new StreamsBuilder
-      val stream: KStream[String, String] =
-        streamBuilder.stream(inTopic, Consumed.`with`(stringSerde, stringSerde))
-
-      stream.to(outTopic, Produced.`with`(stringSerde, stringSerde))
-
-      runStreams(Seq(inTopic, outTopic), streamBuilder.build())(
-        withConsumer[String, String, Assertion]({ consumer =>
-          publishToKafka(inTopic, "hello", "world")
-          val h :: _ = consumer.consumeLazily[(String, String)](outTopic).toList
-          h should be("hello" -> "world")
-        })
-      )(config)
-
     }
   }
 }
