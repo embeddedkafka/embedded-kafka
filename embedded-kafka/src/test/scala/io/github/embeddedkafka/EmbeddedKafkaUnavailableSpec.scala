@@ -1,9 +1,9 @@
 package io.github.embeddedkafka
 
 import io.github.embeddedkafka.EmbeddedKafka._
+import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.StringSerializer
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.tagobjects.Slow
 
 class EmbeddedKafkaUnavailableSpec
     extends EmbeddedKafkaSpecSupport
@@ -18,8 +18,14 @@ class EmbeddedKafkaUnavailableSpec
   }
 
   "the consumeFirstStringMessageFrom method" should {
-    "throw a KafkaUnavailableException when there's no running instance of Kafka" taggedAs Slow ignore {
-      // TODO: This test is *really* slow. The request.max.timeout.ms in the underlying consumer should be changed.
+    "throw a KafkaUnavailableException when there's no running instance of Kafka" in {
+      implicit val config: EmbeddedKafkaConfig =
+        EmbeddedKafkaConfig(customConsumerProperties =
+          Map(
+            ConsumerConfig.DEFAULT_API_TIMEOUT_MS_CONFIG -> 1000.toString
+          )
+        )
+
       a[KafkaUnavailableException] shouldBe thrownBy {
         consumeFirstStringMessageFrom("non_existing_topic")
       }
