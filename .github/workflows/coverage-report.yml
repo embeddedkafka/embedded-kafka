@@ -19,6 +19,6 @@ jobs:
       run: sbt coverageReport
     - name: Aggregate sub-projects coverage reports
       run: sbt coverageAggregate
-    - uses: codacy/codacy-coverage-reporter-action@master
+    - uses: codacy/codacy-coverage-reporter-action@v1
       with:
         project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
