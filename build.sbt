@@ -87,9 +87,7 @@ lazy val root = (project in file("."))
 lazy val embeddedKafka = (project in file("embedded-kafka"))
   .settings(name := "embedded-kafka")
   .settings(commonSettings: _*)
-  .settings(
-    libraryDependencies ++= EmbeddedKafka.prodDeps ++ EmbeddedKafka.testDeps
-  )
+  .settings(libraryDependencies ++= EmbeddedKafka.prodDeps)
 
 lazy val kafkaStreams = (project in file("kafka-streams"))
   .settings(name := "embedded-kafka-streams")

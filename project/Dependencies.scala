@@ -8,7 +8,6 @@ object Dependencies {
     val Kafka                = "2.8.1"
     val Slf4j                = "1.7.32"
     val ScalaTest            = "3.2.10"
-    val ScalaTestPlusMockito = "3.2.10.0"
   }
 
   object Common {
@@ -23,10 +22,6 @@ object Dependencies {
     lazy val prodDeps: Seq[ModuleID] = Seq(
       "org.apache.kafka" %% "kafka" % Versions.Kafka
     )
-
-    lazy val testDeps: Seq[ModuleID] = Seq(
-      "org.scalatestplus" %% "mockito-3-4" % Versions.ScalaTestPlusMockito
-    ).map(_ % Test)
   }
 
   object KafkaStreams {
