@@ -3,11 +3,11 @@ import sbt._
 object Dependencies {
 
   object Versions {
-    val Scala                = "2.13.6"
-    val Scala212             = "2.12.15"
-    val Kafka                = "2.8.1"
-    val Slf4j                = "1.7.32"
-    val ScalaTest            = "3.2.10"
+    val Scala     = "2.13.6"
+    val Scala212  = "2.12.15"
+    val Kafka     = "2.8.1"
+    val Slf4j     = "1.7.32"
+    val ScalaTest = "3.2.10"
   }
 
   object Common {
