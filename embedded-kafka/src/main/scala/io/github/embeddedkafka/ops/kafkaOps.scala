@@ -12,16 +12,14 @@ import io.github.embeddedkafka.{
 import org.apache.kafka.common.security.auth.SecurityProtocol
 
 import scala.jdk.CollectionConverters._
-import scala.concurrent.duration._
 
 /**
   * Trait for Kafka-related actions.
   */
 trait KafkaOps {
-  protected val brokerId: Short                     = 0
-  protected val autoCreateTopics: Boolean           = true
-  protected val logCleanerDedupeBufferSize: Int     = 1048577
-  protected val zkConnectionTimeout: FiniteDuration = 10.seconds
+  protected val brokerId: Short                 = 0
+  protected val autoCreateTopics: Boolean       = true
+  protected val logCleanerDedupeBufferSize: Int = 1048577
 
   private[embeddedkafka] def startKafka(
       kafkaPort: Int,
@@ -33,8 +31,7 @@ trait KafkaOps {
     val listener  = s"${SecurityProtocol.PLAINTEXT}://localhost:$kafkaPort"
 
     val brokerProperties = Map[String, Object](
-      KafkaConfig.ZkConnectProp -> zkAddress,
-      KafkaConfig.ZkConnectionTimeoutMsProp -> zkConnectionTimeout.toMillis.toString,
+      KafkaConfig.ZkConnectProp              -> zkAddress,
       KafkaConfig.BrokerIdProp               -> brokerId.toString,
       KafkaConfig.ListenersProp              -> listener,
       KafkaConfig.AdvertisedListenersProp    -> listener,
