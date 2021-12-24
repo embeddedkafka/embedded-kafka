@@ -17,10 +17,11 @@ class TestJsonDeserializer[T](implicit tag: ClassTag[T], ev: Null <:< T)
 
   override def deserialize(topic: String, bytes: Array[Byte]): T =
     Option(bytes).map { _ =>
-      try mapper.readValue(
-        bytes,
-        tag.runtimeClass.asInstanceOf[Class[T]]
-      )
+      try
+        mapper.readValue(
+          bytes,
+          tag.runtimeClass.asInstanceOf[Class[T]]
+        )
       catch {
         case NonFatal(e) => throw new SerializationException(e)
       }
