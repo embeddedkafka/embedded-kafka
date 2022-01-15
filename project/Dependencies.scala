@@ -3,7 +3,7 @@ import sbt._
 object Dependencies {
 
   object Versions {
-    val Scala     = "2.13.7"
+    val Scala     = "2.13.8"
     val Scala212  = "2.12.15"
     val Kafka     = "3.0.0"
     val Slf4j     = "1.7.33"
