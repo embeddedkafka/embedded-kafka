@@ -45,17 +45,22 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
       ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> false.toString
     )
 
-  def consumeFirstStringMessageFrom(topic: String, autoCommit: Boolean = false)(
+  def consumeFirstStringMessageFrom(
+      topic: String,
+      autoCommit: Boolean = false,
+      timeout: Duration = 5.seconds
+  )(
       implicit config: C
   ): String =
-    consumeNumberStringMessagesFrom(topic, 1, autoCommit)(config).head
+    consumeNumberStringMessagesFrom(topic, 1, autoCommit, timeout)(config).head
 
   def consumeNumberStringMessagesFrom(
       topic: String,
       number: Int,
-      autoCommit: Boolean = false
+      autoCommit: Boolean = false,
+      timeout: Duration = 5.seconds
   )(implicit config: C): List[String] =
-    consumeNumberMessagesFrom(topic, number, autoCommit)(
+    consumeNumberMessagesFrom(topic, number, autoCommit, timeout)(
       config,
       new StringDeserializer()
     )
@@ -74,6 +79,8 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
     *   if `false`, only the offset for the consumed message will be committed.
     *   if `true`, the offset for the last polled message will be committed
     *   instead.
+    * @param timeout
+    *   the interval to wait for messages before throwing `TimeoutException`
     * @param config
     *   an implicit [[EmbeddedKafkaConfig]]
     * @param valueDeserializer
@@ -85,9 +92,10 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
   @throws(classOf[KafkaUnavailableException])
   def consumeFirstMessageFrom[V](
       topic: String,
-      autoCommit: Boolean = false
+      autoCommit: Boolean = false,
+      timeout: Duration = 5.seconds
   )(implicit config: C, valueDeserializer: Deserializer[V]): V =
-    consumeNumberMessagesFrom[V](topic, 1, autoCommit)(
+    consumeNumberMessagesFrom[V](topic, 1, autoCommit, timeout)(
       config,
       valueDeserializer
     ).head
@@ -106,6 +114,8 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
     *   if `false`, only the offset for the consumed message will be committed.
     *   if `true`, the offset for the last polled message will be committed
     *   instead.
+    * @param timeout
+    *   the interval to wait for messages before throwing `TimeoutException`
     * @param config
     *   an implicit [[EmbeddedKafkaConfig]]
     * @param keyDeserializer
@@ -119,13 +129,14 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
   @throws(classOf[KafkaUnavailableException])
   def consumeFirstKeyedMessageFrom[K, V](
       topic: String,
-      autoCommit: Boolean = false
+      autoCommit: Boolean = false,
+      timeout: Duration = 5.seconds
   )(
       implicit config: C,
       keyDeserializer: Deserializer[K],
       valueDeserializer: Deserializer[V]
   ): (K, V) =
-    consumeNumberKeyedMessagesFrom[K, V](topic, 1, autoCommit)(
+    consumeNumberKeyedMessagesFrom[K, V](topic, 1, autoCommit, timeout)(
       config,
       keyDeserializer,
       valueDeserializer
@@ -134,9 +145,10 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
   def consumeNumberMessagesFrom[V](
       topic: String,
       number: Int,
-      autoCommit: Boolean = false
+      autoCommit: Boolean = false,
+      timeout: Duration = 5.seconds
   )(implicit config: C, valueDeserializer: Deserializer[V]): List[V] =
-    consumeNumberMessagesFromTopics(Set(topic), number, autoCommit)(
+    consumeNumberMessagesFromTopics(Set(topic), number, autoCommit, timeout)(
       config,
       valueDeserializer
     )(topic)
@@ -144,13 +156,19 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
   def consumeNumberKeyedMessagesFrom[K, V](
       topic: String,
       number: Int,
-      autoCommit: Boolean = false
+      autoCommit: Boolean = false,
+      timeout: Duration = 5.seconds
   )(
       implicit config: C,
       keyDeserializer: Deserializer[K],
       valueDeserializer: Deserializer[V]
   ): List[(K, V)] =
-    consumeNumberKeyedMessagesFromTopics(Set(topic), number, autoCommit)(
+    consumeNumberKeyedMessagesFromTopics(
+      Set(topic),
+      number,
+      autoCommit,
+      timeout
+    )(
       config,
       keyDeserializer,
       valueDeserializer
