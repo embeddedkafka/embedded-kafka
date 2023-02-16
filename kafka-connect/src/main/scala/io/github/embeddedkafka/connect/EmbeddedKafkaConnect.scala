@@ -1,11 +1,10 @@
 package io.github.embeddedkafka.connect
 
 import java.nio.file.Path
-
 import org.apache.kafka.common.utils.Time
 import org.apache.kafka.connect.connector.policy.ConnectorClientConfigOverridePolicy
 import org.apache.kafka.connect.runtime.isolation.Plugins
-import org.apache.kafka.connect.runtime.rest.RestServer
+import org.apache.kafka.connect.runtime.rest.{RestClient, RestServer}
 import org.apache.kafka.connect.runtime.standalone.{
   StandaloneConfig,
   StandaloneHerder
@@ -68,7 +67,8 @@ private[embeddedkafka] trait EmbeddedKafkaConnectSupport[
         extraConfig
       )
       val standaloneConfig = new StandaloneConfig(configMap.asJava)
-      val rest             = new RestServer(standaloneConfig)
+      val restClient       = new RestClient(standaloneConfig)
+      val rest             = new RestServer(standaloneConfig, restClient)
       rest.initializeServer()
 
       val plugins = new Plugins(configMap.asJava)
@@ -90,7 +90,7 @@ private[embeddedkafka] trait EmbeddedKafkaConnectSupport[
         new MemoryOffsetBackingStore,
         connectorClientConfigOverridePolicy
       )
-      val clusterId = ConnectUtils.lookupKafkaClusterId(standaloneConfig)
+      val clusterId = standaloneConfig.kafkaClusterId()
       val herder = new StandaloneHerder(
         worker,
         clusterId,
