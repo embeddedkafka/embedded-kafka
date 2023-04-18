@@ -10,7 +10,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - uses: olafurpg/setup-scala@v13
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: 8
+        cache: 'sbt'
     - name: Check formatting
       run: sbt scalafmtCheckAll
     - name: Compile
