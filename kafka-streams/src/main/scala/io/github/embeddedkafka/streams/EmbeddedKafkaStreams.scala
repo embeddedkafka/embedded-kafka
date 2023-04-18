@@ -2,7 +2,7 @@ package io.github.embeddedkafka.streams
 
 import java.util.Properties
 
-import io.github.embeddedkafka.ops.AdminOps
+import io.github.embeddedkafka.ops.{AdminOps, KafkaOps, ZooKeeperOps}
 import io.github.embeddedkafka.{
   EmbeddedKafka,
   EmbeddedKafkaConfig,
@@ -25,7 +25,10 @@ trait EmbeddedKafkaStreams
 private[embeddedkafka] trait EmbeddedKafkaStreamsSupport[
     C <: EmbeddedKafkaConfig
 ] {
-  this: EmbeddedKafkaSupport[C] with AdminOps[C] =>
+  this: EmbeddedKafkaSupport[C]
+    with AdminOps[C]
+    with ZooKeeperOps
+    with KafkaOps =>
 
   protected[embeddedkafka] def streamsConfig: EmbeddedStreamsConfig[C]
 
