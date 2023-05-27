@@ -72,9 +72,13 @@ lazy val testSettings = Seq(
 )
 
 lazy val commonSettings = Seq(
-  organization       := "io.github.embeddedkafka",
-  scalaVersion       := Versions.Scala,
-  crossScalaVersions := Seq(Versions.Scala212, Versions.Scala)
+  organization := "io.github.embeddedkafka",
+  scalaVersion := Versions.Scala213,
+  crossScalaVersions := Seq(
+    Versions.Scala212,
+    Versions.Scala213,
+    Versions.Scala3
+  )
 ) ++ compileSettings ++ coverageSettings ++ publishSettings ++ releaseSettings ++ testSettings
 
 lazy val root = (project in file("."))

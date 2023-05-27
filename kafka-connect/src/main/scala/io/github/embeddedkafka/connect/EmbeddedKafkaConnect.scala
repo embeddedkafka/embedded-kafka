@@ -12,6 +12,8 @@ import org.apache.kafka.connect.runtime.standalone.{
 import org.apache.kafka.connect.runtime.{Connect, Worker, WorkerConfig}
 import org.apache.kafka.connect.storage.MemoryOffsetBackingStore
 import org.apache.kafka.connect.util.ConnectUtils
+
+import io.github.embeddedkafka.ops.{KafkaOps, ZooKeeperOps}
 import io.github.embeddedkafka.{
   EmbeddedKafka,
   EmbeddedKafkaConfig,
@@ -34,7 +36,7 @@ trait EmbeddedKafkaConnect
 private[embeddedkafka] trait EmbeddedKafkaConnectSupport[
     C <: EmbeddedKafkaConfig
 ] {
-  this: EmbeddedKafkaSupport[C] =>
+  this: EmbeddedKafkaSupport[C] with ZooKeeperOps with KafkaOps =>
 
   protected[embeddedkafka] def connectConfig: EmbeddedConnectConfig[C]
 

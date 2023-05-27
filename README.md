@@ -13,7 +13,7 @@ Inspired by [kafka-unit](https://github.com/chbatey/kafka-unit).
 
 ## Version compatibility matrix
 
-embedded-kafka is available on Maven Central, compiled for Scala 2.12 and 2.13.
+embedded-kafka is available on Maven Central, compiled for Scala 2.12, 2.13 and Scala 3 (since v3.4.0.1).
 
 Versions match the version of Kafka they're built against.
 

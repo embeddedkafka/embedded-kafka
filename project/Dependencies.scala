@@ -3,11 +3,12 @@ import sbt._
 object Dependencies {
 
   object Versions {
-    val Scala     = "2.13.10"
+    val Scala3    = "3.2.2"
+    val Scala213  = "2.13.10"
     val Scala212  = "2.12.17"
     val Kafka     = "3.4.0"
     val Slf4j     = "1.7.36"
-    val ScalaTest = "3.2.15"
+    val ScalaTest = "3.2.16"
   }
 
   object Common {
@@ -20,7 +21,7 @@ object Dependencies {
 
   object EmbeddedKafka {
     lazy val prodDeps: Seq[ModuleID] = Seq(
-      "org.apache.kafka" %% "kafka" % Versions.Kafka
+      "org.apache.kafka" %% "kafka" % Versions.Kafka cross CrossVersion.for3Use2_13
     )
   }
 
