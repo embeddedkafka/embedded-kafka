@@ -4,9 +4,9 @@ import java.nio.file.Path
 
 import io.github.embeddedkafka.EmbeddedKafkaConfig
 
+import org.apache.kafka.connect.runtime.rest.RestServerConfig
 import org.apache.kafka.connect.runtime.standalone.StandaloneConfig
 import org.apache.kafka.connect.runtime.WorkerConfig
-import org.apache.kafka.connect.runtime.rest.RestServerConfig
 
 /**
   * Kafka Connect config generator.
