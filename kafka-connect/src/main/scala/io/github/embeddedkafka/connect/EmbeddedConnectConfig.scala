@@ -6,6 +6,7 @@ import io.github.embeddedkafka.EmbeddedKafkaConfig
 
 import org.apache.kafka.connect.runtime.standalone.StandaloneConfig
 import org.apache.kafka.connect.runtime.WorkerConfig
+import org.apache.kafka.connect.runtime.rest.RestServerConfig
 
 /**
   * Kafka Connect config generator.
@@ -21,7 +22,7 @@ private[embeddedkafka] trait EmbeddedConnectConfig[C <: EmbeddedKafkaConfig] {
       implicit kafkaConfig: C
   ): Map[String, String] =
     Map(
-      WorkerConfig.LISTENERS_CONFIG -> s"http://localhost:$connectPort",
+      RestServerConfig.LISTENERS_CONFIG -> s"http://localhost:$connectPort",
       WorkerConfig.BOOTSTRAP_SERVERS_CONFIG -> s"localhost:${kafkaConfig.kafkaPort}",
       WorkerConfig.KEY_CONVERTER_CLASS_CONFIG -> "org.apache.kafka.connect.json.JsonConverter",
       WorkerConfig.VALUE_CONVERTER_CLASS_CONFIG -> "org.apache.kafka.connect.json.JsonConverter",

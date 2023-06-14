@@ -3,16 +3,15 @@ package io.github.embeddedkafka.connect
 import java.nio.file.Path
 import org.apache.kafka.common.utils.Time
 import org.apache.kafka.connect.connector.policy.ConnectorClientConfigOverridePolicy
+import org.apache.kafka.connect.json.{JsonConverter, JsonConverterConfig}
 import org.apache.kafka.connect.runtime.isolation.Plugins
-import org.apache.kafka.connect.runtime.rest.{RestClient, RestServer}
+import org.apache.kafka.connect.runtime.rest.{ConnectRestServer, RestClient}
 import org.apache.kafka.connect.runtime.standalone.{
   StandaloneConfig,
   StandaloneHerder
 }
 import org.apache.kafka.connect.runtime.{Connect, Worker, WorkerConfig}
-import org.apache.kafka.connect.storage.MemoryOffsetBackingStore
-import org.apache.kafka.connect.util.ConnectUtils
-
+import org.apache.kafka.connect.storage.FileOffsetBackingStore
 import io.github.embeddedkafka.ops.{KafkaOps, ZooKeeperOps}
 import io.github.embeddedkafka.{
   EmbeddedKafka,
@@ -68,7 +67,11 @@ private[embeddedkafka] trait EmbeddedKafkaConnectSupport[
       )
       val standaloneConfig = new StandaloneConfig(configMap.asJava)
       val restClient       = new RestClient(standaloneConfig)
-      val rest             = new RestServer(standaloneConfig, restClient)
+      val rest = new ConnectRestServer(
+        standaloneConfig.rebalanceTimeout,
+        restClient,
+        configMap.asJava
+      )
       rest.initializeServer()
 
       val plugins = new Plugins(configMap.asJava)
@@ -80,6 +83,16 @@ private[embeddedkafka] trait EmbeddedKafkaConnectSupport[
         standaloneConfig,
         classOf[ConnectorClientConfigOverridePolicy]
       )
+      val offsetBackingStore = new FileOffsetBackingStore(
+        plugins.newInternalConverter(
+          true,
+          classOf[JsonConverter].getName,
+          Map(
+            JsonConverterConfig.SCHEMAS_ENABLE_CONFIG -> false.toString
+          ).asJava
+        )
+      )
+      offsetBackingStore.configure(standaloneConfig)
 
       val workerId = s"localhost:$connectPort"
       val worker = new Worker(
@@ -87,7 +100,7 @@ private[embeddedkafka] trait EmbeddedKafkaConnectSupport[
         Time.SYSTEM,
         plugins,
         standaloneConfig,
-        new MemoryOffsetBackingStore,
+        offsetBackingStore,
         connectorClientConfigOverridePolicy
       )
       val clusterId = standaloneConfig.kafkaClusterId()
