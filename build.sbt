@@ -1,6 +1,7 @@
 import Dependencies._
 
 ThisBuild / parallelExecution := false
+ThisBuild / versionScheme := Some("semver-spec")
 
 lazy val compileSettings = Seq(
   Compile / compile := (Compile / compile)
