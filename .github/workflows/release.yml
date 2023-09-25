@@ -16,7 +16,6 @@ jobs:
         distribution: 'temurin'
         java-version: 8
         cache: 'sbt'
-    - uses: olafurpg/setup-gpg@v3
     - name: Publish artifacts
       run: sbt ci-release || sbt sonatypeReleaseAll
       env:
