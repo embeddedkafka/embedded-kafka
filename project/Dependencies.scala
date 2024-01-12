@@ -7,7 +7,7 @@ object Dependencies {
     val Scala213  = "2.13.12"
     val Scala212  = "2.12.18"
     val Kafka     = "3.6.1"
-    val Slf4j     = "1.7.36"
+    val Slf4j     = "2.0.11"
     val ScalaTest = "3.2.17"
   }
 
