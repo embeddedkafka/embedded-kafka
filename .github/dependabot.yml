@@ -6,7 +6,3 @@ updates:
       interval: "weekly"
     labels:
       - "dependencies"
-    ignore:
-      - dependency-name: org.slf4j:slf4j-reload4j
-        versions:
-          - ">= 2.0"
