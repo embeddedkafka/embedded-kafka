@@ -298,8 +298,8 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
         while (recordIter.hasNext && messagesRead < number) {
           val record = recordIter.next
           messagesBuffers(record.topic) += (record.key -> record.value)
-          val tp = new TopicPartition(record.topic, record.partition)
-          val om = new OffsetAndMetadata(record.offset + 1)
+          val tp     = new TopicPartition(record.topic, record.partition)
+          val om     = new OffsetAndMetadata(record.offset + 1)
           consumer.commitSync(Map(tp -> om).asJava)
           messagesRead += 1
         }
