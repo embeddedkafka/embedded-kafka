@@ -1,7 +1,6 @@
 package io.github.embeddedkafka.ops
 
 import java.nio.file.Path
-
 import kafka.server.{KafkaConfig, KafkaServer}
 import io.github.embeddedkafka.{
   EmbeddedK,
@@ -10,6 +9,15 @@ import io.github.embeddedkafka.{
   EmbeddedZ
 }
 import org.apache.kafka.common.security.auth.SecurityProtocol
+import org.apache.kafka.coordinator.group.GroupCoordinatorConfig
+import org.apache.kafka.coordinator.transaction.TransactionLogConfigs
+import org.apache.kafka.network.SocketServerConfigs
+import org.apache.kafka.server.config.{
+  ServerConfigs,
+  ServerLogConfigs,
+  ZkConfigs
+}
+import org.apache.kafka.storage.internals.log.CleanerConfig
 
 import scala.jdk.CollectionConverters._
 
@@ -31,19 +39,19 @@ trait KafkaOps {
     val listener  = s"${SecurityProtocol.PLAINTEXT}://localhost:$kafkaPort"
 
     val brokerProperties = Map[String, Object](
-      KafkaConfig.ZkConnectProp              -> zkAddress,
-      KafkaConfig.BrokerIdProp               -> brokerId.toString,
-      KafkaConfig.ListenersProp              -> listener,
-      KafkaConfig.AdvertisedListenersProp    -> listener,
-      KafkaConfig.AutoCreateTopicsEnableProp -> autoCreateTopics.toString,
-      KafkaConfig.LogDirProp -> kafkaLogDir.toAbsolutePath.toString,
-      KafkaConfig.LogFlushIntervalMessagesProp           -> 1.toString,
-      KafkaConfig.OffsetsTopicReplicationFactorProp      -> 1.toString,
-      KafkaConfig.OffsetsTopicPartitionsProp             -> 1.toString,
-      KafkaConfig.TransactionsTopicReplicationFactorProp -> 1.toString,
-      KafkaConfig.TransactionsTopicMinISRProp            -> 1.toString,
+      ZkConfigs.ZK_CONNECT_CONFIG                     -> zkAddress,
+      ServerConfigs.BROKER_ID_CONFIG                  -> brokerId.toString,
+      SocketServerConfigs.LISTENERS_CONFIG            -> listener,
+      SocketServerConfigs.ADVERTISED_LISTENERS_CONFIG -> listener,
+      ServerLogConfigs.AUTO_CREATE_TOPICS_ENABLE_CONFIG -> autoCreateTopics.toString,
+      ServerLogConfigs.LOG_DIRS_CONFIG -> kafkaLogDir.toAbsolutePath.toString,
+      ServerLogConfigs.LOG_FLUSH_INTERVAL_MESSAGES_CONFIG -> 1.toString,
+      GroupCoordinatorConfig.OFFSETS_TOPIC_REPLICATION_FACTOR_CONFIG -> 1.toString,
+      GroupCoordinatorConfig.OFFSETS_TOPIC_PARTITIONS_CONFIG -> 1.toString,
+      TransactionLogConfigs.TRANSACTIONS_TOPIC_REPLICATION_FACTOR_CONFIG -> 1.toString,
+      TransactionLogConfigs.TRANSACTIONS_TOPIC_MIN_ISR_CONFIG -> 1.toString,
       // The total memory used for log deduplication across all cleaner threads, keep it small to not exhaust suite memory
-      KafkaConfig.LogCleanerDedupeBufferSizeProp -> logCleanerDedupeBufferSize.toString
+      CleanerConfig.LOG_CLEANER_DEDUPE_BUFFER_SIZE_PROP -> logCleanerDedupeBufferSize.toString
     ) ++ customBrokerProperties
 
     val broker = new KafkaServer(new KafkaConfig(brokerProperties.asJava))

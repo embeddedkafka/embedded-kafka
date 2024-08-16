@@ -1,9 +1,9 @@
 package io.github.embeddedkafka
 
-import kafka.server.KafkaConfig
 import io.github.embeddedkafka.EmbeddedKafka._
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
+import org.apache.kafka.server.config.{ReplicationConfigs, ServerConfigs}
 
 import scala.language.postfixOps
 import scala.util.Random
@@ -16,8 +16,8 @@ class EmbeddedKafkaCustomConfigSpec extends EmbeddedKafkaSpecSupport {
     "allow pass additional producer parameters" in {
       val customBrokerConfig =
         Map(
-          KafkaConfig.ReplicaFetchMaxBytesProp -> s"$ThreeMegabytes",
-          KafkaConfig.MessageMaxBytesProp      -> s"$ThreeMegabytes"
+          ReplicationConfigs.REPLICA_FETCH_MAX_BYTES_CONFIG -> s"$ThreeMegabytes",
+          ServerConfigs.MESSAGE_MAX_BYTES_CONFIG -> s"$ThreeMegabytes"
         )
 
       val customProducerConfig =
