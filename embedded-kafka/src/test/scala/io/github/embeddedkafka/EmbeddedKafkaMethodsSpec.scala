@@ -2,7 +2,6 @@ package io.github.embeddedkafka
 
 import java.util.Collections
 import java.util.concurrent.TimeoutException
-import kafka.server.KafkaConfig
 import kafka.zk.KafkaZkClient
 import io.github.embeddedkafka.EmbeddedKafka._
 import io.github.embeddedkafka.serializers.{
@@ -18,6 +17,7 @@ import org.apache.kafka.common.config.TopicConfig
 import org.apache.kafka.common.header.internals.RecordHeaders
 import org.apache.kafka.common.serialization._
 import org.apache.kafka.common.utils.Time
+import org.apache.kafka.storage.internals.log.CleanerConfig
 import org.apache.zookeeper.client.ZKClientConfig
 import org.scalatest.concurrent.JavaFutures
 import org.scalatest.time.{Milliseconds, Seconds, Span}
@@ -159,7 +159,7 @@ class EmbeddedKafkaMethodsSpec
     "create a topic with a custom configuration" in {
       implicit val config: EmbeddedKafkaConfig = EmbeddedKafkaConfig(
         customBrokerProperties = Map(
-          KafkaConfig.LogCleanerDedupeBufferSizeProp -> 2000000.toString
+          CleanerConfig.LOG_CLEANER_DEDUPE_BUFFER_SIZE_PROP -> 2000000.toString
         )
       )
       val topic = "test_custom_topic"
@@ -220,7 +220,7 @@ class EmbeddedKafkaMethodsSpec
     "either delete of mark for deletion a list of topics" in {
       implicit val config: EmbeddedKafkaConfig = EmbeddedKafkaConfig(
         customBrokerProperties = Map(
-          KafkaConfig.LogCleanerDedupeBufferSizeProp -> 2000000.toString
+          CleanerConfig.LOG_CLEANER_DEDUPE_BUFFER_SIZE_PROP -> 2000000.toString
         )
       )
       val topics = List("test_topic_deletion_1", "test_topic_deletion_2")
