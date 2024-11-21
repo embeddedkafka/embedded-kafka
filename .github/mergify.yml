@@ -1,16 +1,16 @@
 queue_rules:
   - name: default
-    conditions:
-      - check-success=test
-      - check-success=Codacy Static Code Analysis
-
-pull_request_rules:
-  - name: automatic merge for scala-steward PRs
-    conditions:
+    queue_conditions:
       - author=scala-steward
       - check-success=test
       - check-success=Codacy Static Code Analysis
+    merge_conditions:
+      - check-success=test
+      - check-success=Codacy Static Code Analysis
+    merge_method: squash
+
+pull_request_rules:
+  - name: refactored queue action rule
+    conditions: []
     actions:
       queue:
-        name: default
-        method: squash
