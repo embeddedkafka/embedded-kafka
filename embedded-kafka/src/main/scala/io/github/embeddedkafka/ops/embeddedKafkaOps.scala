@@ -21,7 +21,7 @@ private[embeddedkafka] trait EmbeddedKafkaOps[
 
 /**
   * [[EmbeddedKafkaOps]] extension relying on `RunningServersOps` for keeping
-  * track of running `EmbeddedServer`s.
+  * track of running `EmbeddedServer` s.
   *
   * @tparam C
   *   an [[EmbeddedKafkaConfig]]

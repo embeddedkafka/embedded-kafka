@@ -6,14 +6,14 @@ object RunningServersOps {
 
   /**
     * Wrapper class providing methods for keeping track of running
-    * `EmbeddedServer`s.
+    * `EmbeddedServer` s.
     */
   private[embeddedkafka] class RunningServers {
     private[this] var servers: Seq[EmbeddedServer] = Seq.empty
 
     /**
       * @return
-      *   the list of running `EmbeddedServer`s
+      *   the list of running `EmbeddedServer` s
       */
     def list: List[EmbeddedServer] = servers.toList
 
@@ -29,10 +29,10 @@ object RunningServersOps {
 
     /**
       * Stops and removes each `EmbeddedServer` matching the provided predicate
-      * from the list of running `EmbeddedServer`s.
+      * from the list of running `EmbeddedServer` s.
       *
       * @param removalPredicate
-      *   the predicate for removing `EmbeddedServer`s
+      *   the predicate for removing `EmbeddedServer` s
       * @param clearLogs
       *   whether or not to clear server logs, if any.
       */
@@ -50,7 +50,7 @@ object RunningServersOps {
     }
 
     /**
-      * Stops all `EmbeddedServer`s and clears their logs.
+      * Stops all `EmbeddedServer` s and clears their logs.
       */
     def stopAndRemoveAll(): this.type = {
       // Make sure servers are stopped in the opposite order in which they were
@@ -64,7 +64,7 @@ object RunningServersOps {
 }
 
 /**
-  * Trait for keeping track of running `EmbeddedServer`s.
+  * Trait for keeping track of running `EmbeddedServer` s.
   */
 private[embeddedkafka] trait RunningServersOps {
   import RunningServersOps._
@@ -93,7 +93,7 @@ private[embeddedkafka] trait RunningServersOps {
 
 /**
   * Trait for starting `EmbeddedServer` instances. Relies on `RunningServersOps`
-  * for keeping track of running `EmbeddedServer`s.
+  * for keeping track of running `EmbeddedServer` s.
   *
   * @tparam C
   *   an [[EmbeddedKafkaConfig]]
