@@ -5,10 +5,10 @@ object Dependencies {
   object Versions {
     val Scala3    = "3.3.5"
     val Scala213  = "2.13.16"
-    val Scala212  = "2.12.20"
-    val Kafka     = "3.9.0"
+    val Kafka     = "4.0.0"
     val Slf4j     = "1.7.36"
     val ScalaTest = "3.2.19"
+    val Jackson   = "2.16.2" // Keep consistent with the one provided by Kafka
   }
 
   object Common {
@@ -23,6 +23,9 @@ object Dependencies {
     lazy val prodDeps: Seq[ModuleID] = Seq(
       "org.apache.kafka" %% "kafka" % Versions.Kafka cross CrossVersion.for3Use2_13
     )
+    lazy val testDeps: Seq[ModuleID] = Seq(
+      "com.fasterxml.jackson.module" %% "jackson-module-scala" % Versions.Jackson
+    ).map(_ % Test)
   }
 
   object KafkaStreams {

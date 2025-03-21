@@ -10,9 +10,9 @@ import org.scalatest.Assertion
 class EmbeddedKafkaWithRunningKafkaOnFoundPortSpec
     extends EmbeddedKafkaSpecSupport {
   "the withRunningKafkaOnFoundPort method" should {
-    "start and stop Kafka and Zookeeper successfully on non-zero ports" in {
+    "start and stop Kafka broker and controller successfully on non-zero ports" in {
       val userDefinedConfig =
-        EmbeddedKafkaConfig(kafkaPort = 12345, zooKeeperPort = 12346)
+        EmbeddedKafkaConfig(kafkaPort = 12345, controllerPort = 54321)
       val actualConfig = withRunningKafkaOnFoundPort(userDefinedConfig) {
         actualConfig =>
           actualConfig shouldBe userDefinedConfig
@@ -22,9 +22,9 @@ class EmbeddedKafkaWithRunningKafkaOnFoundPortSpec
       noServerIsAvailable(actualConfig)
     }
 
-    "start and stop multiple Kafka and Zookeeper successfully on arbitrary available ports" in {
+    "start and stop multiple Kafka broker and controller successfully on arbitrary available ports" in {
       val userDefinedConfig =
-        EmbeddedKafkaConfig(kafkaPort = 0, zooKeeperPort = 0)
+        EmbeddedKafkaConfig(kafkaPort = 0, controllerPort = 0)
       val actualConfig1 = withRunningKafkaOnFoundPort(userDefinedConfig) {
         actualConfig1 =>
           everyServerIsAvailable(actualConfig1)
@@ -43,12 +43,12 @@ class EmbeddedKafkaWithRunningKafkaOnFoundPortSpec
                 Seq(userDefinedConfig, actualConfig1, actualConfig2)
               // Confirm both actual configs are running on separate non-zero ports, but otherwise equal
               allConfigs.map(_.kafkaPort).distinct should have size 3
-              allConfigs.map(_.zooKeeperPort).distinct should have size 3
+              allConfigs.map(_.controllerPort).distinct should have size 3
               allConfigs
                 .map(config =>
                   EmbeddedKafkaConfigImpl(
                     kafkaPort = 0,
-                    zooKeeperPort = 0,
+                    controllerPort = 0,
                     config.customBrokerProperties,
                     config.customProducerProperties,
                     config.customConsumerProperties
@@ -65,7 +65,7 @@ class EmbeddedKafkaWithRunningKafkaOnFoundPortSpec
 
     "work with a simple example using implicits" in {
       val userDefinedConfig =
-        EmbeddedKafkaConfig(kafkaPort = 0, zooKeeperPort = 0)
+        EmbeddedKafkaConfig(kafkaPort = 0, controllerPort = 0)
       withRunningKafkaOnFoundPort(userDefinedConfig) { implicit actualConfig =>
         publishStringMessageToKafka("topic", "message")
         consumeFirstStringMessageFrom("topic") shouldBe "message"
@@ -74,12 +74,12 @@ class EmbeddedKafkaWithRunningKafkaOnFoundPortSpec
   }
 
   private def everyServerIsAvailable(config: EmbeddedKafkaConfig): Assertion = {
+    expectedServerStatus(config.controllerPort, Available)
     expectedServerStatus(config.kafkaPort, Available)
-    expectedServerStatus(config.zooKeeperPort, Available)
   }
 
   private def noServerIsAvailable(config: EmbeddedKafkaConfig): Assertion = {
+    expectedServerStatus(config.controllerPort, NotAvailable)
     expectedServerStatus(config.kafkaPort, NotAvailable)
-    expectedServerStatus(config.zooKeeperPort, NotAvailable)
   }
 }

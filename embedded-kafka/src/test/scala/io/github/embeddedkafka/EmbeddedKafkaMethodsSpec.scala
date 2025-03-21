@@ -1,8 +1,5 @@
 package io.github.embeddedkafka
 
-import java.util.Collections
-import java.util.concurrent.TimeoutException
-import kafka.zk.KafkaZkClient
 import io.github.embeddedkafka.EmbeddedKafka._
 import io.github.embeddedkafka.serializers.{
   TestJsonDeserializer,
@@ -16,15 +13,13 @@ import org.apache.kafka.clients.producer.{
 import org.apache.kafka.common.config.TopicConfig
 import org.apache.kafka.common.header.internals.RecordHeaders
 import org.apache.kafka.common.serialization._
-import org.apache.kafka.common.utils.Time
 import org.apache.kafka.storage.internals.log.CleanerConfig
-import org.apache.zookeeper.client.ZKClientConfig
 import org.scalatest.concurrent.JavaFutures
 import org.scalatest.time.{Milliseconds, Seconds, Span}
 import org.scalatest.{Assertion, BeforeAndAfterAll, OptionValues}
 
-// Used by Scala 2.12
-import scala.collection.compat._
+import java.util.Collections
+import java.util.concurrent.TimeoutException
 import scala.concurrent.duration._
 import scala.jdk.CollectionConverters._
 
@@ -171,20 +166,7 @@ class EmbeddedKafkaMethodsSpec
         )
       )
 
-      val zkClient = KafkaZkClient.apply(
-        s"localhost:${config.zooKeeperPort}",
-        isSecure = false,
-        zkSessionTimeoutMs,
-        zkConnectionTimeoutMs,
-        maxInFlightRequests = 1,
-        Time.SYSTEM,
-        "embedded-kafka-zookeeper-client",
-        new ZKClientConfig()
-      )
-
-      try {
-        zkClient.topicExists(topic) shouldBe true
-      } finally zkClient.close()
+      listTopics().getOrElse(Set.empty) should contain(topic)
     }
 
     "create a topic with custom number of partitions" in {
@@ -199,20 +181,11 @@ class EmbeddedKafkaMethodsSpec
         partitions = 2
       )
 
-      val zkClient = KafkaZkClient.apply(
-        s"localhost:${config.zooKeeperPort}",
-        isSecure = false,
-        zkSessionTimeoutMs,
-        zkConnectionTimeoutMs,
-        maxInFlightRequests = 1,
-        Time.SYSTEM,
-        "embedded-kafka-zookeeper-client",
-        new ZKClientConfig()
-      )
-
-      try {
-        zkClient.getTopicPartitionCount(topic).value shouldBe 2
-      } finally zkClient.close()
+      describeTopics(Seq(topic))
+        .getOrElse(Map.empty)
+        .apply(topic)
+        .partitions()
+        .size() shouldBe 2
     }
   }
 
@@ -229,26 +202,14 @@ class EmbeddedKafkaMethodsSpec
 
       deleteTopics(topics)
 
-      val zkClient = KafkaZkClient.apply(
-        s"localhost:${config.zooKeeperPort}",
-        isSecure = false,
-        zkSessionTimeoutMs,
-        zkConnectionTimeoutMs,
-        maxInFlightRequests = 1,
-        Time.SYSTEM,
-        "embedded-kafka-zookeeper-client",
-        new ZKClientConfig()
-      )
-
       eventually {
-        val noTopicExistsAnymore = topics.forall(t => !zkClient.topicExists(t))
-        val allTopicsAreMarkedForDeletion =
-          topics.forall(t => zkClient.getTopicDeletions.contains(t))
+        val allTopicsOrFailure = listTopics()
+        assert(allTopicsOrFailure.isSuccess)
 
-        assert(allTopicsAreMarkedForDeletion || noTopicExistsAnymore)
+        val allTopics            = allTopicsOrFailure.getOrElse(Set.empty)
+        val noTopicExistsAnymore = topics.forall(t => !allTopics.contains(t))
+        assert(noTopicExistsAnymore)
       }
-
-      zkClient.close()
     }
   }
 

@@ -25,7 +25,7 @@ class ExampleKafkaStreamsSpec
   "A Kafka streams test" should {
     "be easy to run with streams and consumer lifecycle management" in {
       implicit val config: EmbeddedKafkaConfig =
-        EmbeddedKafkaConfig(kafkaPort = 7000, zooKeeperPort = 7001)
+        EmbeddedKafkaConfig(kafkaPort = 7000, controllerPort = 7001)
 
       val streamBuilder = new StreamsBuilder
       val stream: KStream[String, String] =
@@ -54,7 +54,7 @@ class ExampleKafkaStreamsSpec
 
     "be easy to run with streams on arbitrary available ports" in {
       val userDefinedConfig: EmbeddedKafkaConfig =
-        EmbeddedKafkaConfig(kafkaPort = 0, zooKeeperPort = 0)
+        EmbeddedKafkaConfig(kafkaPort = 0, controllerPort = 0)
 
       val streamBuilder = new StreamsBuilder
       val stream: KStream[String, String] =
@@ -86,7 +86,7 @@ class ExampleKafkaStreamsSpec
 
     "allow support creating custom consumers" in {
       implicit val config: EmbeddedKafkaConfig =
-        EmbeddedKafkaConfig(kafkaPort = 7000, zooKeeperPort = 7001)
+        EmbeddedKafkaConfig(kafkaPort = 7000, controllerPort = 7001)
 
       implicit val patienceConfig: PatienceConfig =
         PatienceConfig(5.seconds, 100.millis)

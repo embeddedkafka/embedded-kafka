@@ -5,7 +5,10 @@ import org.apache.kafka.clients.admin.{
   AdminClient,
   AdminClientConfig,
   DeleteTopicsOptions,
-  NewTopic
+  DescribeTopicsOptions,
+  ListTopicsOptions,
+  NewTopic,
+  TopicDescription
 }
 
 import scala.jdk.CollectionConverters._
@@ -24,6 +27,8 @@ trait AdminOps[C <: EmbeddedKafkaConfig] {
   val zkConnectionTimeoutMs                             = 10000
   protected val topicCreationTimeout: FiniteDuration    = 2.seconds
   protected val topicDeletionTimeout: FiniteDuration    = 2.seconds
+  protected val topicListTimeout: FiniteDuration        = 2.seconds
+  protected val topicDescribeTimeout: FiniteDuration    = 2.seconds
   protected val adminClientCloseTimeout: FiniteDuration = 2.seconds
 
   /**
@@ -75,6 +80,53 @@ trait AdminOps[C <: EmbeddedKafkaConfig] {
         .all
         .get(topicDeletionTimeout.length, topicDeletionTimeout.unit)
     }.map(_ => ())
+  }
+
+  /**
+    * Lists the topics available.
+    * @param config
+    *   an implicit [[EmbeddedKafkaConfig]]
+    * @return
+    *   the list of topic names
+    */
+  def listTopics()(implicit config: C): Try[Set[String]] = {
+    val opts = new ListTopicsOptions()
+      .timeoutMs(topicListTimeout.toMillis.toInt)
+
+    withAdminClient { adminClient =>
+      adminClient
+        .listTopics(opts)
+        .names()
+        .get(topicListTimeout.length, topicListTimeout.unit)
+        .asScala
+        .toSet
+    }
+  }
+
+  /**
+    * Describe the topics.
+    *
+    * @param topics
+    *   the topic names to describe
+    * @param config
+    *   an implicit [[EmbeddedKafkaConfig]]
+    * @return
+    *   the list of topic names
+    */
+  def describeTopics(
+      topics: Seq[String]
+  )(implicit config: C): Try[Map[String, TopicDescription]] = {
+    val opts = new DescribeTopicsOptions()
+      .timeoutMs(topicDescribeTimeout.toMillis.toInt)
+
+    withAdminClient { adminClient =>
+      adminClient
+        .describeTopics(topics.asJavaCollection, opts)
+        .allTopicNames()
+        .get(topicDescribeTimeout.length, topicDescribeTimeout.unit)
+        .asScala
+        .toMap
+    }
   }
 
   /**

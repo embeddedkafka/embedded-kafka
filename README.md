@@ -11,25 +11,58 @@ A library that provides an in-memory Kafka instance to run your tests against.
 
 Inspired by [kafka-unit](https://github.com/chbatey/kafka-unit).
 
+1. [Version compatibility matrix](#version-compatibility-matrix)
+2. [Upgrade notes](#upgrade-notes)
+3. [Usage](#usage)
+   1. [embedded-kafka](#embedded-kafka-1)
+   2. [embedded-kafka-streams](#embedded-kafka-streams)
+   3. [embedded-kafka-connect](#embedded-kafka-connect)
+
+---
+
 ## Version compatibility matrix
 
-embedded-kafka is available on Maven Central, compiled for Scala 2.12, 2.13 and Scala 3 (since v3.4.0.1).
+The library is available on Maven Central.
 
 Versions match the version of Kafka they're built against.
 
-## Important known limitation (prior to v2.8.0)
+| embedded-kafka version | Kafka version | Scala versions  | Java version |
+|------------------------|---------------|-----------------|--------------|
+| 4.0.0                  | 4.0.0         | 2.13, 3.3       | 17+          |
+| 3.4.0.1 - 3.9.0        | 3.4.0 - 3.9.0 | 2,12, 2.13, 3.3 | 8+           |
 
-[Prior to v2.8.0](https://github.com/apache/kafka/pull/10174) Kafka core was inlining the Scala library, so you couldn't use a different Scala **patch** version than [what Kafka used to compile its jars](https://github.com/apache/kafka/blob/trunk/gradle/dependencies.gradle#L30)!
+_Note that [prior to v2.8.0](https://github.com/apache/kafka/pull/10174) Kafka core was inlining the Scala library, so you couldn't use a different Scala **patch** version than [what Kafka used to compile its jars](https://github.com/apache/kafka/blob/trunk/gradle/dependencies.gradle#L30)._
 
-## Breaking change: new package name
+---
 
-From v2.8.0 onwards package name has been updated to reflect the library group id (i.e. `io.github.embeddedkafka`).
+## Upgrade notes
 
+### 4.0.0
+
+Major changes:
+- **Java 17+:** as [Kafka Server 4.x requires Java 17+](https://kafka.apache.org/40/documentation/compatibility.html), so does embedded-kafka even though Kafka Clients/Streams are still available for Java 11+.
+- **Scala 2.13+**: Kafka is not compiled against Scala 2.12 anymore, so does embedded-kafka.
+- embedded-kafka 4.0.0 starts a Kafka server in combined mode (broker and controller) and no more Zookeeper.
+
+As a user, you'll have to change your code to use `controllerPort` instead of `zookeeperPort` in places you where doing so:
+
+```diff
+- EmbeddedKafkaConfig(kafkaPort = 12345, zooKeeperPort = 54321)
++ EmbeddedKafkaConfig(kafkaPort = 12345, controllerPort = 54321)
+```
+
+### 2.8.0
+
+**Package name change:** from v2.8.0 onwards package name has been updated to reflect the library group id (i.e. `io.github.embeddedkafka`).
 Aliases to the old package name have been added, along with a one-time [Scalafix rule](https://github.com/embeddedkafka/embedded-kafka-scalafix) to ensure the smoothest migration.
 
-## embedded-kafka
+---
 
-### How to use
+## Usage
+
+### embedded-kafka
+
+#### How to use
 
 * In your `build.sbt` file add the following dependency (replace `x.x.x` with the appropriate version): `"io.github.embeddedkafka" %% "embedded-kafka" % "x.x.x" % Test`
 * Have your class extend the `EmbeddedKafka` trait.
@@ -52,11 +85,11 @@ class MySpec extends AnyWordSpecLike with Matchers with EmbeddedKafka {
 }
 ```
 
-* In-memory Zookeeper and Kafka will be instantiated respectively on port 6000 and 6001 and automatically shutdown at the end of the test.
+* In-memory Kafka broker and controller (combined mode) will be instantiated respectively on port 6000 and 6001 and automatically shutdown at the end of the test.
 
-### Use without the `withRunningKafka` method
+#### Use without the `withRunningKafka` method
 
-A `EmbeddedKafka` companion object is provided for usage without extending the `EmbeddedKafka` trait. Zookeeper and Kafka can be started and stopped in a programmatic way. This is the recommended usage if you have more than one test in your file and you don't want to start and stop Kafka and Zookeeper on every test.
+A `EmbeddedKafka` companion object is provided for usage without extending the `EmbeddedKafka` trait. Kafka can be started and stopped in a programmatic way. This is the recommended usage if you have more than one test in your file and you don't want to start and stop Kafka on every test.
 
 ```scala
 class MySpec extends AnyWordSpecLike with Matchers {
@@ -76,9 +109,9 @@ class MySpec extends AnyWordSpecLike with Matchers {
 
 Please note that in order to avoid Kafka instances not shutting down properly, it's recommended to call `EmbeddedKafka.stop()` in a `after` block or in a similar teardown logic.
 
-### Configuration
+#### Configuration
 
-It's possible to change the ports on which Zookeeper and Kafka are started by providing an implicit `EmbeddedKafkaConfig`
+It's possible to change the ports on which Kafka broker and controller are started by providing an implicit `EmbeddedKafkaConfig`
 
 ```scala
 class MySpec extends AnyWordSpecLike with Matchers with EmbeddedKafka {
@@ -96,7 +129,7 @@ class MySpec extends AnyWordSpecLike with Matchers with EmbeddedKafka {
 }
 ```
 
-If you want to run ZooKeeper and Kafka on arbitrary available ports, you can
+If you want to run Kafka broker and controller on arbitrary available ports, you can
 use the `withRunningKafkaOnFoundPort` method. This is useful to make tests more
 reliable, especially when running tests in parallel or on machines where other
 tests or services may be running with port numbers you can't control.
@@ -107,7 +140,7 @@ class MySpec extends AnyWordSpecLike with Matchers with EmbeddedKafka {
   "runs with embedded kafka on arbitrary available ports" should {
 
     "work" in {
-      val userDefinedConfig = EmbeddedKafkaConfig(kafkaPort = 0, zooKeeperPort = 0)
+      val userDefinedConfig = EmbeddedKafkaConfig(kafkaPort = 0, controllerPort = 0)
 
       withRunningKafkaOnFoundPort(userDefinedConfig) { implicit actualConfig =>
         // now a kafka broker is listening on actualConfig.kafkaPort
@@ -153,7 +186,7 @@ Those properties will be added to the broker configuration, be careful some prop
 in case of conflict the `customBrokerProperties` values will take precedence. Please look at the source code to see what these properties
 are.
 
-### Utility methods
+#### Utility methods
 
 The `EmbeddedKafka` trait provides also some utility methods to interact with the embedded kafka, in order to set preconditions or verifications in your specs:
 
@@ -165,17 +198,17 @@ def consumeFirstMessageFrom(topic: String): String
 def createCustomTopic(topic: String, topicConfig: Map[String,String], partitions: Int, replicationFactor: Int): Unit
 ```
 
-### Custom producers
+#### Custom producers
 
 Given implicits `Deserializer`s for each type and an `EmbeddedKafkaConfig` it is possible to use `withProducer[A, B, R] { your code here }` where R is the code return type.
 
 For more information about how to use the utility methods, you can either look at the Scaladocs or at the tests of this project.
 
-### Custom consumers
+#### Custom consumers
 
 Given implicits `Serializer`s for each type and an `EmbeddedKafkaConfig` it is possible to use `withConsumer[A, B, R] { your code here }` where R is the code return type.
 
-### Loan methods example
+#### Loan methods example
 
 A simple test using loan methods can be as simple as this:
 
@@ -201,26 +234,26 @@ A simple test using loan methods can be as simple as this:
   })
 ```
 
-## embedded-kafka-streams
+### embedded-kafka-streams
 
 A library that builds on top of `embedded-kafka` to offer easy testing of [Kafka Streams](https://kafka.apache.org/documentation/streams).
 
 It takes care of instantiating and starting your streams as well as closing them after running your test-case code.
 
-### How to use
+#### How to use
 
 * In your `build.sbt` file add the following dependency (replace `x.x.x` with the appropriate version): `"io.github.embeddedkafka" %% "embedded-kafka-streams" % "x.x.x" % Test`
 * Have a look at the [example test](kafka-streams/src/test/scala/io/github/embeddedkafka/streams/ExampleKafkaStreamsSpec.scala)
 * For most of the cases have your class extend the `EmbeddedKafkaStreams` trait. This offers both streams management and easy loaning of producers and consumers for asserting resulting messages in output/sink topics.
 * Use `EmbeddedKafkaStreams.runStreams` and `EmbeddedKafka.withConsumer` and `EmbeddedKafka.withProducer`. This allows you to create your own consumers of custom types as seen in the [example test](kafka-streams/src/test/scala/io/github/embeddedkafka/streams/ExampleKafkaStreamsSpec.scala).
 
-## embedded-kafka-connect
+### embedded-kafka-connect
 
 A library that builds on top of `embedded-kafka` to offer easy testing of [Kafka Connect](https://kafka.apache.org/documentation/#connect).
 
 It takes care of instantiating and starting a Kafka Connect server as well as closing it after running your test-case code.
 
-### How to use
+#### How to use
 
 * In your `build.sbt` file add the following dependency (replace `x.x.x` with the appropriate version): `"io.github.embeddedkafka" %% "embedded-kafka-connect" % "x.x.x" % Test`
 * Have a look at the [example test](kafka-connect/src/test/scala/io/github/embeddedkafka/connect/ExampleKafkaConnectSpec.scala)
