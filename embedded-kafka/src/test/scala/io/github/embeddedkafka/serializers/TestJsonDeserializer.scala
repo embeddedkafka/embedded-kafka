@@ -1,7 +1,6 @@
 package io.github.embeddedkafka.serializers
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import org.apache.kafka.common.errors.SerializationException
 import org.apache.kafka.common.serialization.Deserializer
 
@@ -13,7 +12,7 @@ import scala.util.control.NonFatal
   */
 class TestJsonDeserializer[T](implicit tag: ClassTag[T], ev: Null <:< T)
     extends Deserializer[T] {
-  private val mapper = new ObjectMapper().registerModule(DefaultScalaModule)
+  private val mapper = new ObjectMapper()
 
   override def deserialize(topic: String, bytes: Array[Byte]): T =
     Option(bytes).map { _ =>

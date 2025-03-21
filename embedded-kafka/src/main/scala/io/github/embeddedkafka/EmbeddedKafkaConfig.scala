@@ -2,7 +2,6 @@ package io.github.embeddedkafka
 
 trait EmbeddedKafkaConfig {
   def kafkaPort: Int
-  def zooKeeperPort: Int
   def customBrokerProperties: Map[String, String]
   def customProducerProperties: Map[String, String]
   def customConsumerProperties: Map[String, String]
@@ -11,7 +10,6 @@ trait EmbeddedKafkaConfig {
 
 case class EmbeddedKafkaConfigImpl(
     kafkaPort: Int,
-    zooKeeperPort: Int,
     customBrokerProperties: Map[String, String],
     customProducerProperties: Map[String, String],
     customConsumerProperties: Map[String, String]
@@ -20,21 +18,18 @@ case class EmbeddedKafkaConfigImpl(
 }
 
 object EmbeddedKafkaConfig {
-  lazy val defaultKafkaPort     = 6001
-  lazy val defaultZookeeperPort = 6000
+  lazy val defaultKafkaPort = 6001
 
   implicit val defaultConfig: EmbeddedKafkaConfig = apply()
 
   def apply(
       kafkaPort: Int = defaultKafkaPort,
-      zooKeeperPort: Int = defaultZookeeperPort,
       customBrokerProperties: Map[String, String] = Map.empty,
       customProducerProperties: Map[String, String] = Map.empty,
       customConsumerProperties: Map[String, String] = Map.empty
   ): EmbeddedKafkaConfig =
     EmbeddedKafkaConfigImpl(
       kafkaPort,
-      zooKeeperPort,
       customBrokerProperties,
       customProducerProperties,
       customConsumerProperties

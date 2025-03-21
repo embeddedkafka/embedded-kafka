@@ -11,7 +11,7 @@ import io.github.embeddedkafka.connect.EmbeddedKafkaConnect._
 
 class ExampleKafkaConnectSpec extends EmbeddedKafkaSpecSupport {
   implicit val kafkaConfig: EmbeddedKafkaConfig =
-    EmbeddedKafkaConfig(kafkaPort = 7000, zooKeeperPort = 7001)
+    EmbeddedKafkaConfig(kafkaPort = 7000)
 
   "A Kafka Connect test" should {
     "start a Connect server on a specified port" in {

@@ -2,7 +2,6 @@ package io.github.embeddedkafka
 
 import java.util.Collections
 import java.util.concurrent.TimeoutException
-import kafka.zk.KafkaZkClient
 import io.github.embeddedkafka.EmbeddedKafka._
 import io.github.embeddedkafka.serializers.{
   TestJsonDeserializer,
@@ -18,13 +17,10 @@ import org.apache.kafka.common.header.internals.RecordHeaders
 import org.apache.kafka.common.serialization._
 import org.apache.kafka.common.utils.Time
 import org.apache.kafka.storage.internals.log.CleanerConfig
-import org.apache.zookeeper.client.ZKClientConfig
 import org.scalatest.concurrent.JavaFutures
 import org.scalatest.time.{Milliseconds, Seconds, Span}
 import org.scalatest.{Assertion, BeforeAndAfterAll, OptionValues}
 
-// Used by Scala 2.12
-import scala.collection.compat._
 import scala.concurrent.duration._
 import scala.jdk.CollectionConverters._
 
@@ -37,9 +33,11 @@ class EmbeddedKafkaMethodsSpec
   private implicit val patience: PatienceConfig =
     PatienceConfig(Span(5, Seconds), Span(100, Milliseconds))
 
+  var k: EmbeddedK = _
+  
   override def beforeAll(): Unit = {
     super.beforeAll()
-    val _ = EmbeddedKafka.start()
+    k = EmbeddedKafka.start()
   }
 
   override def afterAll(): Unit = {
@@ -171,20 +169,7 @@ class EmbeddedKafkaMethodsSpec
         )
       )
 
-      val zkClient = KafkaZkClient.apply(
-        s"localhost:${config.zooKeeperPort}",
-        isSecure = false,
-        zkSessionTimeoutMs,
-        zkConnectionTimeoutMs,
-        maxInFlightRequests = 1,
-        Time.SYSTEM,
-        "embedded-kafka-zookeeper-client",
-        new ZKClientConfig()
-      )
-
-      try {
-        zkClient.topicExists(topic) shouldBe true
-      } finally zkClient.close()
+      listTopics().get should contain(topic)
     }
 
     "create a topic with custom number of partitions" in {
