@@ -3,10 +3,7 @@ package io.github.embeddedkafka
 import io.github.embeddedkafka.EmbeddedKafka._
 import io.github.embeddedkafka.EmbeddedKafkaSpecSupport._
 import org.scalatest.exceptions.TestFailedException
-import io.github.embeddedkafka.EmbeddedKafkaConfig.{
-  defaultKafkaPort,
-  defaultZookeeperPort
-}
+import io.github.embeddedkafka.EmbeddedKafkaConfig.defaultKafkaPort
 
 class EmbeddedKafkaWithRunningKafkaSpec extends EmbeddedKafkaSpecSupport {
   "the withRunningKafka method" should {
@@ -16,20 +13,13 @@ class EmbeddedKafkaWithRunningKafkaSpec extends EmbeddedKafkaSpecSupport {
       }
     }
 
-    "start a ZooKeeper instance on port 6000 by default" in {
-      withRunningKafka {
-        expectedServerStatus(defaultZookeeperPort, Available)
-      }
-    }
-
-    "stop Kafka and Zookeeper successfully" when {
+    "stop Kafka successfully" when {
       "the enclosed test passes" in {
         withRunningKafka {
           true shouldBe true
         }
 
         expectedServerStatus(defaultKafkaPort, NotAvailable)
-        expectedServerStatus(defaultZookeeperPort, NotAvailable)
       }
 
       "the enclosed test fails" in {
@@ -40,7 +30,6 @@ class EmbeddedKafkaWithRunningKafkaSpec extends EmbeddedKafkaSpecSupport {
         }
 
         expectedServerStatus(defaultKafkaPort, NotAvailable)
-        expectedServerStatus(defaultZookeeperPort, NotAvailable)
       }
     }
 
@@ -53,13 +42,5 @@ class EmbeddedKafkaWithRunningKafkaSpec extends EmbeddedKafkaSpecSupport {
       }
     }
 
-    "start a Zookeeper server on a specified port" in {
-      implicit val config: EmbeddedKafkaConfig =
-        EmbeddedKafkaConfig(zooKeeperPort = 12345)
-
-      withRunningKafka {
-        expectedServerStatus(12345, Available)
-      }
-    }
   }
 }
