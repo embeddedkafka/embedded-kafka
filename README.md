@@ -44,8 +44,7 @@ Major changes:
 - **Scala 2.13+**: Kafka is not compiled against Scala 2.12 anymore, so does embedded-kafka.
 - embedded-kafka 4.0.0 starts a Kafka server in combined mode (broker and controller) and no more Zookeeper.
 
-As a user, you'll have to change your code to use `controllerPort` instead of `zookeeperPort` in places you where doing so:
-
+As a user, you'll have to change your code to use `controllerPort` instead of `zookeeperPort` in places you were doing so:
 ```diff
 - EmbeddedKafkaConfig(kafkaPort = 12345, zooKeeperPort = 54321)
 + EmbeddedKafkaConfig(kafkaPort = 12345, controllerPort = 54321)
