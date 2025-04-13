@@ -1,21 +1,19 @@
 package io.github.embeddedkafka
 
-import java.nio.file.Files
-
+import io.github.embeddedkafka.EmbeddedKafka._
+import io.github.embeddedkafka.EmbeddedKafkaConfig.{
+  defaultControllerPort,
+  defaultKafkaPort
+}
+import io.github.embeddedkafka.EmbeddedKafkaSpecSupport._
 import org.apache.kafka.common.serialization.{
   StringDeserializer,
   StringSerializer
 }
-import io.github.embeddedkafka.EmbeddedKafka._
-import io.github.embeddedkafka.EmbeddedKafkaConfig.{
-  defaultKafkaPort,
-  defaultZookeeperPort
-}
-import io.github.embeddedkafka.EmbeddedKafkaSpecSupport._
 import org.scalatest.OptionValues
 
-import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
+import scala.jdk.CollectionConverters._
 
 class EmbeddedKafkaObjectSpec
     extends EmbeddedKafkaSpecSupport
@@ -24,21 +22,21 @@ class EmbeddedKafkaObjectSpec
 
   "the EmbeddedKafka object" when {
     "invoking the start and stop methods" should {
-      "start and stop Kafka and Zookeeper on the default ports" in {
+      "start and stop Kafka broker and controller on the default ports" in {
         EmbeddedKafka.start()
 
+        expectedServerStatus(defaultControllerPort, Available)
         expectedServerStatus(defaultKafkaPort, Available)
-        expectedServerStatus(defaultZookeeperPort, Available)
 
         EmbeddedKafka.stop()
 
         expectedServerStatus(defaultKafkaPort, NotAvailable)
-        expectedServerStatus(defaultZookeeperPort, NotAvailable)
+        expectedServerStatus(defaultControllerPort, NotAvailable)
       }
 
-      "start and stop Kafka and Zookeeper on different specified ports using an implicit configuration" in {
+      "start and stop Kafka broker and controller on different specified ports using an implicit configuration" in {
         implicit val config: EmbeddedKafkaConfig =
-          EmbeddedKafkaConfig(kafkaPort = 12345, zooKeeperPort = 54321)
+          EmbeddedKafkaConfig(kafkaPort = 12345, controllerPort = 54321)
         EmbeddedKafka.start()
 
         expectedServerStatus(12345, Available)
@@ -48,20 +46,20 @@ class EmbeddedKafkaObjectSpec
       }
 
       "start and stop a specific Kafka" in {
-        val firstBroker = EmbeddedKafka.start()(
-          EmbeddedKafkaConfig(kafkaPort = 7000, zooKeeperPort = 7001)
+        val firstServer = EmbeddedKafka.start()(
+          EmbeddedKafkaConfig(kafkaPort = 7000, controllerPort = 7001)
         )
         EmbeddedKafka.start()(
-          EmbeddedKafkaConfig(kafkaPort = 8000, zooKeeperPort = 8001)
+          EmbeddedKafkaConfig(kafkaPort = 8000, controllerPort = 8001)
         )
 
-        expectedServerStatus(7000, Available)
         expectedServerStatus(7001, Available)
+        expectedServerStatus(7000, Available)
 
-        expectedServerStatus(8000, Available)
         expectedServerStatus(8001, Available)
+        expectedServerStatus(8000, Available)
 
-        EmbeddedKafka.stop(firstBroker)
+        EmbeddedKafka.stop(firstServer)
 
         expectedServerStatus(7000, NotAvailable)
         expectedServerStatus(7001, NotAvailable)
@@ -72,35 +70,33 @@ class EmbeddedKafkaObjectSpec
         EmbeddedKafka.stop()
       }
 
-      "start and stop Kafka and Zookeeper successfully on arbitrary available ports" in {
+      "start and stop Kafka broker and controller successfully on arbitrary available ports" in {
         val someConfig =
-          EmbeddedKafkaConfig(kafkaPort = 0, zooKeeperPort = 0)
+          EmbeddedKafkaConfig(kafkaPort = 0, controllerPort = 0)
         val kafka = EmbeddedKafka.start()(someConfig)
 
-        kafka.factory shouldBe defined
+        val usedControllerPort = EmbeddedKafka.controllerPort(kafka.controller)
+        val usedKafkaPort      = EmbeddedKafka.kafkaPort(kafka.broker)
 
-        val usedZookeeperPort = EmbeddedKafka.zookeeperPort(kafka.factory.get)
-        val usedKafkaPort     = EmbeddedKafka.kafkaPort(kafka.broker)
-
+        expectedServerStatus(usedControllerPort, Available)
         expectedServerStatus(usedKafkaPort, Available)
-        expectedServerStatus(usedZookeeperPort, Available)
 
+        kafka.config.controllerPort should be(usedControllerPort)
         kafka.config.kafkaPort should be(usedKafkaPort)
-        kafka.config.zooKeeperPort should be(usedZookeeperPort)
 
         EmbeddedKafka.stop()
 
         expectedServerStatus(usedKafkaPort, NotAvailable)
-        expectedServerStatus(usedZookeeperPort, NotAvailable)
+        expectedServerStatus(usedControllerPort, NotAvailable)
       }
 
       "start and stop multiple Kafka instances on specified ports" in {
         val someConfig =
-          EmbeddedKafkaConfig(kafkaPort = 12345, zooKeeperPort = 32111)
+          EmbeddedKafkaConfig(kafkaPort = 12345, controllerPort = 54321)
         val someBroker = EmbeddedKafka.start()(someConfig)
 
         val someOtherConfig =
-          EmbeddedKafkaConfig(kafkaPort = 23456, zooKeeperPort = 43211)
+          EmbeddedKafkaConfig(kafkaPort = 23456, controllerPort = 65432)
         val someOtherBroker = EmbeddedKafka.start()(someOtherConfig)
 
         val topic            = "publish_test_topic_1"
@@ -133,29 +129,9 @@ class EmbeddedKafkaObjectSpec
     }
 
     "invoking the isRunning method" should {
-      "return true when both Kafka and Zookeeper are running" in {
+      "return true when Kafka is running" in {
         EmbeddedKafka.start()
         EmbeddedKafka.isRunning shouldBe true
-        EmbeddedKafka.stop()
-        EmbeddedKafka.isRunning shouldBe false
-      }
-
-      "return true when both Kafka and Zookeeper are running, if started separately" in {
-        EmbeddedKafka.startZooKeeper(
-          Files.createTempDirectory("zookeeper-test-logs")
-        )
-        EmbeddedKafka.startKafka(Files.createTempDirectory("kafka-test-logs"))
-
-        EmbeddedKafka.isRunning shouldBe true
-        EmbeddedKafka.stop()
-        EmbeddedKafka.isRunning shouldBe false
-      }
-
-      "return false when only Zookeeper is running" in {
-        EmbeddedKafka.startZooKeeper(
-          Files.createTempDirectory("zookeeper-test-logs")
-        )
-        EmbeddedKafka.isRunning shouldBe false
         EmbeddedKafka.stop()
         EmbeddedKafka.isRunning shouldBe false
       }

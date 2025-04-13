@@ -75,7 +75,6 @@ lazy val commonSettings = Seq(
   organization := "io.github.embeddedkafka",
   scalaVersion := Versions.Scala213,
   crossScalaVersions := Seq(
-    Versions.Scala212,
     Versions.Scala213,
     Versions.Scala3
   )
@@ -92,6 +91,7 @@ lazy val embeddedKafka = (project in file("embedded-kafka"))
   .settings(name := "embedded-kafka")
   .settings(commonSettings: _*)
   .settings(libraryDependencies ++= EmbeddedKafka.prodDeps)
+  .settings(libraryDependencies ++= EmbeddedKafka.testDeps)
 
 lazy val kafkaStreams = (project in file("kafka-streams"))
   .settings(name := "embedded-kafka-streams")

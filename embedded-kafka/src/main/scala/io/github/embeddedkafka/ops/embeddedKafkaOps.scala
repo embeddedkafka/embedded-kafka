@@ -16,7 +16,6 @@ private[embeddedkafka] trait EmbeddedKafkaOps[
 ] extends AdminOps[C]
     with ConsumerOps[C]
     with ProducerOps[C]
-    with ZooKeeperOps
     with KafkaOps
 
 /**
@@ -34,5 +33,4 @@ private[embeddedkafka] trait RunningEmbeddedKafkaOps[
 ] extends EmbeddedKafkaOps[C, S]
     with RunningServersOps
     with ServerStarter[C, S]
-    with RunningZooKeeperOps
     with RunningKafkaOps
