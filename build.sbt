@@ -1,5 +1,4 @@
 import Dependencies._
-import xerial.sbt.Sonatype.sonatypeCentralHost
 
 ThisBuild / parallelExecution := false
 ThisBuild / versionScheme     := Some("semver-spec")
@@ -65,7 +64,6 @@ lazy val releaseSettings = Seq(
   releaseVersionBump := sbtrelease.Version.Bump.Minor,
   releaseCrossBuild  := true
 )
-ThisBuild / sonatypeCredentialHost := sonatypeCentralHost
 
 lazy val testSettings = Seq(
   Test / fork              := true,
