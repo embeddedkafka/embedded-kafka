@@ -88,7 +88,7 @@ private[embeddedkafka] trait EmbeddedKafkaStreamsSupport[
     withRunningKafkaOnFoundPort(config) { implicit configWithUsedPorts =>
       topicsToCreate.foreach(topic => createCustomTopic(topic))
       val streamId = UUIDs.newUuid().toString
-      val streams = new KafkaStreams(
+      val streams  = new KafkaStreams(
         topology,
         map2Properties(streamsConfig.config(streamId, extraConfig))
       )
