@@ -27,7 +27,7 @@ class ExampleKafkaStreamsSpec
       implicit val config: EmbeddedKafkaConfig =
         EmbeddedKafkaConfig(kafkaPort = 7000, controllerPort = 7001)
 
-      val streamBuilder = new StreamsBuilder
+      val streamBuilder                   = new StreamsBuilder
       val stream: KStream[String, String] =
         streamBuilder.stream(inTopic, Consumed.`with`(stringSerde, stringSerde))
 
@@ -56,7 +56,7 @@ class ExampleKafkaStreamsSpec
       val userDefinedConfig: EmbeddedKafkaConfig =
         EmbeddedKafkaConfig(kafkaPort = 0, controllerPort = 0)
 
-      val streamBuilder = new StreamsBuilder
+      val streamBuilder                   = new StreamsBuilder
       val stream: KStream[String, String] =
         streamBuilder.stream(inTopic, Consumed.`with`(stringSerde, stringSerde))
 
@@ -91,7 +91,7 @@ class ExampleKafkaStreamsSpec
       implicit val patienceConfig: PatienceConfig =
         PatienceConfig(5.seconds, 100.millis)
 
-      val streamBuilder = new StreamsBuilder
+      val streamBuilder                   = new StreamsBuilder
       val stream: KStream[String, String] =
         streamBuilder.stream(inTopic, Consumed.`with`(stringSerde, stringSerde))
 
