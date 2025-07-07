@@ -41,7 +41,7 @@ _Note that [prior to v2.8.0](https://github.com/apache/kafka/pull/10174) Kafka c
 
 Major changes:
 - **Java 17+:** as [Kafka Server 4.x requires Java 17+](https://kafka.apache.org/40/documentation/compatibility.html), so does embedded-kafka even though Kafka Clients/Streams are still available for Java 11+.
-- **Scala 2.13+**: Kafka is not compiled against Scala 2.12 anymore, so does embedded-kafka.
+- **Scala 2.13+**: Kafka is not compiled against Scala 2.12 anymore, so neither is embedded-kafka.
 - embedded-kafka 4.0.0 starts a Kafka server in combined mode (broker and controller) and no more Zookeeper.
 
 As a user, you'll have to change your code to use `controllerPort` instead of `zookeeperPort` in places you were doing so:
