@@ -47,22 +47,22 @@ class EmbeddedKafkaObjectSpec
 
       "start and stop a specific Kafka" in {
         val firstServer = EmbeddedKafka.start()(
-          EmbeddedKafkaConfig(kafkaPort = 7000, controllerPort = 7001)
+          EmbeddedKafkaConfig(kafkaPort = 9000, controllerPort = 9001)
         )
         EmbeddedKafka.start()(
           EmbeddedKafkaConfig(kafkaPort = 8000, controllerPort = 8001)
         )
 
-        expectedServerStatus(7001, Available)
-        expectedServerStatus(7000, Available)
+        expectedServerStatus(9001, Available)
+        expectedServerStatus(9000, Available)
 
         expectedServerStatus(8001, Available)
         expectedServerStatus(8000, Available)
 
         EmbeddedKafka.stop(firstServer)
 
-        expectedServerStatus(7000, NotAvailable)
-        expectedServerStatus(7001, NotAvailable)
+        expectedServerStatus(9000, NotAvailable)
+        expectedServerStatus(9001, NotAvailable)
 
         expectedServerStatus(8000, Available)
         expectedServerStatus(8001, Available)
