@@ -21,6 +21,7 @@ import org.apache.kafka.server.config.{
   ServerConfigs,
   ServerLogConfigs
 }
+import org.apache.kafka.common.network.ListenerName
 import org.apache.kafka.storage.internals.log.CleanerConfig
 import org.slf4j.LoggerFactory
 
@@ -240,13 +241,17 @@ trait RunningKafkaOps {
 
   private[embeddedkafka] def kafkaPort(kafkaBrokerServer: BrokerServer): Int =
     kafkaBrokerServer.boundPort(
-      kafkaBrokerServer.config.listeners.head.listenerName
+      ListenerName.normalised(
+        kafkaBrokerServer.config.listeners.head.listener()
+      )
     )
 
   private[embeddedkafka] def controllerPort(
       controllerServer: ControllerServer
   ): Int =
     controllerServer.socketServer.boundPort(
-      controllerServer.config.controllerListeners.head.listenerName
+      ListenerName.normalised(
+        controllerServer.config.controllerListeners.head.listener()
+      )
     )
 }
