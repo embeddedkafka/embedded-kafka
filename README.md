@@ -28,7 +28,7 @@ Versions match the version of Kafka they're built against.
 
 | embedded-kafka version | Kafka version | Scala versions  | Java version |
 |------------------------|---------------|-----------------|--------------|
-| 4.0.0                  | 4.0.0         | 2.13, 3.3       | 17+          |
+| 4.x                    | 4.x           | 2.13, 3.3       | 17+          |
 | 3.4.0.1 - 3.9.0        | 3.4.0 - 3.9.0 | 2,12, 2.13, 3.3 | 8+           |
 
 _Note that [prior to v2.8.0](https://github.com/apache/kafka/pull/10174) Kafka core was inlining the Scala library, so you couldn't use a different Scala **patch** version than [what Kafka used to compile its jars](https://github.com/apache/kafka/blob/trunk/gradle/dependencies.gradle#L30)._
