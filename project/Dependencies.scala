@@ -6,7 +6,7 @@ object Dependencies {
     val Scala3    = "3.3.6"
     val Scala213  = "2.13.16"
     val Kafka     = "4.0.0"
-    val Slf4j     = "1.7.36"
+    val Slf4j     = "2.0.17"
     val ScalaTest = "3.2.19"
     val Jackson   = "2.16.2" // Keep consistent with the one provided by Kafka
   }
