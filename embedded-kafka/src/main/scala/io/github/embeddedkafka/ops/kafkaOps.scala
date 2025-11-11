@@ -3,9 +3,11 @@ package io.github.embeddedkafka.ops
 import io.github.embeddedkafka.{EmbeddedK, EmbeddedKafkaConfig, EmbeddedServer}
 import kafka.server._
 import org.apache.kafka.common.Uuid
+import org.apache.kafka.common.metadata.FeatureLevelRecord
 import org.apache.kafka.common.utils.Time
 import org.apache.kafka.coordinator.group.GroupCoordinatorConfig
 import org.apache.kafka.coordinator.transaction.TransactionLogConfig
+import org.apache.kafka.metadata.bootstrap.BootstrapMetadata
 import org.apache.kafka.metadata.properties.{
   MetaProperties,
   MetaPropertiesEnsemble,
@@ -15,6 +17,7 @@ import org.apache.kafka.metadata.properties.{
 import org.apache.kafka.network.SocketServerConfigs
 import org.apache.kafka.raft.QuorumConfig
 import org.apache.kafka.server.ServerSocketFactory
+import org.apache.kafka.server.common.ApiMessageAndVersion
 import org.apache.kafka.server.config.{
   KRaftConfigs,
   ReplicationConfigs,
@@ -28,6 +31,7 @@ import org.slf4j.LoggerFactory
 import java.io.{File, IOException}
 import java.net.ServerSocket
 import java.nio.file.{Path, Paths}
+import java.util.ArrayList
 import java.util.concurrent.CompletableFuture
 import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Try, Using}
@@ -99,6 +103,9 @@ trait KafkaOps {
     val (metaPropsEnsemble, bootstrapMetadata) =
       KafkaRaftServer.initializeLogDirs(config, logger, logIdent)
 
+    // Enhance bootstrap metadata with group.version feature to support the new consumer group protocol
+    val enhancedBootstrapMetadata = enhanceBootstrapMetadata(bootstrapMetadata)
+
     val metrics = Server.initializeMetrics(
       config,
       time,
@@ -123,7 +130,7 @@ trait KafkaOps {
     val controller: ControllerServer = new ControllerServer(
       sharedServer,
       KafkaRaftServer.configSchema,
-      bootstrapMetadata
+      enhancedBootstrapMetadata
     )
 
     // Controller component must be started before the broker component so that
@@ -136,6 +143,35 @@ trait KafkaOps {
 
   private def generateRandomClusterId(): String = {
     Uuid.randomUuid().toString
+  }
+
+  /**
+    * Enhance bootstrap metadata with group.version feature to support the new
+    * consumer group protocol. This adds the group.version=1 feature to the
+    * finalized features, which enables the CONSUMER group protocol.
+    *
+    * @param bootstrapMetadata
+    *   the original bootstrap metadata
+    * @return
+    *   enhanced bootstrap metadata with group.version feature
+    */
+  private def enhanceBootstrapMetadata(
+      bootstrapMetadata: BootstrapMetadata
+  ): BootstrapMetadata = {
+    val records = new ArrayList[ApiMessageAndVersion]()
+    bootstrapMetadata.records().forEach(r => records.add(r))
+
+    // Add group.version feature with level 1 to enable the new consumer group protocol
+    records.add(
+      new ApiMessageAndVersion(
+        new FeatureLevelRecord()
+          .setName("group.version")
+          .setFeatureLevel(1.toShort),
+        0.toShort
+      )
+    )
+
+    BootstrapMetadata.fromRecords(records, "embedded-kafka")
   }
 
   private def writeMetaProperties(
