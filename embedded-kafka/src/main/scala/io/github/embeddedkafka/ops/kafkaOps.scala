@@ -3,7 +3,6 @@ package io.github.embeddedkafka.ops
 import io.github.embeddedkafka.{EmbeddedK, EmbeddedKafkaConfig, EmbeddedServer}
 import kafka.server._
 import org.apache.kafka.common.Uuid
-import org.apache.kafka.common.metadata.FeatureLevelRecord
 import org.apache.kafka.common.utils.Time
 import org.apache.kafka.coordinator.group.GroupCoordinatorConfig
 import org.apache.kafka.coordinator.transaction.TransactionLogConfig
@@ -17,7 +16,6 @@ import org.apache.kafka.metadata.properties.{
 import org.apache.kafka.network.SocketServerConfigs
 import org.apache.kafka.raft.QuorumConfig
 import org.apache.kafka.server.ServerSocketFactory
-import org.apache.kafka.server.common.ApiMessageAndVersion
 import org.apache.kafka.server.config.{
   KRaftConfigs,
   ReplicationConfigs,
@@ -31,7 +29,7 @@ import org.slf4j.LoggerFactory
 import java.io.{File, IOException}
 import java.net.ServerSocket
 import java.nio.file.{Path, Paths}
-import java.util.ArrayList
+import java.util.{HashMap => JHashMap}
 import java.util.concurrent.CompletableFuture
 import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Try, Using}
@@ -147,8 +145,9 @@ trait KafkaOps {
 
   /**
     * Enhance bootstrap metadata with group.version feature to support the new
-    * consumer group protocol. This adds the group.version=1 feature to the
-    * finalized features, which enables the CONSUMER group protocol.
+    * consumer group protocol. This uses the standard Kafka API to create
+    * bootstrap metadata with the required features, which is the same approach
+    * used by standard Kafka deployments.
     *
     * @param bootstrapMetadata
     *   the original bootstrap metadata
@@ -158,20 +157,16 @@ trait KafkaOps {
   private def enhanceBootstrapMetadata(
       bootstrapMetadata: BootstrapMetadata
   ): BootstrapMetadata = {
-    val records = new ArrayList[ApiMessageAndVersion]()
-    bootstrapMetadata.records().forEach(r => records.add(r))
+    // Use the standard Kafka API (fromVersions) to create bootstrap metadata with features
+    // This is the same approach used by real Kafka deployments
+    val featureVersions = new JHashMap[String, java.lang.Short]()
+    featureVersions.put("group.version", 1.toShort)
 
-    // Add group.version feature with level 1 to enable the new consumer group protocol
-    records.add(
-      new ApiMessageAndVersion(
-        new FeatureLevelRecord()
-          .setName("group.version")
-          .setFeatureLevel(1.toShort),
-        0.toShort
-      )
+    BootstrapMetadata.fromVersions(
+      bootstrapMetadata.metadataVersion(),
+      featureVersions,
+      "embedded-kafka"
     )
-
-    BootstrapMetadata.fromRecords(records, "embedded-kafka")
   }
 
   private def writeMetaProperties(
