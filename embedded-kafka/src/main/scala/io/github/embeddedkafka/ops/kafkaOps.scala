@@ -16,6 +16,7 @@ import org.apache.kafka.metadata.properties.{
 import org.apache.kafka.network.SocketServerConfigs
 import org.apache.kafka.raft.QuorumConfig
 import org.apache.kafka.server.ServerSocketFactory
+import org.apache.kafka.server.common.GroupVersion
 import org.apache.kafka.server.config.{
   KRaftConfigs,
   ReplicationConfigs,
@@ -144,23 +145,27 @@ trait KafkaOps {
   }
 
   /**
-    * Enhance bootstrap metadata with group.version feature to support the new
-    * consumer group protocol. This uses the standard Kafka API to create
-    * bootstrap metadata with the required features, which is the same approach
-    * used by standard Kafka deployments.
+    * Enhance bootstrap metadata with latest production feature versions to
+    * support new protocols like the consumer group protocol. This uses the
+    * standard Kafka API to create bootstrap metadata with feature versions
+    * derived from Kafka's latest production constants, ensuring compatibility
+    * without hardcoding specific version numbers.
     *
     * @param bootstrapMetadata
     *   the original bootstrap metadata
     * @return
-    *   enhanced bootstrap metadata with group.version feature
+    *   enhanced bootstrap metadata with latest production features
     */
   private def enhanceBootstrapMetadata(
       bootstrapMetadata: BootstrapMetadata
   ): BootstrapMetadata = {
     // Use the standard Kafka API (fromVersions) to create bootstrap metadata with features
-    // This is the same approach used by real Kafka deployments
+    // Use latest production feature versions from Kafka constants to avoid hardcoding
     val featureVersions = new JHashMap[String, java.lang.Short]()
-    featureVersions.put("group.version", 1.toShort)
+    featureVersions.put(
+      GroupVersion.FEATURE_NAME,
+      GroupVersion.LATEST_PRODUCTION.featureLevel()
+    )
 
     BootstrapMetadata.fromVersions(
       bootstrapMetadata.metadataVersion(),
