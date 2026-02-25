@@ -6,6 +6,7 @@ import org.apache.kafka.common.Uuid
 import org.apache.kafka.common.utils.Time
 import org.apache.kafka.coordinator.group.GroupCoordinatorConfig
 import org.apache.kafka.coordinator.transaction.TransactionLogConfig
+import org.apache.kafka.metadata.bootstrap.BootstrapMetadata
 import org.apache.kafka.metadata.properties.{
   MetaProperties,
   MetaPropertiesEnsemble,
@@ -15,6 +16,7 @@ import org.apache.kafka.metadata.properties.{
 import org.apache.kafka.network.SocketServerConfigs
 import org.apache.kafka.raft.QuorumConfig
 import org.apache.kafka.server.ServerSocketFactory
+import org.apache.kafka.server.common.GroupVersion
 import org.apache.kafka.server.config.{
   KRaftConfigs,
   ReplicationConfigs,
@@ -28,6 +30,7 @@ import org.slf4j.LoggerFactory
 import java.io.{File, IOException}
 import java.net.ServerSocket
 import java.nio.file.{Path, Paths}
+import java.util.{HashMap => JHashMap}
 import java.util.concurrent.CompletableFuture
 import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Try, Using}
@@ -99,6 +102,9 @@ trait KafkaOps {
     val (metaPropsEnsemble, bootstrapMetadata) =
       KafkaRaftServer.initializeLogDirs(config, logger, logIdent)
 
+    // Enhance bootstrap metadata with group.version feature to support the new consumer group protocol
+    val enhancedBootstrapMetadata = enhanceBootstrapMetadata(bootstrapMetadata)
+
     val metrics = Server.initializeMetrics(
       config,
       time,
@@ -123,7 +129,7 @@ trait KafkaOps {
     val controller: ControllerServer = new ControllerServer(
       sharedServer,
       KafkaRaftServer.configSchema,
-      bootstrapMetadata
+      enhancedBootstrapMetadata
     )
 
     // Controller component must be started before the broker component so that
@@ -136,6 +142,36 @@ trait KafkaOps {
 
   private def generateRandomClusterId(): String = {
     Uuid.randomUuid().toString
+  }
+
+  /**
+    * Enhance bootstrap metadata with latest production feature versions to
+    * support new protocols like the consumer group protocol. This uses the
+    * standard Kafka API to create bootstrap metadata with feature versions
+    * derived from Kafka's latest production constants, ensuring compatibility
+    * without hardcoding specific version numbers.
+    *
+    * @param bootstrapMetadata
+    *   the original bootstrap metadata
+    * @return
+    *   enhanced bootstrap metadata with latest production features
+    */
+  private def enhanceBootstrapMetadata(
+      bootstrapMetadata: BootstrapMetadata
+  ): BootstrapMetadata = {
+    // Use the standard Kafka API (fromVersions) to create bootstrap metadata with features
+    // Use latest production feature versions from Kafka constants to avoid hardcoding
+    val featureVersions = new JHashMap[String, java.lang.Short]()
+    featureVersions.put(
+      GroupVersion.FEATURE_NAME,
+      GroupVersion.LATEST_PRODUCTION.featureLevel()
+    )
+
+    BootstrapMetadata.fromVersions(
+      bootstrapMetadata.metadataVersion(),
+      featureVersions,
+      "embedded-kafka"
+    )
   }
 
   private def writeMetaProperties(
