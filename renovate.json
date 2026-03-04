@@ -3,5 +3,6 @@
   "extends": [
     "config:recommended"
   ],
-  "dependencyDashboardAutoclose": true
+  "dependencyDashboardAutoclose": true,
+  "baseBranchPatterns": ["master", "v3.x"]
 }
