@@ -19,7 +19,7 @@ class EmbeddedKafkaWithRunningKafkaSpec extends EmbeddedKafkaSpecSupport {
     "stop Kafka successfully" when {
       "the enclosed test passes" in {
         withRunningKafka {
-          true shouldBe true
+          val _ = true shouldBe true
         }
 
         expectedServerStatus(defaultControllerPort, NotAvailable)
@@ -27,9 +27,9 @@ class EmbeddedKafkaWithRunningKafkaSpec extends EmbeddedKafkaSpecSupport {
       }
 
       "the enclosed test fails" in {
-        a[TestFailedException] shouldBe thrownBy {
+        val _ = a[TestFailedException] shouldBe thrownBy {
           withRunningKafka {
-            true shouldBe false
+            val _ = true shouldBe false
           }
         }
 

@@ -44,7 +44,7 @@ class ExampleKafkaConnectSpec extends EmbeddedKafkaSpecSupport {
       val extraConfig = Map(
         WorkerConfig.KEY_CONVERTER_CLASS_CONFIG -> "InvalidKeyConverter"
       )
-      a[ConfigException] shouldBe thrownBy {
+      val _ = a[ConfigException] shouldBe thrownBy {
         startConnect(connectPort, offsets, extraConfig) {}
       }
 

@@ -7,7 +7,6 @@ import io.github.embeddedkafka.EmbeddedKafkaSpecSupport.{
   NotAvailable,
   ServerStatus
 }
-import org.scalatest.Assertion
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{Milliseconds, Seconds, Span}
@@ -24,10 +23,11 @@ trait EmbeddedKafkaSpecSupport
   implicit val config: PatienceConfig =
     PatienceConfig(Span(1, Seconds), Span(100, Milliseconds))
 
-  def expectedServerStatus(port: Int, expectedStatus: ServerStatus): Assertion =
-    eventually {
+  def expectedServerStatus(port: Int, expectedStatus: ServerStatus): Unit = {
+    val _ = eventually {
       status(port) shouldBe expectedStatus
     }
+  }
 
   private def status(port: Int): ServerStatus = {
     Try(new Socket(InetAddress.getByName("localhost"), port)) match {

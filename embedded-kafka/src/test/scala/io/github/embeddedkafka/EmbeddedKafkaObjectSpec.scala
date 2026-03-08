@@ -23,7 +23,7 @@ class EmbeddedKafkaObjectSpec
   "the EmbeddedKafka object" when {
     "invoking the start and stop methods" should {
       "start and stop Kafka broker and controller on the default ports" in {
-        EmbeddedKafka.start()
+        val _ = EmbeddedKafka.start()
 
         expectedServerStatus(defaultControllerPort, Available)
         expectedServerStatus(defaultKafkaPort, Available)
@@ -37,7 +37,7 @@ class EmbeddedKafkaObjectSpec
       "start and stop Kafka broker and controller on different specified ports using an implicit configuration" in {
         implicit val config: EmbeddedKafkaConfig =
           EmbeddedKafkaConfig(kafkaPort = 12345, controllerPort = 54321)
-        EmbeddedKafka.start()
+        val _ = EmbeddedKafka.start()
 
         expectedServerStatus(12345, Available)
         expectedServerStatus(54321, Available)
@@ -49,7 +49,7 @@ class EmbeddedKafkaObjectSpec
         val firstServer = EmbeddedKafka.start()(
           EmbeddedKafkaConfig(kafkaPort = 9000, controllerPort = 9001)
         )
-        EmbeddedKafka.start()(
+        val _ = EmbeddedKafka.start()(
           EmbeddedKafkaConfig(kafkaPort = 8000, controllerPort = 8001)
         )
 
@@ -81,8 +81,8 @@ class EmbeddedKafkaObjectSpec
         expectedServerStatus(usedControllerPort, Available)
         expectedServerStatus(usedKafkaPort, Available)
 
-        kafka.config.controllerPort should be(usedControllerPort)
-        kafka.config.kafkaPort should be(usedKafkaPort)
+        val _ = kafka.config.controllerPort should be(usedControllerPort)
+        val _ = kafka.config.kafkaPort should be(usedKafkaPort)
 
         EmbeddedKafka.stop()
 
@@ -121,8 +121,8 @@ class EmbeddedKafkaObjectSpec
               .map(Codecs.stringValueCrDecoder)
           }(someOtherConfig, deserializer, deserializer)
 
-        moreRecords.size shouldBe 1
-        moreRecords.headOption.value shouldBe someOtherMessage
+        val _ = moreRecords.size shouldBe 1
+        val _ = moreRecords.headOption.value shouldBe someOtherMessage
 
         EmbeddedKafka.stop(someOtherBroker)
       }
@@ -130,8 +130,8 @@ class EmbeddedKafkaObjectSpec
 
     "invoking the isRunning method" should {
       "return true when Kafka is running" in {
-        EmbeddedKafka.start()
-        EmbeddedKafka.isRunning shouldBe true
+        val _ = EmbeddedKafka.start()
+        val _ = EmbeddedKafka.isRunning shouldBe true
         EmbeddedKafka.stop()
         EmbeddedKafka.isRunning shouldBe false
       }

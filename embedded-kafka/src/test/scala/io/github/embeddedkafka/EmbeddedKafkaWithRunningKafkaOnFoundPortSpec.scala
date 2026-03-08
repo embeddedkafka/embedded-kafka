@@ -5,7 +5,6 @@ import io.github.embeddedkafka.EmbeddedKafkaSpecSupport.{
   Available,
   NotAvailable
 }
-import org.scalatest.Assertion
 
 class EmbeddedKafkaWithRunningKafkaOnFoundPortSpec
     extends EmbeddedKafkaSpecSupport {
@@ -15,7 +14,7 @@ class EmbeddedKafkaWithRunningKafkaOnFoundPortSpec
         EmbeddedKafkaConfig(kafkaPort = 12345, controllerPort = 54321)
       val actualConfig = withRunningKafkaOnFoundPort(userDefinedConfig) {
         actualConfig =>
-          actualConfig shouldBe userDefinedConfig
+          val _ = actualConfig shouldBe userDefinedConfig
           everyServerIsAvailable(actualConfig)
           actualConfig
       }
@@ -29,22 +28,23 @@ class EmbeddedKafkaWithRunningKafkaOnFoundPortSpec
         actualConfig1 =>
           everyServerIsAvailable(actualConfig1)
           publishStringMessageToKafka("topic", "message1")(actualConfig1)
-          consumeFirstStringMessageFrom("topic")(
+          val _ = consumeFirstStringMessageFrom("topic")(
             actualConfig1
           ) shouldBe "message1"
           val actualConfig2 = withRunningKafkaOnFoundPort(userDefinedConfig) {
             actualConfig2 =>
               everyServerIsAvailable(actualConfig2)
               publishStringMessageToKafka("topic", "message2")(actualConfig2)
-              consumeFirstStringMessageFrom("topic")(
+              val _ = consumeFirstStringMessageFrom("topic")(
                 actualConfig2
               ) shouldBe "message2"
               val allConfigs =
                 Seq(userDefinedConfig, actualConfig1, actualConfig2)
               // Confirm both actual configs are running on separate non-zero ports, but otherwise equal
-              allConfigs.map(_.kafkaPort).distinct should have size 3
-              allConfigs.map(_.controllerPort).distinct should have size 3
-              allConfigs
+              val _ = allConfigs.map(_.kafkaPort).distinct should have size 3
+              val _ =
+                allConfigs.map(_.controllerPort).distinct should have size 3
+              val _ = allConfigs
                 .map(config =>
                   EmbeddedKafkaConfigImpl(
                     kafkaPort = 0,
@@ -73,12 +73,12 @@ class EmbeddedKafkaWithRunningKafkaOnFoundPortSpec
     }
   }
 
-  private def everyServerIsAvailable(config: EmbeddedKafkaConfig): Assertion = {
+  private def everyServerIsAvailable(config: EmbeddedKafkaConfig): Unit = {
     expectedServerStatus(config.controllerPort, Available)
     expectedServerStatus(config.kafkaPort, Available)
   }
 
-  private def noServerIsAvailable(config: EmbeddedKafkaConfig): Assertion = {
+  private def noServerIsAvailable(config: EmbeddedKafkaConfig): Unit = {
     expectedServerStatus(config.controllerPort, NotAvailable)
     expectedServerStatus(config.kafkaPort, NotAvailable)
   }
