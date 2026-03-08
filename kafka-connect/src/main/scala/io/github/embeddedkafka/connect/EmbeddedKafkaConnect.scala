@@ -67,7 +67,7 @@ private[embeddedkafka] trait EmbeddedKafkaConnectSupport[
       )
       val standaloneConfig = new StandaloneConfig(configMap.asJava)
       val restClient       = new RestClient(standaloneConfig)
-      val rest = new ConnectRestServer(
+      val rest             = new ConnectRestServer(
         standaloneConfig.rebalanceTimeout,
         restClient,
         configMap.asJava
@@ -95,7 +95,7 @@ private[embeddedkafka] trait EmbeddedKafkaConnectSupport[
       offsetBackingStore.configure(standaloneConfig)
 
       val workerId = s"localhost:$connectPort"
-      val worker = new Worker(
+      val worker   = new Worker(
         workerId,
         Time.SYSTEM,
         plugins,
@@ -104,7 +104,7 @@ private[embeddedkafka] trait EmbeddedKafkaConnectSupport[
         connectorClientConfigOverridePolicy
       )
       val clusterId = standaloneConfig.kafkaClusterId()
-      val herder = new StandaloneHerder(
+      val herder    = new StandaloneHerder(
         worker,
         clusterId,
         connectorClientConfigOverridePolicy
