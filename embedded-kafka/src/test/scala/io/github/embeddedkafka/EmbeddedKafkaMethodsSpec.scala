@@ -57,7 +57,7 @@ class EmbeddedKafkaMethodsSpec
         val records =
           consumer.poll(duration2JavaDuration(consumerPollTimeout))
 
-        records.iterator().hasNext shouldBe true
+        val _      = records.iterator().hasNext shouldBe true
         val record = records.iterator().next()
 
         record.value() shouldBe message
@@ -83,10 +83,10 @@ class EmbeddedKafkaMethodsSpec
         val records =
           consumer.poll(duration2JavaDuration(consumerPollTimeout))
 
-        records.iterator().hasNext shouldBe true
+        val _      = records.iterator().hasNext shouldBe true
         val record = records.iterator().next()
 
-        record.value() shouldBe message
+        val _                 = record.value() shouldBe message
         val myHeader          = record.headers().lastHeader("my_header")
         val actualHeaderValue = new String(myHeader.value().map(_.toChar))
         actualHeaderValue shouldBe headerValue
@@ -102,17 +102,17 @@ class EmbeddedKafkaMethodsSpec
 
       publishToKafka(topic, key, message)
 
-      withConsumer[String, String, Assertion] { consumer =>
+      withConsumer[String, String, Unit] { consumer =>
         consumer.subscribe(List(topic).asJava)
 
         val records =
           consumer.poll(duration2JavaDuration(consumerPollTimeout))
 
-        records.iterator().hasNext shouldBe true
+        val _      = records.iterator().hasNext shouldBe true
         val record = records.iterator().next()
 
-        record.key() shouldBe key
-        record.value() shouldBe message
+        val _ = record.key() shouldBe key
+        val _ = record.value() shouldBe message
       }
     }
 
@@ -129,23 +129,23 @@ class EmbeddedKafkaMethodsSpec
 
       publishToKafka(topic, messages)
 
-      withConsumer[String, String, Assertion] { consumer =>
+      withConsumer[String, String, Unit] { consumer =>
         consumer.subscribe(List(topic).asJava)
 
         val records = consumer
           .poll(duration2JavaDuration(consumerPollTimeout))
           .iterator()
 
-        records.hasNext shouldBe true
+        val _ = records.hasNext shouldBe true
 
         val record1 = records.next()
-        record1.key() shouldBe key1
-        record1.value() shouldBe message1
+        val _       = record1.key() shouldBe key1
+        val _       = record1.value() shouldBe message1
 
-        records.hasNext shouldBe true
+        val _       = records.hasNext shouldBe true
         val record2 = records.next()
-        record2.key() shouldBe key2
-        record2.value() shouldBe message2
+        val _       = record2.key() shouldBe key2
+        val _       = record2.value() shouldBe message2
       }
     }
   }
@@ -159,7 +159,7 @@ class EmbeddedKafkaMethodsSpec
       )
       val topic = "test_custom_topic"
 
-      createCustomTopic(
+      val _ = createCustomTopic(
         topic,
         Map(
           TopicConfig.CLEANUP_POLICY_CONFIG -> TopicConfig.CLEANUP_POLICY_COMPACT
@@ -173,7 +173,7 @@ class EmbeddedKafkaMethodsSpec
       implicit val config: EmbeddedKafkaConfig = EmbeddedKafkaConfig()
       val topic = "test_custom_topic_with_custom_partitions"
 
-      createCustomTopic(
+      val _ = createCustomTopic(
         topic,
         Map(
           TopicConfig.CLEANUP_POLICY_CONFIG -> TopicConfig.CLEANUP_POLICY_COMPACT
@@ -200,11 +200,11 @@ class EmbeddedKafkaMethodsSpec
 
       topics.foreach(createCustomTopic(_))
 
-      deleteTopics(topics)
+      val _ = deleteTopics(topics)
 
       eventually {
         val allTopicsOrFailure = listTopics()
-        assert(allTopicsOrFailure.isSuccess)
+        val _                  = assert(allTopicsOrFailure.isSuccess)
 
         val allTopics            = allTopicsOrFailure.getOrElse(Set.empty)
         val noTopicExistsAnymore = topics.forall(t => !allTopics.contains(t))
@@ -234,7 +234,9 @@ class EmbeddedKafkaMethodsSpec
 
       whenReady(
         producer.send(new ProducerRecord[String, String](topic, message))
-      ) { _ => consumeFirstStringMessageFrom(topic) shouldBe message }
+      ) { _ =>
+        val _ = consumeFirstStringMessageFrom(topic) shouldBe message
+      }
 
       producer.close()
     }
@@ -265,7 +267,7 @@ class EmbeddedKafkaMethodsSpec
         consumeFirstStringMessageFrom(topic)
       }
 
-      consumedMessages.toSet shouldEqual messages
+      val _ = consumedMessages.toSet shouldEqual messages
 
       producer.close()
     }
@@ -301,7 +303,8 @@ class EmbeddedKafkaMethodsSpec
       whenReady(
         producer.send(new ProducerRecord[String, String](topic, message))
       ) { _ =>
-        consumeFirstMessageFrom[Array[Byte]](topic) shouldBe message.getBytes
+        val _ =
+          consumeFirstMessageFrom[Array[Byte]](topic) shouldBe message.getBytes
       }
 
       producer.close()
@@ -322,7 +325,7 @@ class EmbeddedKafkaMethodsSpec
       )
 
       whenReady(producer.send(new ProducerRecord(topic, message))) { _ =>
-        consumeFirstMessageFrom[TestClass](topic) shouldBe message
+        val _ = consumeFirstMessageFrom[TestClass](topic) shouldBe message
       }
 
       producer.close()
@@ -356,8 +359,8 @@ class EmbeddedKafkaMethodsSpec
       ) { _ =>
         val (k, v) =
           consumeFirstKeyedMessageFrom[Array[Byte], Array[Byte]](topic)
-        k shouldBe key.getBytes
-        v shouldBe message.getBytes
+        val _ = k shouldBe key.getBytes
+        val _ = v shouldBe message.getBytes
       }
 
       producer.close()
@@ -380,7 +383,7 @@ class EmbeddedKafkaMethodsSpec
       )
 
       whenReady(producer.send(new ProducerRecord(topic, key, message))) { _ =>
-        consumeFirstKeyedMessageFrom[TestClass, TestClass](
+        val _ = consumeFirstKeyedMessageFrom[TestClass, TestClass](
           topic
         ) shouldBe key -> message
       }
@@ -406,7 +409,7 @@ class EmbeddedKafkaMethodsSpec
       )
 
       whenReady(producer.send(new ProducerRecord(topic, key, message))) { _ =>
-        consumeFirstKeyedMessageFrom[String, TestClass](
+        val _ = consumeFirstKeyedMessageFrom[String, TestClass](
           topic
         ) shouldBe key -> message
       }
@@ -442,7 +445,7 @@ class EmbeddedKafkaMethodsSpec
       val consumedMessages =
         consumeNumberStringMessagesFrom(topic, messages.size)
 
-      consumedMessages.toSet shouldEqual messages
+      val _ = consumedMessages.toSet shouldEqual messages
 
       producer.close()
     }
@@ -468,7 +471,7 @@ class EmbeddedKafkaMethodsSpec
 
       producer.flush()
 
-      a[TimeoutException] shouldBe thrownBy {
+      val _ = a[TimeoutException] shouldBe thrownBy {
         consumeNumberStringMessagesFrom(topic, messages.size + 1)
       }
 
@@ -507,7 +510,7 @@ class EmbeddedKafkaMethodsSpec
           topicMessagesMap.values.map(_.size).sum
         )
 
-      consumedMessages.view
+      val _ = consumedMessages.view
         .mapValues(_.sorted)
         .toMap shouldEqual topicMessagesMap
 
@@ -547,7 +550,7 @@ class EmbeddedKafkaMethodsSpec
           topicMessagesMap.values.map(_.size).sum
         )
 
-      consumedMessages.view
+      val _ = consumedMessages.view
         .mapValues(_.sorted)
         .toMap shouldEqual topicMessagesMap
 
@@ -568,16 +571,16 @@ class EmbeddedKafkaMethodsSpec
           producer.send(new ProducerRecord[String, String](topic, key, value))
       }
 
-      withConsumer[String, String, Assertion](consumer => {
+      withConsumer[String, String, Unit](consumer => {
         consumer.subscribe(Collections.singletonList(topic))
 
         eventually {
           val records =
             consumer.poll(duration2JavaDuration(1.seconds)).asScala.toList
-          records should have size 1
-          val r :: _ = records
-          r.key shouldBe key
-          r.value shouldBe value
+          val _      = records should have size 1
+          val r :: _ = records: @unchecked
+          val _      = r.key shouldBe key
+          val _      = r.value shouldBe value
         }
       })
     }

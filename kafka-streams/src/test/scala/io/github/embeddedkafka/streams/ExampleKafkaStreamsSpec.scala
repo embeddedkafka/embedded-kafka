@@ -41,7 +41,7 @@ class ExampleKafkaStreamsSpec
         val firstTwoMessages =
           consumeNumberKeyedMessagesFrom[String, String](outTopic, 2)
 
-        firstTwoMessages should be(
+        val _ = firstTwoMessages should be(
           Seq("hello" -> "world", "foo" -> "bar")
         )
 
@@ -73,7 +73,7 @@ class ExampleKafkaStreamsSpec
         val firstTwoMessages =
           consumeNumberKeyedMessagesFrom[String, String](outTopic, 2)
 
-        firstTwoMessages should be(
+        val _ = firstTwoMessages should be(
           Seq("hello" -> "world", "foo" -> "bar")
         )
 
