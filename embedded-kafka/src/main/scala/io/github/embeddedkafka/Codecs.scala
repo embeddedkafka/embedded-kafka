@@ -8,7 +8,7 @@ import org.apache.kafka.common.serialization._
   * decoders
   */
 object Codecs {
-  implicit val stringSerializer: Serializer[String] = new StringSerializer()
+  implicit val stringSerializer: Serializer[String]    = new StringSerializer()
   implicit val nullSerializer: Serializer[Array[Byte]] =
     new ByteArraySerializer()
 

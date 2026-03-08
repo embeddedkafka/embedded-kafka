@@ -34,7 +34,7 @@ class EmbeddedKafkaMethodsSpec
     with OptionValues
     with JavaFutures {
   private val consumerPollTimeout: FiniteDuration = 5.seconds
-  private implicit val patience: PatienceConfig =
+  private implicit val patience: PatienceConfig   =
     PatienceConfig(Span(5, Seconds), Span(100, Milliseconds))
 
   override def beforeAll(): Unit = {
@@ -75,7 +75,7 @@ class EmbeddedKafkaMethodsSpec
       val message                                   = "hello world!"
       val topic       = "publish_test_topic_with_header"
       val headerValue = "my_header_value"
-      val headers = new RecordHeaders()
+      val headers     = new RecordHeaders()
         .add("my_header", headerValue.toCharArray.map(_.toByte))
       val producerRecord =
         new ProducerRecord[String, String](topic, null, "key", message, headers)
@@ -347,8 +347,8 @@ class EmbeddedKafkaMethodsSpec
     }
 
     "return a message published to a topic with custom decoder" in {
-      val message = TestClass("name")
-      val topic   = "consume_test_topic"
+      val message                                        = TestClass("name")
+      val topic                                          = "consume_test_topic"
       implicit val deserializer: Deserializer[TestClass] =
         new TestJsonDeserializer[TestClass]
 
@@ -403,9 +403,9 @@ class EmbeddedKafkaMethodsSpec
     }
 
     "return a message published to a topic with custom decoders" in {
-      val key     = TestClass("key")
-      val message = TestClass("message")
-      val topic   = "consume_test_topic"
+      val key                                            = TestClass("key")
+      val message                                        = TestClass("message")
+      val topic                                          = "consume_test_topic"
       implicit val deserializer: Deserializer[TestClass] =
         new TestJsonDeserializer[TestClass]
       val serializer = new TestJsonSerializer[TestClass]
@@ -428,9 +428,9 @@ class EmbeddedKafkaMethodsSpec
     }
 
     "return a message published to a topic with 2 different decoders" in {
-      val key     = "key"
-      val message = TestClass("message")
-      val topic   = "consume_test_topic"
+      val key                                             = "key"
+      val message                                         = TestClass("message")
+      val topic                                           = "consume_test_topic"
       implicit val stringDeserializer: StringDeserializer =
         new StringDeserializer
       implicit val deserializer: Deserializer[TestClass] =
@@ -517,7 +517,7 @@ class EmbeddedKafkaMethodsSpec
 
   "the consumeNumberMessagesFromTopics method" should {
     "consume from multiple topics" in {
-      val config = EmbeddedKafkaConfig()
+      val config           = EmbeddedKafkaConfig()
       val topicMessagesMap = Map(
         "topic1" -> List("message 1"),
         "topic2" -> List("message 2a", "message 2b")
@@ -540,7 +540,7 @@ class EmbeddedKafkaMethodsSpec
       producer.flush()
 
       implicit val deserializer: StringDeserializer = new StringDeserializer
-      val consumedMessages =
+      val consumedMessages                          =
         consumeNumberMessagesFromTopics(
           topicMessagesMap.keySet,
           topicMessagesMap.values.map(_.size).sum
@@ -556,7 +556,7 @@ class EmbeddedKafkaMethodsSpec
 
   "the consumeNumberKeyedMessagesFromTopics method" should {
     "consume from multiple topics" in {
-      val config = EmbeddedKafkaConfig()
+      val config           = EmbeddedKafkaConfig()
       val topicMessagesMap =
         Map(
           "topic1" -> List(("m1", "message 1")),
@@ -580,7 +580,7 @@ class EmbeddedKafkaMethodsSpec
       producer.flush()
 
       implicit val deserializer: StringDeserializer = new StringDeserializer
-      val consumedMessages =
+      val consumedMessages                          =
         consumeNumberKeyedMessagesFromTopics(
           topicMessagesMap.keySet,
           topicMessagesMap.values.map(_.size).sum

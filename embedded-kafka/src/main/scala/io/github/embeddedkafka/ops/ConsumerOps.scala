@@ -277,7 +277,7 @@ trait ConsumerOps[C <: EmbeddedKafkaConfig] {
     )
 
     var timeoutNanoTime = System.nanoTime + timeout.toNanos
-    val consumer = new KafkaConsumer[K, V](
+    val consumer        = new KafkaConsumer[K, V](
       consumerProperties.asJava,
       keyDeserializer,
       valueDeserializer
