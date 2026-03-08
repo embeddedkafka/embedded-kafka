@@ -578,7 +578,7 @@ class EmbeddedKafkaMethodsSpec
           val records =
             consumer.poll(duration2JavaDuration(1.seconds)).asScala.toList
           val _      = records should have size 1
-          val r :: _ = records
+          val r :: _ = records: @unchecked
           val _      = r.key shouldBe key
           val _      = r.value shouldBe value
         }
