@@ -60,12 +60,12 @@ private[embeddedkafka] trait EmbeddedKafkaStreamsSupport[
     * Execute Kafka streams and pass a block of code that can operate while the
     * streams are active. The code block can be used for publishing and
     * consuming messages in Kafka. The actual ports of the servers will be
-    * detected and inserted into a copied version of the [[EmbeddedKafkaConfig]]
+    * detected and inserted into a copied version of the `EmbeddedKafkaConfig`
     * that gets passed to body. This is useful if you set any port to `0`, which
     * will listen on an arbitrary available port.
     *
     * @param config
-    *   the user-defined [[EmbeddedKafkaConfig]]
+    *   the user-defined `EmbeddedKafkaConfig`
     * @param topicsToCreate
     *   the topics that should be created in Kafka before launching the streams.
     * @param topology
@@ -77,8 +77,8 @@ private[embeddedkafka] trait EmbeddedKafkaStreamsSupport[
     *   default config)
     * @param block
     *   the code block that will executed while the streams are active, given an
-    *   [[EmbeddedKafkaConfig]] with the actual ports the servers are running
-    *   on. Once the block has been executed the streams will be closed.
+    *   `EmbeddedKafkaConfig` with the actual ports the servers are running on.
+    *   Once the block has been executed the streams will be closed.
     */
   def runStreamsOnFoundPort[T](config: C)(
       topicsToCreate: Seq[String],
