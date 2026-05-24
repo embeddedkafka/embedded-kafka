@@ -13,10 +13,9 @@ import org.apache.kafka.metadata.properties.{
   PropertiesUtils
 }
 import org.apache.kafka.network.SocketServerConfigs
-import org.apache.kafka.raft.QuorumConfig
+import org.apache.kafka.raft.{KRaftConfigs, QuorumConfig}
 import org.apache.kafka.server.ServerSocketFactory
 import org.apache.kafka.server.config.{
-  KRaftConfigs,
   ReplicationConfigs,
   ServerConfigs,
   ServerLogConfigs
