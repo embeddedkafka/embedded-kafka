@@ -20,5 +20,7 @@ jobs:
       run: sbt scalafmtCheckAll
     - name: Compile
       run: sbt compile
+    - name: Generate documentation
+      run: sbt "Compile / doc"
     - name: Run cross-version tests
       run: sbt +test
