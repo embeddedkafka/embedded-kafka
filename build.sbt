@@ -24,7 +24,7 @@ lazy val publishSettings = Seq(
   homepage := Some(url("https://github.com/embeddedkafka/embedded-kafka")),
   licenses += ("MIT", url("https://opensource.org/licenses/MIT")),
   Test / publishArtifact := false,
-  developers := List(
+  developers             := List(
     Developer(
       "manub",
       "Emanuele Blanco",
@@ -68,12 +68,16 @@ lazy val releaseSettings = Seq(
 lazy val testSettings = Seq(
   Test / fork              := true,
   Test / logBuffered       := false,
-  Test / parallelExecution := false
+  Test / parallelExecution := false,
+  Test / scalacOptions --= Seq(
+    "-Wnonunit-statement",
+    "-Wvalue-discard"
+  )
 )
 
 lazy val commonSettings = Seq(
-  organization := "io.github.embeddedkafka",
-  scalaVersion := Versions.Scala213,
+  organization       := "io.github.embeddedkafka",
+  scalaVersion       := Versions.Scala213,
   crossScalaVersions := Seq(
     Versions.Scala212,
     Versions.Scala213,
