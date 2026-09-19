@@ -4,12 +4,14 @@ ThisBuild / parallelExecution := false
 ThisBuild / versionScheme     := Some("semver-spec")
 
 lazy val compileSettings = Seq(
-  Compile / compile := (Compile / compile)
-    .dependsOn(
-      Compile / scalafmtSbt,
-      Compile / scalafmtAll
-    )
-    .value,
+  Compile / compile := Def.uncached {
+    (Compile / compile)
+      .dependsOn(
+        Compile / scalafmtSbt,
+        Compile / scalafmtAll
+      )
+      .value
+  },
   libraryDependencies ++= Common.testDeps,
   javaOptions ++= Seq("-Xms512m", "-Xmx2048m"),
   scalacOptions -= "-Xfatal-warnings"
@@ -21,27 +23,27 @@ lazy val coverageSettings = Seq(
 )
 
 lazy val publishSettings = Seq(
-  homepage := Some(url("https://github.com/embeddedkafka/embedded-kafka")),
-  licenses += ("MIT", url("https://opensource.org/licenses/MIT")),
+  homepage := Some(uri("https://github.com/embeddedkafka/embedded-kafka")),
+  licenses += License.MIT,
   Test / publishArtifact := false,
   developers             := List(
     Developer(
       "manub",
       "Emanuele Blanco",
       "emanuele.blanco@gmail.com",
-      url("https://twitter.com/manub")
+      uri("https://twitter.com/manub")
     ),
     Developer(
       "francescopellegrini",
       "Francesco Pellegrini",
       "francesco.pelle@gmail.com",
-      url("https://github.com/francescopellegrini")
+      uri("https://github.com/francescopellegrini")
     ),
     Developer(
       "NeQuissimus",
       "Tim Steinbach",
       "steinbach.tim@gmail.com",
-      url("https://github.com/NeQuissimus")
+      uri("https://github.com/NeQuissimus")
     )
   )
 )
@@ -82,25 +84,25 @@ lazy val commonSettings = Seq(
 
 lazy val root = (project in file("."))
   .settings(name := "embedded-kafka-root")
-  .settings(commonSettings: _*)
+  .settings(commonSettings *)
   .settings(publishArtifact := false)
   .settings(publish / skip := true)
   .aggregate(embeddedKafka, kafkaStreams, kafkaConnect)
 
 lazy val embeddedKafka = (project in file("embedded-kafka"))
   .settings(name := "embedded-kafka")
-  .settings(commonSettings: _*)
+  .settings(commonSettings *)
   .settings(libraryDependencies ++= EmbeddedKafka.prodDeps)
   .settings(libraryDependencies ++= EmbeddedKafka.testDeps)
 
 lazy val kafkaStreams = (project in file("kafka-streams"))
   .settings(name := "embedded-kafka-streams")
-  .settings(commonSettings: _*)
+  .settings(commonSettings *)
   .settings(libraryDependencies ++= KafkaStreams.prodDeps)
   .dependsOn(embeddedKafka)
 
 lazy val kafkaConnect = (project in file("kafka-connect"))
   .settings(name := "embedded-kafka-connect")
-  .settings(commonSettings: _*)
+  .settings(commonSettings *)
   .settings(libraryDependencies ++= KafkaConnect.prodDeps)
   .dependsOn(embeddedKafka % "compile->compile;test->test")

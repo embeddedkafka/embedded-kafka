@@ -19,7 +19,7 @@ jobs:
     - name: Compile
       run: sbt compile
     - name: Run cross-version tests with coverage
-      run: sbt coverage +test
+      run: sbt "coverage; +test"
     - name: Generate coverage report
       run: sbt coverageReport
     - name: Aggregate sub-projects coverage reports

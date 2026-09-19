@@ -21,7 +21,9 @@ object Dependencies {
 
   object EmbeddedKafka {
     lazy val prodDeps: Seq[ModuleID] = Seq(
-      "org.apache.kafka" %% "kafka" % Versions.Kafka cross CrossVersion.for3Use2_13
+      ("org.apache.kafka" %% "kafka" % Versions.Kafka).cross(
+        CrossVersion.for3Use2_13
+      )
     )
     lazy val testDeps: Seq[ModuleID] = Seq(
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % Versions.Jackson
