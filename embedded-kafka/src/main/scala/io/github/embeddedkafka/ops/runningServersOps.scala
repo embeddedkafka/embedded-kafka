@@ -9,7 +9,7 @@ object RunningServersOps {
     * `EmbeddedServer`s.
     */
   private[embeddedkafka] class RunningServers {
-    private[this] var servers: Seq[EmbeddedServer] = Seq.empty
+    private var servers: Seq[EmbeddedServer] = Seq.empty
 
     /**
       * @return
