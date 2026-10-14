@@ -15,11 +15,7 @@ import org.apache.kafka.metadata.properties.{
 import org.apache.kafka.network.SocketServerConfigs
 import org.apache.kafka.raft.{KRaftConfigs, QuorumConfig}
 import org.apache.kafka.server.ServerSocketFactory
-import org.apache.kafka.server.config.{
-  ReplicationConfigs,
-  ServerConfigs,
-  ServerLogConfigs
-}
+import org.apache.kafka.server.config.{ReplicationConfigs, ServerLogConfigs}
 import org.apache.kafka.common.network.ListenerName
 import org.apache.kafka.storage.internals.log.CleanerConfig
 import org.slf4j.LoggerFactory
@@ -62,7 +58,6 @@ trait KafkaOps {
       ReplicationConfigs.INTER_BROKER_LISTENER_NAME_CONFIG -> "BROKER",
       KRaftConfigs.CONTROLLER_LISTENER_NAMES_CONFIG        -> "CONTROLLER",
       QuorumConfig.QUORUM_VOTERS_CONFIG -> s"$nodeId@localhost:$actualControllerPort",
-      ServerConfigs.BROKER_ID_CONFIG -> nodeId.toString,
       SocketServerConfigs.LISTENERS_CONFIG -> s"$brokerListener,$controllerListener",
       SocketServerConfigs.ADVERTISED_LISTENERS_CONFIG -> brokerListener,
       SocketServerConfigs.LISTENER_SECURITY_PROTOCOL_MAP_CONFIG -> "BROKER:PLAINTEXT,CONTROLLER:PLAINTEXT",
