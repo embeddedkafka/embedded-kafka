@@ -16,7 +16,8 @@ class TestJsonDeserializer[T](implicit tag: ClassTag[T], ev: Null <:< T)
   private val mapper = new ObjectMapper().registerModule(DefaultScalaModule)
 
   override def deserialize(topic: String, bytes: Array[Byte]): T =
-    Option(bytes).map { _ =>
+    if (bytes == null) ev(null)
+    else
       try
         mapper.readValue(
           bytes,
@@ -25,5 +26,4 @@ class TestJsonDeserializer[T](implicit tag: ClassTag[T], ev: Null <:< T)
       catch {
         case NonFatal(e) => throw new SerializationException(e)
       }
-    }.orNull
 }

@@ -14,7 +14,16 @@ lazy val compileSettings = Seq(
   },
   libraryDependencies ++= Common.testDeps,
   javaOptions ++= Seq("-Xms512m", "-Xmx2048m"),
-  scalacOptions -= "-Xfatal-warnings"
+  scalacOptions -= "-Xfatal-warnings",
+  // Code must stay source-compatible with both Scala 2.13 and 3: `using` clauses and `&` aren't available in 2.13
+  scalacOptions ++= {
+    if (scalaVersion.value.startsWith("3."))
+      Seq(
+        "-Wconf:msg=Implicit parameters should be provided with a `using` clause:s",
+        "-Wconf:msg=with as a type operator has been deprecated:s"
+      )
+    else Nil
+  }
 )
 
 lazy val coverageSettings = Seq(
