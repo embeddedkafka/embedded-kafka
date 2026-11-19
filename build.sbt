@@ -3,6 +3,12 @@ import Dependencies._
 ThisBuild / parallelExecution := false
 ThisBuild / versionScheme     := Some("semver-spec")
 
+// Tests use fixed ports (e.g. default 6000/6001, 7000/7002), so test tasks of
+// different projects must not run concurrently. sbt 2.1.0 does not honor
+// `parallelExecution := false` across projects, see
+// https://github.com/sbt/sbt/issues/10078
+Global / concurrentRestrictions += Tags.limit(Tags.Test, 1)
+
 lazy val compileSettings = Seq(
   Compile / compile := Def.uncached {
     (Compile / compile)
